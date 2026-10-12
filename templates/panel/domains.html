@@ -1,0 +1,42 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}دامنه{% endblock %}
+{% block content %}
+<div class="page-head"><h1>دامنه</h1></div>
+<section class="panel-box">
+  <h2 class="h2">آدرس رایگان شما</h2>
+  <p><a class="ltr" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener">{{ request.tenant.subdomain_host }}</a> همیشه فعال است. پنل هم همیشه روی همین آدرس است: <span class="ltr">{{ request.tenant.subdomain_host }}/panel</span></p>
+</section>
+
+<section class="panel-box">
+  <h2 class="h2">اتصال دامنه خودتان</h2>
+  <ol class="howto">
+    <li>دامنه را از هر جا که خواستید ثبت کنید (برای .ir از ایرنیک یا نمایندگانش).</li>
+    <li>در پنل ثبت دامنه، نام‌سرورها (NS) را این دو مورد بگذارید:
+      <ul class="ns-list">{% for ns in nameservers %}<li><code class="ltr">{{ ns }}</code> <button type="button" class="linkish copy" data-copy="{{ ns }}">کپی</button></li>{% endfor %}</ul>
+    </li>
+    <li>دامنه را پایین وارد کنید. هر ۵ دقیقه خودکار بررسی می‌کنیم؛ تغییر NS در .ir ممکن است چند ساعت طول بکشد.</li>
+  </ol>
+  {% if domains|length < limit %}
+  <form method="post" class="inline-form" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">افزودن دامنه</button></form>
+  {% else %}
+  <p class="muted">سقف دامنه اشتراک شما ({{ limit|fa }}) پر است. برای دامنه بیشتر، افزونه «دامنه اضافه» را از <a href="{% url 'panel:billing' %}">اشتراک</a> اضافه کنید.</p>
+  {% endif %}
+</section>
+
+{% if domains %}
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>دامنه</th><th>وضعیت</th><th>NSهای دیده‌شده</th><th>آخرین بررسی</th><th></th></tr></thead>
+  <tbody>{% for d in domains %}
+    <tr><td class="ltr">{{ d.hostname }}{% if d.is_primary %} <span class="tag">اصلی</span>{% endif %}</td>
+      <td><span class="tag {% if d.status == 'active' %}ok{% elif d.status == 'error' %}hot{% else %}warm{% endif %}">{{ d.get_status_display }}</span></td>
+      <td class="ltr small muted">{{ d.last_seen_ns|default:"—" }}</td><td class="muted">{{ d.last_checked_at|jdate:"time"|default:"—" }}</td>
+      <td class="row-actions"><form method="post" action="{% url 'panel:domain_action' d.pk %}">{% csrf_token %}
+        <button class="linkish" name="action" value="check">بررسی همین حالا</button>
+        {% if not d.is_primary %}<button class="linkish" name="action" value="primary">اصلی شود</button>{% endif %}
+        <button class="linkish danger" name="action" value="delete" onclick="return confirm('دامنه حذف شود؟')">حذف</button></form></td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script>document.querySelectorAll(".copy").forEach(b=>b.addEventListener("click",()=>{navigator.clipboard.writeText(b.dataset.copy);b.textContent="کپی شد"}))</script>{% endblock %}

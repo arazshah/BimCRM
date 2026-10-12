@@ -1,0 +1,20 @@
+{% extends base_template %}
+{% load fa %}
+{% block main %}
+<section class="subpage">
+  <h1>ورود مشتریان</h1>
+  <p>بیمه‌نامه‌ها و درخواست‌هایتان را با شماره موبایلی که در دفتر ثبت کرده‌اید ببینید.</p>
+  {% if messages %}<ul class="flash">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
+  <form method="post" class="quote-form">
+    {% csrf_token %}
+    {% if step == "code" %}
+      <p>کد به <span class="ltr">{{ portal_mobile|fa }}</span> پیامک شد.</p>
+      <div class="qf-field"><label for="a-code">کد تأیید</label><input id="a-code" name="code" dir="ltr" inputmode="numeric" autocomplete="one-time-code" required autofocus></div>
+      <button class="qf-submit" type="submit">ورود</button>
+    {% else %}
+      <div class="qf-field"><label for="a-mobile">موبایل</label><input id="a-mobile" name="mobile" dir="ltr" inputmode="numeric" autocomplete="tel" required></div>
+      <button class="qf-submit" type="submit">دریافت کد</button>
+    {% endif %}
+  </form>
+</section>
+{% endblock %}

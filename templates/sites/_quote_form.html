@@ -1,0 +1,21 @@
+{% load fa %}<form class="quote-form" action="/quote/" method="post" id="quote-form">
+  {% csrf_token %}
+  {% if lines %}
+  <div class="qf-field">
+    <label for="qf-line">نوع بیمه</label>
+    <select id="qf-line" name="line" required>
+      {% for l in lines %}<option value="{{ l.slug }}" data-fields="{{ l.form_fields|json_attr }}">{{ l.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="qf-extra" id="qf-extra"></div>
+  <div class="qf-row">
+    <div class="qf-field"><label for="qf-name">نام و نام خانوادگی</label><input id="qf-name" name="full_name" required autocomplete="name"></div>
+    <div class="qf-field"><label for="qf-mobile">موبایل</label><input id="qf-mobile" name="mobile" required inputmode="numeric" autocomplete="tel" dir="ltr" placeholder="09…"></div>
+  </div>
+  <div class="qf-field"><label for="qf-msg">توضیحات <span class="opt">(اختیاری)</span></label><textarea id="qf-msg" name="message" rows="2"></textarea></div>
+  <button class="qf-submit" type="submit" {% if is_demo %}disabled title="در پیش‌نمایش ارسال نمی‌شود"{% endif %}>{{ submit_label|default:"درخواست استعلام" }}</button>
+  <p class="qf-note">کد پیگیری می‌گیرید و دفتر با شما تماس می‌گیرد.</p>
+  {% else %}
+  <p class="qf-note">فرم استعلام به‌زودی فعال می‌شود. فعلاً با {{ site.phone|default:"دفتر" }} تماس بگیرید.</p>
+  {% endif %}
+</form>

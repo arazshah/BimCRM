@@ -1,0 +1,45 @@
+{% extends "sites/chandsherkati/base.html" %}
+{% load fa %}
+{% block main %}
+<section class="c-hero">
+  <div class="site-wrap c-hero-grid">
+    <div>
+      <h1>{{ site.hero_title|default:tenant.name }}</h1>
+      {% if site.hero_subtitle %}<p class="c-sub">{{ site.hero_subtitle }}</p>{% endif %}
+      {% if companies %}<p class="c-count"><strong>{{ companies|length|fa }}</strong> شرکت بیمه، یک دفتر؛ پوشش و قیمت را کنار هم می‌بینید.</p>{% endif %}
+    </div>
+    <div class="c-form" id="quote">
+      <h2>درخواست مقایسه و استعلام</h2>
+      {% include "sites/_quote_form.html" with submit_label="ثبت درخواست مقایسه" %}
+    </div>
+  </div>
+</section>
+
+{% if lines %}
+<section class="c-compare" id="compare"><div class="site-wrap">
+  <h2>رشته‌ها</h2>
+  <div class="c-table-wrap">
+  <table class="c-table">
+    <thead><tr><th scope="col">رشته</th><th scope="col">پوشش اصلی</th><th scope="col"><span class="visually-hidden">استعلام</span></th></tr></thead>
+    <tbody>{% for l in lines %}<tr><th scope="row"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg>{{ l.name }}</th><td>{{ l.summary }}</td><td><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}">استعلام</a></td></tr>{% endfor %}</tbody>
+  </table>
+  </div>
+</div></section>
+{% endif %}
+
+{% if companies %}
+<section class="c-partners" id="partners"><div class="site-wrap">
+  <h2>شرکت‌های همکار</h2>
+  <ul class="c-logos">{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}">{% else %}{{ c.name }}{% endif %}</li>{% endfor %}</ul>
+</div></section>
+{% endif %}
+
+<section class="c-split"><div class="site-wrap c-split-grid">
+  {% if site.about %}<div><h2>درباره دفتر</h2>{{ site.about|linebreaks }}</div>{% endif %}
+  {% if testimonials %}<div><h2>نظر مشتریان</h2><ul class="c-voices">{% for t in testimonials %}<li><p>{{ t.text }}</p><span>{{ t.name }}</span></li>{% endfor %}</ul></div>{% endif %}
+</div></section>
+
+{% if faqs %}
+<section class="c-faq"><div class="site-wrap"><h2>سؤالات متداول</h2><div class="c-faq-grid">{% for f in faqs %}<details><summary>{{ f.question }}</summary>{{ f.answer|linebreaks }}</details>{% endfor %}</div></div></section>
+{% endif %}
+{% endblock %}

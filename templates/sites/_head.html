@@ -1,0 +1,11 @@
+{% load static %}<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ site.hero_title|default:tenant.name }}{% endblock %}</title>
+{% if site.seo_description %}<meta name="description" content="{{ site.seo_description }}">{% endif %}
+{% if is_demo or is_preview %}<meta name="robots" content="noindex">{% endif %}
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/sites/common.css' %}">
+<link rel="stylesheet" href="{% static 'css/sites/'|add:tpl.key|add:'.css' %}">
+<style>:root { --brand: {{ site.color }}; }</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"InsuranceAgency","name":"{{ tenant.name|escapejs }}"{% if site.phone %},"telephone":"{{ site.phone|escapejs }}"{% endif %}{% if site.address %},"address":"{{ site.address|escapejs }}"{% endif %}}</script>
+{{ head_code }}

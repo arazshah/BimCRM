@@ -1,0 +1,31 @@
+<script>
+(() => {
+  const sel = document.getElementById("qf-line");
+  const box = document.getElementById("qf-extra");
+  if (!sel || !box) return;
+  const render = () => {
+    box.innerHTML = "";
+    let fields = [];
+    try { fields = JSON.parse(sel.selectedOptions[0].dataset.fields || "[]"); } catch (e) {}
+    fields.forEach(f => {
+      if (!f.name) return;
+      const wrap = document.createElement("div");
+      wrap.className = "qf-field";
+      const label = document.createElement("label");
+      label.htmlFor = "qf-f-" + f.name;
+      label.textContent = f.label || f.name;
+      const input = document.createElement("input");
+      input.id = "qf-f-" + f.name;
+      input.name = "f_" + f.name;
+      wrap.append(label, input);
+      box.append(wrap);
+    });
+  };
+  const params = new URLSearchParams(location.search);
+  if (params.get("line")) sel.value = params.get("line");
+  sel.addEventListener("change", render);
+  render();
+  document.querySelectorAll("[data-line]").forEach(a => a.addEventListener("click", () => { sel.value = a.dataset.line; render(); }));
+})();
+</script>
+{{ body_code }}

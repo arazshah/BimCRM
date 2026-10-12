@@ -1,0 +1,32 @@
+/* Shared by all five public templates */
+.preview-bar { background: #fff6d6; color: #5b4300; text-align: center; font-size: 14px; padding: .5rem 1rem; }
+.preview-bar a { font-weight: 700; }
+.site-wrap { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
+
+.quote-form { display: grid; gap: .8rem; }
+.qf-row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.qf-extra { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.qf-extra:empty { display: none; }
+.qf-field label { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: .25rem; }
+.qf-field .opt { font-weight: 400; opacity: .7; }
+.quote-form select { width: 100%; font: inherit; padding: .55em .8em; border-radius: 8px; border: 1px solid #c9d0da; background: #fff; }
+.qf-submit { font: inherit; font-weight: 700; font-size: 16px; border: 0; border-radius: 8px; padding: .75em 1em; cursor: pointer; background: var(--brand); color: #fff; }
+.qf-submit[disabled] { opacity: .65; cursor: not-allowed; }
+.qf-note { font-size: 13px; opacity: .75; margin: 0; }
+
+.subpage { max-width: 640px; margin: 48px auto; padding: 0 20px; min-height: 40vh; }
+.subpage h1 { font-size: 26px; }
+.big-code { font-size: 34px; font-weight: 800; letter-spacing: 2px; direction: ltr; display: inline-block; padding: .2rem 1rem; border: 2px dashed var(--brand); border-radius: 10px; }
+.track-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: .6rem; align-items: end; margin: 1rem 0 2rem; }
+.status-steps { list-style: none; padding: 0; display: flex; gap: .4rem; flex-wrap: wrap; }
+.status-steps li { padding: .3rem .9rem; border-radius: 99px; background: #eef1f5; font-size: 14px; }
+.status-steps li.on { background: var(--brand); color: #fff; }
+.acc-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 1.5rem; }
+.acc-table th, .acc-table td { padding: .55rem .6rem; border-bottom: 1px solid #e3e7ee; text-align: right; }
+.site-btn { display: inline-block; font: inherit; font-weight: 700; border: 0; border-radius: 8px; padding: .6em 1.3em; cursor: pointer; background: var(--brand); color: #fff; text-decoration: none; }
+.trust-badges { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.trust-badges img { max-height: 80px; }
+
+@media (max-width: 640px) {
+  .qf-row, .qf-extra, .track-form { grid-template-columns: 1fr; }
+}

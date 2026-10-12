@@ -1,0 +1,41 @@
+{% extends "panel/base.html" %}
+{% block title %}محتوای سایت{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>محتوای سایت</h1>
+  <div class="head-actions">
+    <a class="btn btn-ghost btn-sm" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener">دیدن سایت</a>
+    <form method="post" action="{% url 'panel:site_publish' %}">{% csrf_token %}
+      {% if site.is_published %}<button class="btn btn-danger btn-sm" name="publish" value="0">خارج کردن از دسترس</button>
+      {% else %}<button class="btn btn-sm" name="publish" value="1">انتشار سایت</button>{% endif %}
+    </form>
+  </div>
+</div>
+<p class="note">{% if site.is_published %}سایت منتشر شده و برای همه قابل دیدن است.{% else %}سایت هنوز منتشر نشده؛ بازدیدکنندگان صفحه «به‌زودی» می‌بینند و فقط شما و همکارانتان پیش‌نمایش را می‌بینید.{% endif %} قالب فعلی: <strong>{{ site.template_info.name }}</strong> (<a href="{% url 'panel:site_template' %}">تغییر</a>)</p>
+<form method="post" enctype="multipart/form-data" class="panel-form wide" novalidate>
+  {% csrf_token %}
+  {% include "includes/form_fields.html" %}
+
+  <fieldset class="formset">
+    <legend>نظرات مشتریان</legend>
+    {{ tforms.management_form }}
+    {% for f in tforms %}<div class="formset-row">{% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+      <input type="text" name="{{ f.name.html_name }}" value="{{ f.name.value|default:'' }}" placeholder="نام" aria-label="نام">
+      <input type="text" name="{{ f.text.html_name }}" value="{{ f.text.value|default:'' }}" placeholder="متن نظر" aria-label="متن نظر">
+      <label class="inline-check">{{ f.is_visible }} نمایش</label>{% if f.instance.pk %}<label class="inline-check">{{ f.DELETE }} حذف</label>{% endif %}
+    </div>{% endfor %}
+  </fieldset>
+
+  <fieldset class="formset">
+    <legend>سؤالات متداول</legend>
+    {{ fforms.management_form }}
+    {% for f in fforms %}<div class="formset-row faq-row">{% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+      <input type="text" name="{{ f.question.html_name }}" value="{{ f.question.value|default:'' }}" placeholder="سؤال" aria-label="سؤال">
+      <textarea name="{{ f.answer.html_name }}" rows="2" placeholder="پاسخ" aria-label="پاسخ">{{ f.answer.value|default:'' }}</textarea>
+      <input type="number" name="{{ f.order.html_name }}" value="{{ f.order.value|default:0 }}" aria-label="ترتیب" class="order">
+      {% if f.instance.pk %}<label class="inline-check">{{ f.DELETE }} حذف</label>{% endif %}
+    </div>{% endfor %}
+  </fieldset>
+  <div class="form-actions sticky"><button class="btn" type="submit">ذخیره محتوا</button></div>
+</form>
+{% endblock %}

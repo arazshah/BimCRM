@@ -1,0 +1,8 @@
+{% extends "main/base.html" %}
+{% block content %}
+<section class="narrow">
+  <h1>به این محیط دسترسی ندارید</h1>
+  <p>با شماره {{ request.user.mobile }} وارد شده‌اید، ولی عضو «{{ request.tenant.name }}» نیستید. اگر همکار این دفترید، از مدیر دفتر بخواهید شما را از بخش «همکاران» اضافه کند.</p>
+  <a class="btn btn-ghost" href="{{ PLATFORM_URL }}/me/?all=1">محیط‌های من</a>
+</section>
+{% endblock %}

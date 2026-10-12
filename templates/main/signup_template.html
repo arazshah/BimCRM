@@ -1,0 +1,24 @@
+{% extends "main/base.html" %}
+{% block title %}انتخاب قالب — CRM بیمه{% endblock %}
+{% block content %}
+<section class="narrow wide">
+  {% include "main/_steps.html" %}
+  <h1>قالب سایت <span class="ltr muted">{{ slug }}.{{ PLATFORM_DOMAIN }}</span></h1>
+  <p class="muted">هر وقت خواستید از پنل عوضش کنید؛ محتوایی که وارد کرده‌اید سر جایش می‌ماند.</p>
+  <form method="post">
+    {% csrf_token %}
+    <fieldset class="tpl-pick">
+      <legend class="visually-hidden">قالب</legend>
+      {% for t in templates %}
+      <label class="tpl-option" style="--tpl: {{ t.default_color }}">
+        <input type="radio" name="template" value="{{ t.key }}" {% if form.template.value == t.key %}checked{% endif %}>
+        <span class="tpl-swatch tpl-{{ t.key }}" aria-hidden="true">{{ t.name }}</span>
+        <span><strong>{{ t.name }}</strong><br><span class="muted small">{{ t.tagline }}</span></span>
+        <a class="small" href="{% url 'main:template_preview' t.key %}" target="_blank" rel="noopener">پیش‌نمایش</a>
+      </label>
+      {% endfor %}
+    </fieldset>
+    <div class="actions"><a class="btn btn-ghost" href="{% url 'main:signup' %}">قبلی</a><button class="btn" type="submit">ادامه</button></div>
+  </form>
+</section>
+{% endblock %}

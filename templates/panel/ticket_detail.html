@@ -1,0 +1,19 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}{{ ticket.subject }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ ticket.subject }}</h1><a class="btn btn-ghost btn-sm" href="{% url 'panel:tickets' %}">بازگشت</a></div>
+<p class="muted">{{ ticket.get_category_display }} · {{ ticket.get_status_display }}</p>
+<ol class="thread">
+  {% for m in msgs %}
+  <li class="{% if m.is_staff_reply %}staff{% endif %}">
+    <div class="who">{% if m.is_staff_reply %}پشتیبانی CRM بیمه{% else %}{{ m.author }}{% endif %} <span class="muted small">{{ m.created_at|jdate:"time" }}</span></div>
+    <div>{{ m.body|linebreaksbr }}</div>
+    {% if m.attachment %}<a href="{{ m.attachment.url }}" target="_blank" rel="noopener">پیوست</a>{% endif %}
+  </li>
+  {% endfor %}
+</ol>
+{% if ticket.status != "closed" %}
+<form method="post" enctype="multipart/form-data" class="panel-form" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">ارسال پاسخ</button></form>
+{% endif %}
+{% endblock %}

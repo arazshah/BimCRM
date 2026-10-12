@@ -1,0 +1,18 @@
+{% extends "main/base.html" %}
+{% load fa %}
+{% block title %}کد تأیید — CRM بیمه{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>کد تأیید</h1>
+  <p class="muted">کد ۵ رقمی به <span class="ltr num">{{ mobile|fa }}</span> فرستاده شد. <a href="{% url 'main:login' %}">تغییر شماره</a></p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <button class="btn btn-block" type="submit">ورود</button>
+  </form>
+  <form method="post" class="resend">
+    {% csrf_token %}
+    <button class="linkish" type="submit" name="resend" value="1">کد نرسید؟ دوباره بفرستید</button>
+  </form>
+</section>
+{% endblock %}

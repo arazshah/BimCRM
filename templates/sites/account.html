@@ -1,0 +1,22 @@
+{% extends base_template %}
+{% load fa %}
+{% block main %}
+<section class="subpage">
+  <h1>{% if customer %}{{ customer.full_name }}{% else %}حساب شما{% endif %}</h1>
+  <p class="muted">وارد شده با <span class="ltr">{{ mobile|fa }}</span> · <a href="/account/logout/">خروج</a></p>
+  <h2>بیمه‌نامه‌ها</h2>
+  {% if policies %}
+  <table class="acc-table">
+    <thead><tr><th>رشته</th><th>شرکت</th><th>موضوع</th><th>پایان</th></tr></thead>
+    <tbody>{% for p in policies %}<tr><td>{{ p.line }}</td><td>{{ p.company }}</td><td>{{ p.subject }}</td><td>{{ p.end_date|jdate }}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% else %}<p>بیمه‌نامه‌ای با این موبایل در دفتر ثبت نشده است.</p>{% endif %}
+  <h2>درخواست‌ها</h2>
+  {% if quotes %}
+  <table class="acc-table">
+    <thead><tr><th>رشته</th><th>کد پیگیری</th><th>وضعیت</th><th>ثبت</th></tr></thead>
+    <tbody>{% for q in quotes %}<tr><td>{{ q.line }}</td><td class="ltr">{{ q.tracking_code|fa }}</td><td>{{ q.get_status_display }}</td><td>{{ q.created_at|jdate }}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% else %}<p>درخواستی ندارید. <a href="/#quote">استعلام جدید</a></p>{% endif %}
+</section>
+{% endblock %}

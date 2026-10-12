@@ -1,0 +1,66 @@
+/* اعتماد: classic, formal. Serif Markazi headings, navy + muted gold rules. */
+.t-etemad { --gold: #a8844f; --navy: var(--brand); background: #f8f9fb; color: #1d2433; }
+.t-etemad h1, .t-etemad h2, .t-etemad .e-line-name, .t-etemad .e-record dd, .t-etemad blockquote { font-family: "Markazi", "Naskh", serif; font-weight: 700; }
+.e-header { background: #fff; border-bottom: 1px solid #e2e5ea; }
+.e-header-inner { display: flex; justify-content: space-between; align-items: center; min-height: 76px; gap: 1rem; }
+.e-brand { display: flex; align-items: center; gap: .7rem; text-decoration: none; font-family: "Markazi", serif; font-weight: 700; font-size: 24px; color: var(--navy); }
+.e-brand img { max-height: 48px; }
+.e-nav { display: flex; gap: 1.5rem; font-size: 14.5px; align-items: center; }
+.e-nav a { text-decoration: none; color: #3a4456; }
+.e-phone { color: var(--navy) !important; font-weight: 700; border-inline-start: 1px solid var(--gold); padding-inline-start: 1.2rem; }
+
+.e-hero { background: var(--navy); color: #fff; padding: 72px 0 80px; border-bottom: 5px solid var(--gold); }
+.e-hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
+.e-hero h1 { font-size: clamp(36px, 5vw, 60px); line-height: 1.2; margin-bottom: .3em; }
+.e-sub { font-size: 18px; color: #d5dceb; max-width: 30em; }
+.e-record { display: flex; gap: 0; margin: 2rem 0 0; }
+.e-record > div { padding: 0 1.6rem; border-inline-start: 1px solid rgba(255,255,255,.25); }
+.e-record > div:first-child { padding-inline-start: 0; border: 0; }
+.e-record dt { font-size: 13px; color: #c9b38e; order: 2; }
+.e-record dd { margin: 0; font-size: 46px; line-height: 1.1; color: #fff; }
+.e-form-frame { background: #fff; color: #1d2433; padding: 28px; border: 1px solid var(--gold); outline: 6px solid rgba(255,255,255,.08); }
+.e-form-frame h2 { font-size: 26px; color: var(--navy); margin-bottom: .8rem; }
+.t-etemad .qf-submit { border-radius: 0; background: var(--navy); }
+
+.e-title { font-size: 34px; color: var(--navy); margin-bottom: 1.4rem; display: flex; align-items: center; gap: 1rem; }
+.e-title::after { content: ""; flex: 1; height: 1px; background: var(--gold); opacity: .6; }
+.e-lines, .e-about, .e-voices, .e-faq { padding: 72px 0; }
+.e-line-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 56px; }
+.e-line-list a { display: flex; flex-direction: column; padding: 1rem 0; border-bottom: 1px solid #dcd3c3; text-decoration: none; }
+.e-line-list a:hover .e-line-name { color: var(--gold); }
+.e-line-name { font-size: 25px; color: var(--navy); }
+.e-line-sum { color: #5b6476; font-size: 14.5px; }
+
+.e-about { background: #fff; border-block: 1px solid #e2e5ea; }
+.e-about-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 56px; }
+.e-about-grid .e-title::after { display: none; }
+.e-about-text { font-size: 17px; line-height: 2.05; max-width: 38em; }
+
+.e-companies { padding: 28px 0; }
+.e-companies .site-wrap { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+.e-co-label { margin: 0; color: var(--gold); font-weight: 700; }
+.e-companies ul { list-style: none; display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; padding: 0; margin: 0; color: #5b6476; font-size: 14px; }
+.e-companies img { max-height: 36px; filter: grayscale(1); }
+
+.e-voice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+.e-voices figure { margin: 0; }
+.e-voices blockquote { margin: 0 0 .6rem; font-size: 22px; line-height: 1.7; color: var(--navy); }
+.e-voices blockquote::before { content: "«"; color: var(--gold); }
+.e-voices blockquote::after { content: "»"; color: var(--gold); }
+.e-voices figcaption { color: #6b7385; font-size: 14px; }
+
+.narrow-col { max-width: 760px; }
+.e-faq details { border-bottom: 1px solid #dcd3c3; padding: 1rem 0; }
+.e-faq summary { font-weight: 700; cursor: pointer; font-size: 17px; }
+
+.e-footer { background: var(--navy); color: #cdd5e4; padding: 40px 0; font-size: 14px; border-top: 5px solid var(--gold); }
+.e-footer-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 32px; }
+.e-footer strong { color: #fff; font-family: "Markazi", serif; font-size: 22px; }
+.e-footer p { margin: .2rem 0; }
+
+@media (max-width: 860px) {
+  .e-hero-grid, .e-about-grid, .e-footer-grid { grid-template-columns: 1fr; gap: 32px; }
+  .e-line-list, .e-voice-grid { grid-template-columns: 1fr; }
+  .e-nav a:not(.e-phone) { display: none; }
+  .e-record dd { font-size: 34px; }
+}

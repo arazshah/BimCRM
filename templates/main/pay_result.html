@@ -1,0 +1,15 @@
+{% extends "main/base.html" %}
+{% load fa %}
+{% block title %}نتیجه پرداخت — CRM بیمه{% endblock %}
+{% block content %}
+<section class="narrow">
+  {% if ok %}
+    <h1>پرداخت انجام شد</h1>
+    <p>اشتراک «{{ invoice.tenant.name }}» تمدید شد. کد پیگیری: <span class="ltr num">{{ invoice.ref_id|fa }}</span></p>
+  {% else %}
+    <h1>پرداخت انجام نشد</h1>
+    <p>{{ error|default:"پرداخت لغو شد یا تأیید نشد. اگر مبلغی کم شده، ظرف ۷۲ ساعت به حسابتان برمی‌گردد." }}</p>
+  {% endif %}
+  <a class="btn" href="{{ back }}">بازگشت به پنل</a>
+</section>
+{% endblock %}

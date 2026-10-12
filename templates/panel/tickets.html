@@ -1,0 +1,18 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}پشتیبانی{% endblock %}
+{% block content %}
+<div class="page-head"><h1>پشتیبانی</h1></div>
+<div class="two-col">
+  <section class="panel-box">
+    <h2 class="h2">تیکت‌ها</h2>
+    {% if tickets %}
+    <ul class="plain-list">{% for t in tickets %}<li><a href="{% url 'panel:ticket' t.pk %}">{{ t.subject }}</a><span><span class="tag {% if t.status == 'answered' %}ok{% elif t.status == 'open' %}warm{% endif %}">{{ t.get_status_display }}</span> <span class="muted small">{{ t.updated_at|jdate }}</span></span></li>{% endfor %}</ul>
+    {% else %}<p class="empty">تیکتی ندارید.</p>{% endif %}
+  </section>
+  <section class="panel-box">
+    <h2 class="h2">تیکت جدید</h2>
+    <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">ارسال</button></form>
+  </section>
+</div>
+{% endblock %}

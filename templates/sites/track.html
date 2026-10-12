@@ -1,0 +1,20 @@
+{% extends base_template %}
+{% load fa %}
+{% block main %}
+<section class="subpage">
+  <h1>پیگیری درخواست</h1>
+  {% if messages %}<ul class="flash">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
+  <form class="track-form" method="get">
+    <div class="qf-field"><label for="t-code">کد پیگیری</label><input id="t-code" name="code" value="{{ code }}" dir="ltr" inputmode="numeric" required></div>
+    <div class="qf-field"><label for="t-mobile">موبایل</label><input id="t-mobile" name="mobile" value="{{ mobile }}" dir="ltr" inputmode="numeric" required></div>
+    <button class="site-btn" type="submit">پیگیری</button>
+  </form>
+  {% if quote %}
+  <h2>{{ quote.line }} — ثبت {{ quote.created_at|jdate }}</h2>
+  <ol class="status-steps">
+    {% for value, label in quote.Status.choices %}{% if value != "lost" %}<li class="{% if quote.status == value %}on{% endif %}">{{ label }}</li>{% endif %}{% endfor %}
+  </ol>
+  {% if quote.status == "lost" %}<p>این درخواست بسته شده است. برای درخواست تازه از <a href="/#quote">فرم استعلام</a> استفاده کنید.</p>{% endif %}
+  {% endif %}
+</section>
+{% endblock %}

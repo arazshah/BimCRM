@@ -1,0 +1,13 @@
+{% extends "main/base.html" %}
+{% block title %}محیط‌های من — CRM بیمه{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>محیط‌های من</h1>
+  <ul class="workspace-list">
+    {% for t in tenants %}
+      <li><a href="{{ t.panel_url }}"><strong>{{ t.name }}</strong><span class="ltr muted">{{ t.subdomain_host }}</span></a></li>
+    {% endfor %}
+  </ul>
+  <p><a class="btn btn-ghost" href="{% url 'main:signup' %}">ساخت محیط جدید</a> <a class="btn btn-ghost" href="{% url 'main:logout' %}">خروج</a></p>
+</section>
+{% endblock %}

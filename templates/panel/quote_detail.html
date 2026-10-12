@@ -1,0 +1,27 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}درخواست {{ quote.full_name }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ quote.line }} — {{ quote.full_name }}</h1><a class="btn btn-ghost btn-sm" href="{% url 'panel:quotes' %}">بازگشت</a></div>
+<div class="two-col">
+  <section class="panel-box">
+    <dl class="facts stacked">
+      <div><dt>موبایل</dt><dd><a class="ltr num" href="tel:{{ quote.mobile }}">{{ quote.mobile|fa }}</a></dd></div>
+      <div><dt>کد پیگیری</dt><dd class="ltr num">{{ quote.tracking_code|fa }}</dd></div>
+      <div><dt>ثبت</dt><dd>{{ quote.created_at|jdate:"time" }}</dd></div>
+      {% for k, v in quote.details.items %}<div><dt>{{ k }}</dt><dd>{{ v|default:"—" }}</dd></div>{% endfor %}
+    </dl>
+    {% if quote.message %}<p class="note">{{ quote.message|linebreaksbr }}</p>{% endif %}
+    {% if quote.customer %}
+      <p>پرونده مشتری: <a href="{% url 'panel:customer' quote.customer_id %}">{{ quote.customer.full_name }}</a></p>
+    {% else %}
+      <form method="post">{% csrf_token %}<button class="btn btn-ghost btn-sm" name="make_customer" value="1">ساخت پرونده مشتری</button></form>
+    {% endif %}
+  </section>
+  <section class="panel-box">
+    <h2 class="h2">پیگیری</h2>
+    <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">ذخیره</button></form>
+    <p class="muted small">مشتری با کد پیگیری و موبایلش وضعیت را در سایت می‌بیند.</p>
+  </section>
+</div>
+{% endblock %}
