@@ -6,10 +6,10 @@ Contracts, costs and legal responsibility stay with the agent.
 
 import json
 
-from cryptography.fernet import Fernet, InvalidToken
-from django.conf import settings
+from cryptography.fernet import InvalidToken
 from django.db import models
 
+from apps.core.crypto import fernet
 from apps.core.models import TenantOwned
 
 PROVIDERS = {
@@ -59,15 +59,7 @@ PROVIDERS = {
 KIND_LABELS = {"payment": "درگاه پرداخت", "sms": "پنل پیامک", "trust": "اینماد و ساماندهی", "custom": "کدهای دلخواه"}
 
 
-def _fernet() -> Fernet:
-    key = settings.FIELD_ENCRYPTION_KEY
-    if not key:
-        # Development fallback derived from SECRET_KEY; production must set FIELD_ENCRYPTION_KEY.
-        import base64
-        import hashlib
-
-        key = base64.urlsafe_b64encode(hashlib.sha256(settings.SECRET_KEY.encode()).digest())
-    return Fernet(key)
+_fernet = fernet
 
 
 class Integration(TenantOwned):

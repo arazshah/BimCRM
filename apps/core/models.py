@@ -88,6 +88,36 @@ class PlatformSettings(models.Model):
         help_text="با کاما جدا کنید. خالی = مقدار تنظیمات سرور.",
     )
 
+    # --- Platform services. Empty = fall back to the server environment (see apps/core/platform_config.py). ---
+    class SmsBackend(models.TextChoices):
+        SERVER = "", "از تنظیمات سرور"
+        CONSOLE = "console", "فقط در لاگ سرور چاپ شود (آزمایشی)"
+        SMSIR = "smsir", "ارسال واقعی با sms.ir"
+
+    class ZarinpalMode(models.TextChoices):
+        SERVER = "", "از تنظیمات سرور"
+        SANDBOX = "sandbox", "آزمایشی (sandbox)"
+        LIVE = "live", "واقعی"
+
+    sms_backend = models.CharField("روش ارسال پیامک", max_length=10, choices=SmsBackend.choices, blank=True)
+    smsir_api_key_enc = models.TextField(blank=True, editable=False)
+    smsir_otp_template_id = models.CharField("شناسه قالب کد تأیید sms.ir", max_length=20, blank=True)
+    smsir_line_number = models.CharField("شماره خط sms.ir", max_length=30, blank=True)
+    zarinpal_merchant_id = models.CharField("مرچنت کد زرین‌پال", max_length=64, blank=True)
+    zarinpal_mode = models.CharField("حالت زرین‌پال", max_length=10, choices=ZarinpalMode.choices, blank=True)
+
+    @property
+    def smsir_api_key(self) -> str:
+        from .crypto import decrypt_text
+
+        return decrypt_text(self.smsir_api_key_enc)
+
+    @smsir_api_key.setter
+    def smsir_api_key(self, value: str):
+        from .crypto import encrypt_text
+
+        self.smsir_api_key_enc = encrypt_text(value)
+
     class Meta:
         verbose_name = "تنظیمات پلتفرم"
         verbose_name_plural = "تنظیمات پلتفرم"

@@ -1,16 +1,99 @@
+from django import forms
+from django.conf import settings
 from django.contrib import admin, messages
 
 from .dns import check_domain
 from .models import Domain, InsuranceCompany, LineOfBusiness, PlatformSettings, ReservedSubdomain, Tenant
 
 
+class PlatformSettingsForm(forms.ModelForm):
+    smsir_api_key_input = forms.CharField(
+        label="کلید API سرویس sms.ir",
+        required=False,
+        widget=forms.PasswordInput(render_value=False, attrs={"autocomplete": "new-password", "dir": "ltr"}),
+        help_text="کلید رمزنگاری‌شده ذخیره می‌شود و دوباره نمایش داده نمی‌شود. خالی بگذارید تا کلید فعلی بماند.",
+    )
+    clear_smsir_api_key = forms.BooleanField(label="کلید ذخیره‌شده پاک شود", required=False)
+
+    class Meta:
+        model = PlatformSettings
+        fields = [
+            "trial_days",
+            "grace_days",
+            "data_retention_days",
+            "yearly_discount_note",
+            "support_phone",
+            "nameservers",
+            "sms_backend",
+            "smsir_otp_template_id",
+            "smsir_line_number",
+            "zarinpal_mode",
+            "zarinpal_merchant_id",
+        ]
+
+    def clean(self):
+        data = super().clean()
+        if data.get("sms_backend") == PlatformSettings.SmsBackend.SMSIR:
+            has_key = bool(data.get("smsir_api_key_input")) or (
+                bool(self.instance.smsir_api_key) and not data.get("clear_smsir_api_key")
+            )
+            has_key = has_key or bool(settings.SMSIR_API_KEY)
+            has_template = bool(data.get("smsir_otp_template_id")) or bool(settings.SMSIR_OTP_TEMPLATE_ID)
+            if not has_key:
+                self.add_error("smsir_api_key_input", "برای ارسال واقعی، کلید API لازم است.")
+            if not has_template:
+                self.add_error("smsir_otp_template_id", "برای ارسال واقعی، شناسه قالب کد تأیید لازم است.")
+        if data.get("zarinpal_mode") == PlatformSettings.ZarinpalMode.LIVE:
+            if not (data.get("zarinpal_merchant_id") or settings.ZARINPAL_MERCHANT_ID):
+                self.add_error("zarinpal_merchant_id", "برای حالت واقعی، مرچنت کد لازم است.")
+        return data
+
+
 @admin.register(PlatformSettings)
 class PlatformSettingsAdmin(admin.ModelAdmin):
+    form = PlatformSettingsForm
+    fieldsets = (
+        (
+            "اشتراک و نگهداری",
+            {"fields": ("trial_days", "grace_days", "data_retention_days", "yearly_discount_note", "support_phone")},
+        ),
+        ("دامنه", {"fields": ("nameservers",)}),
+        (
+            "پیامک پلتفرم (sms.ir)",
+            {
+                "description": "کد ورود و ثبت‌نام نمایندگان با این پنل ارسال می‌شود. هر مقداری که خالی بماند، "
+                "از متغیرهای محیطی سرور خوانده می‌شود. تا «ارسال واقعی» را انتخاب نکنید، کدها فقط در لاگ سرور چاپ می‌شوند.",
+                "fields": (
+                    "sms_backend",
+                    "smsir_api_key_input",
+                    "clear_smsir_api_key",
+                    "smsir_otp_template_id",
+                    "smsir_line_number",
+                ),
+            },
+        ),
+        (
+            "پرداخت اشتراک‌ها (زرین‌پال)",
+            {
+                "description": "مرچنت کد زرین‌پال خودتان برای فروش اشتراک و افزونه. در حالت آزمایشی پرداخت واقعی انجام نمی‌شود.",
+                "fields": ("zarinpal_mode", "zarinpal_merchant_id"),
+            },
+        ),
+    )
+
     def has_add_permission(self, request):
         return not PlatformSettings.objects.exists()
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def save_model(self, request, obj, form, change):
+        new_key = form.cleaned_data.get("smsir_api_key_input")
+        if new_key:
+            obj.smsir_api_key = new_key.strip()
+        elif form.cleaned_data.get("clear_smsir_api_key"):
+            obj.smsir_api_key = ""
+        super().save_model(request, obj, form, change)
 
 
 class DomainInline(admin.TabularInline):

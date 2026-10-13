@@ -479,3 +479,147 @@ def test_ensure_superadmin_reissues_password_until_first_login(settings, db, cap
     user.save()
     call_command("ensure_superadmin")
     assert User.objects.get(mobile="09104151005").check_password("my-own-password")
+
+
+# ---------- Platform services configured in the super admin ----------
+
+
+def _platform(**fields):
+    from apps.core.models import PlatformSettings
+
+    p = PlatformSettings.load()
+    for k, v in fields.items():
+        setattr(p, k, v)
+    p.save()
+    return p
+
+
+def test_super_admin_values_win_and_server_env_is_the_fallback(settings, db):
+    from apps.core.platform_config import sms_backend, smsir_config, zarinpal_config
+
+    settings.SMS_BACKEND = "console"
+    settings.SMSIR_API_KEY = "env-key"
+    settings.SMSIR_OTP_TEMPLATE_ID = "111"
+    settings.SMSIR_LINE_NUMBER = "3000"
+    settings.ZARINPAL_MERCHANT_ID = "env-merchant"
+    settings.ZARINPAL_SANDBOX = True
+    assert sms_backend() == "console"
+    assert smsir_config().api_key == "env-key" and smsir_config().otp_template_id == "111"
+    assert zarinpal_config() == ("env-merchant", True)
+
+    _platform(
+        sms_backend="smsir",
+        smsir_api_key="db-key",
+        smsir_otp_template_id="222",
+        zarinpal_merchant_id="db-merchant",
+        zarinpal_mode="live",
+    )
+    assert sms_backend() == "smsir"
+    cfg = smsir_config()
+    assert (cfg.api_key, cfg.otp_template_id, cfg.line_number) == ("db-key", "222", "3000")
+    assert zarinpal_config() == ("db-merchant", False)
+
+
+def test_platform_otp_uses_super_admin_credentials(db, monkeypatch):
+    from apps.accounts import sms
+
+    sent = {}
+    monkeypatch.setattr(
+        sms.SmsIrClient,
+        "send_verify",
+        lambda self, mobile, code: sent.update(key=self.api_key, tpl=self.otp_template_id, mobile=mobile, code=code),
+    )
+    _platform(sms_backend="smsir", smsir_api_key="db-key", smsir_otp_template_id="222")
+    sms.send_platform_otp("09121112233", "4821")
+    assert sent == {"key": "db-key", "tpl": "222", "mobile": "09121112233", "code": "4821"}
+
+
+def test_zarinpal_uses_super_admin_merchant_and_mode(db, monkeypatch):
+    from apps.billing import zarinpal
+
+    calls = []
+
+    class Resp:
+        def json(self):
+            return {"data": {"code": 100, "authority": "A1"}}
+
+    monkeypatch.setattr(
+        zarinpal.requests, "post", lambda url, json=None, timeout=0: calls.append((url, json)) or Resp()
+    )
+    _platform(zarinpal_mode="live", zarinpal_merchant_id="m-live")
+    authority, url = zarinpal.request_payment(1000, "x", "https://cb")
+    assert calls[0][0].startswith("https://payment.zarinpal.com") and calls[0][1]["merchant_id"] == "m-live"
+    assert url == "https://payment.zarinpal.com/pg/StartPay/A1"
+    _platform(zarinpal_mode="sandbox")
+    zarinpal.request_payment(1000, "x", "https://cb")
+    assert calls[1][0].startswith("https://sandbox.zarinpal.com")
+
+
+def _admin_client(client):
+    admin = User.objects.create_superuser("09104151005", password="pw-12345")
+    client.force_login(admin)
+    return f"admin.{MAIN}"
+
+
+def _settings_form(**over):
+    base = {
+        "trial_days": 14,
+        "grace_days": 7,
+        "data_retention_days": 90,
+        "yearly_discount_note": "دو ماه رایگان",
+        "support_phone": "",
+        "nameservers": "",
+        "sms_backend": "",
+        "smsir_api_key_input": "",
+        "smsir_otp_template_id": "",
+        "smsir_line_number": "",
+        "zarinpal_mode": "",
+        "zarinpal_merchant_id": "",
+    }
+    base.update(over)
+    return base
+
+
+def test_admin_saves_sms_key_encrypted_and_never_shows_it(client, settings, db):
+    from apps.core.models import PlatformSettings
+
+    settings.SMSIR_API_KEY = ""
+    settings.SMSIR_OTP_TEMPLATE_ID = ""
+    h = _admin_client(client)
+    url = "/admin/core/platformsettings/1/change/"
+    PlatformSettings.load()
+    resp = client.post(
+        url,
+        _settings_form(sms_backend="smsir", smsir_api_key_input="SECRET-KEY-123", smsir_otp_template_id="555"),
+        HTTP_HOST=h,
+    )
+    assert resp.status_code == 302
+    p = PlatformSettings.load()
+    assert p.smsir_api_key == "SECRET-KEY-123"
+    assert "SECRET-KEY-123" not in p.smsir_api_key_enc
+    page = client.get("/admin/core/platformsettings/1/change/", HTTP_HOST=h).content.decode()
+    assert "SECRET-KEY-123" not in page
+    # Blank keeps the stored key; the checkbox clears it.
+    client.post(
+        "/admin/core/platformsettings/1/change/",
+        _settings_form(sms_backend="smsir", smsir_otp_template_id="555"),
+        HTTP_HOST=h,
+    )
+    assert PlatformSettings.load().smsir_api_key == "SECRET-KEY-123"
+    client.post(
+        "/admin/core/platformsettings/1/change/",
+        _settings_form(smsir_otp_template_id="555", clear_smsir_api_key="on"),
+        HTTP_HOST=h,
+    )
+    assert PlatformSettings.load().smsir_api_key == ""
+
+
+def test_admin_refuses_real_sms_or_live_payment_without_credentials(client, settings, db):
+    settings.SMSIR_API_KEY = settings.SMSIR_OTP_TEMPLATE_ID = settings.ZARINPAL_MERCHANT_ID = ""
+    h = _admin_client(client)
+    resp = client.post(
+        "/admin/core/platformsettings/1/change/", _settings_form(sms_backend="smsir", zarinpal_mode="live"), HTTP_HOST=h
+    )
+    body = resp.content.decode()
+    assert resp.status_code == 200
+    assert "کلید API لازم است" in body and "شناسه قالب" in body and "مرچنت کد لازم است" in body

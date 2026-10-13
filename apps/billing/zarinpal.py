@@ -1,7 +1,8 @@
 """Zarinpal REST v4 — used only for the platform's own sales (subscriptions and add-ons)."""
 
 import requests
-from django.conf import settings
+
+from apps.core.platform_config import zarinpal_config
 
 
 class ZarinpalError(Exception):
@@ -9,13 +10,13 @@ class ZarinpalError(Exception):
 
 
 def _base() -> str:
-    return "https://sandbox.zarinpal.com" if settings.ZARINPAL_SANDBOX else "https://payment.zarinpal.com"
+    return "https://sandbox.zarinpal.com" if zarinpal_config()[1] else "https://payment.zarinpal.com"
 
 
 def request_payment(amount_toman: int, description: str, callback_url: str, mobile: str = "") -> tuple[str, str]:
     """Returns (authority, redirect_url)."""
     payload = {
-        "merchant_id": settings.ZARINPAL_MERCHANT_ID,
+        "merchant_id": zarinpal_config()[0],
         "amount": int(amount_toman),
         "currency": "IRT",
         "description": description[:255],
@@ -35,7 +36,7 @@ def request_payment(amount_toman: int, description: str, callback_url: str, mobi
 
 def verify_payment(amount_toman: int, authority: str) -> str:
     """Returns the ref_id when the payment is confirmed (code 100 or 101)."""
-    payload = {"merchant_id": settings.ZARINPAL_MERCHANT_ID, "amount": int(amount_toman), "authority": authority}
+    payload = {"merchant_id": zarinpal_config()[0], "amount": int(amount_toman), "authority": authority}
     try:
         data = requests.post(f"{_base()}/pg/v4/payment/verify.json", json=payload, timeout=15).json()
     except (requests.RequestException, ValueError) as exc:
