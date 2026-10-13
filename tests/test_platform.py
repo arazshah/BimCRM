@@ -581,6 +581,7 @@ def _settings_form(**over):
         "zarinpal_mode": "",
         "zarinpal_merchant_id": "",
         "payment_mode": "order",
+        "google_site_verification": "",
         "order_grace_days": 3,
         "order_payment_info": "",
     }
@@ -881,3 +882,36 @@ def test_admin_confirm_action(client, tenant, owner, monkeypatch):
     )
     assert resp.status_code == 302
     assert Invoice.objects.get(pk=inv.pk).status == "paid"
+
+
+# ---------- SEO ----------
+
+
+def test_main_seo_endpoints_and_meta(client):
+    import json
+    import re
+
+    robots = client.get("/robots.txt", HTTP_HOST=MAIN).content.decode()
+    assert "Disallow: /me/" in robots and f"Sitemap: http://{MAIN}/sitemap.xml" in robots
+    sm = client.get("/sitemap.xml", HTTP_HOST=MAIN)
+    assert sm.status_code == 200 and f"<loc>http://{MAIN}/</loc>" in sm.content.decode()
+    assert client.get("/favicon.ico", HTTP_HOST=MAIN).status_code == 301
+    PlatformSettings.objects.update_or_create(pk=1, defaults={"google_site_verification": "abc123"})
+    page = client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert '<meta name="google-site-verification" content="abc123">' in page
+    assert 'property="og:image"' in page and 'rel="canonical"' in page and "noindex" not in page
+    ld = re.search(r'<script type="application/ld\+json">(.*?)</script>', page, re.S).group(1)
+    graph = json.loads(ld)["@graph"]
+    assert {g["@type"] for g in graph} >= {"Organization", "WebSite", "SoftwareApplication", "FAQPage"}
+    assert "noindex" in client.get("/login/", HTTP_HOST=MAIN).content.decode()
+
+
+def test_tenant_seo_endpoints(client, tenant):
+    h = host(tenant)
+    assert "Disallow: /" in client.get("/robots.txt", HTTP_HOST=h).content.decode()  # unpublished
+    SiteSettings.all_objects.filter(tenant=tenant).update(is_published=True, seo_description="بیمه ثالث و بدنه در کرج")
+    robots = client.get("/robots.txt", HTTP_HOST=h).content.decode()
+    assert "Disallow: /panel/" in robots and "sitemap.xml" in robots
+    assert f"<loc>http://{h}/</loc>" in client.get("/sitemap.xml", HTTP_HOST=h).content.decode()
+    page = client.get("/", HTTP_HOST=h).content.decode()
+    assert 'content="بیمه ثالث و بدنه در کرج"' in page and '"@type":"InsuranceAgency"' in page

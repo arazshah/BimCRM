@@ -304,4 +304,29 @@ def verification_file(request, name):
 
 
 def robots(request):
-    return HttpResponse("User-agent: *\nAllow: /\n", content_type="text/plain")
+    base = f"{settings.PLATFORM_SCHEME}://{settings.PLATFORM_DOMAIN}"
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /me/",
+        "Disallow: /login/",
+        "Disallow: /signup/",
+        "Disallow: /pay/",
+        "Disallow: /api/",
+        "Disallow: /templates/",
+        "",
+        f"Sitemap: {base}/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
+
+
+def sitemap(request):
+    base = f"{settings.PLATFORM_SCHEME}://{settings.PLATFORM_DOMAIN}"
+    today = timezone.localdate().isoformat()
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"  <url><loc>{base}/</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>\n"
+        "</urlset>\n"
+    )
+    return HttpResponse(xml, content_type="application/xml")

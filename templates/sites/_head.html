@@ -1,11 +1,17 @@
 {% load static %}<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{{ site.hero_title|default:tenant.name }}{% endblock %}</title>
-{% if site.seo_description %}<meta name="description" content="{{ site.seo_description }}">{% endif %}
-{% if is_demo or is_preview %}<meta name="robots" content="noindex">{% endif %}
+{% with desc=site.seo_description|default:site.hero_subtitle %}{% if desc %}<meta name="description" content="{{ desc }}">{% endif %}
+{% if is_demo or is_preview %}<meta name="robots" content="noindex">{% else %}<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">{% endif %}
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fa_IR">
+<meta property="og:site_name" content="{{ tenant.name }}">
+<meta property="og:title" content="{{ site.hero_title|default:tenant.name }}">
+{% if desc %}<meta property="og:description" content="{{ desc }}">{% endif %}
+{% if site.logo %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site.logo.url }}"><link rel="icon" href="{{ site.logo.url }}">{% endif %}{% endwith %}
 <link rel="stylesheet" href="{% static 'css/base.css' %}">
 <link rel="stylesheet" href="{% static 'css/sites/common.css' %}">
 <link rel="stylesheet" href="{% static 'css/sites/'|add:tpl.key|add:'.css' %}">
 <style>:root { --brand: {{ site.color }}; }</style>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"InsuranceAgency","name":"{{ tenant.name|escapejs }}"{% if site.phone %},"telephone":"{{ site.phone|escapejs }}"{% endif %}{% if site.address %},"address":"{{ site.address|escapejs }}"{% endif %}}</script>
+{% if not is_demo %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"InsuranceAgency","name":"{{ tenant.name|escapejs }}","url":"{{ request.scheme }}://{{ request.get_host }}/"{% if site.phone %},"telephone":"{{ site.phone|escapejs }}"{% endif %}{% if site.address %},"address":{"@type":"PostalAddress","streetAddress":"{{ site.address|escapejs }}","addressCountry":"IR"}{% endif %}{% if site.working_hours %},"openingHours":"{{ site.working_hours|escapejs }}"{% endif %}{% if site.logo %},"logo":"{{ request.scheme }}://{{ request.get_host }}{{ site.logo.url }}"{% endif %}}</script>{% endif %}
 {{ head_code }}

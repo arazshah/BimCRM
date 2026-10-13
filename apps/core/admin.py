@@ -33,6 +33,7 @@ class PlatformSettingsForm(forms.ModelForm):
             "zarinpal_merchant_id",
             "enamad_code",
             "footer_badges_html",
+            "google_site_verification",
             "payment_mode",
             "order_grace_days",
             "order_payment_info",
@@ -104,11 +105,11 @@ class PlatformSettingsAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "اینماد و نمادهای اعتماد سایت اصلی",
+            "اینماد، نمادهای اعتماد و گوگل",
             {
                 "description": "برای تأیید مالکیت دامنه در اینماد، کد عددی را وارد کنید و ذخیره کنید؛ سپس در سایت اینماد "
                 "«تایید متاتگ» یا «تایید بارگذاری» را بزنید. بعد از صدور نماد، کد نشان را در کادر دوم بگذارید.",
-                "fields": ("enamad_code", "footer_badges_html"),
+                "fields": ("enamad_code", "footer_badges_html", "google_site_verification"),
             },
         ),
     )

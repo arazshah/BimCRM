@@ -134,6 +134,13 @@ class PlatformSettings(models.Model):
         validators=[RegexValidator(r"^\d+$", "فقط عدد؛ همان کدی که اینماد داده، مثلاً 42186568.")],
         help_text="با وارد کردن این کد، متاتگ اینماد در صفحه اصلی و فایل خالی «کد.txt» در ریشه سایت خودکار ساخته می‌شود.",
     )
+    google_site_verification = models.CharField(
+        "کد تأیید گوگل (Search Console)",
+        max_length=120,
+        blank=True,
+        help_text='فقط مقدار content از تگ <meta name="google-site-verification" content="...">. '
+        "اگر سایت را با رکورد DNS تأیید کرده‌اید، لازم نیست.",
+    )
     footer_badges_html = models.TextField(
         "کد نمادهای اعتماد در فوتر",
         blank=True,

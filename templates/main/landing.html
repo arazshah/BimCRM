@@ -1,6 +1,25 @@
 {% extends "main/base.html" %}
-{% load fa %}
+{% load fa static %}
+{% block title %}CRM بیمه (bimcrm) — نرم‌افزار و سایت دفتر نمایندگی بیمه{% endblock %}
 {% block body_class %}landing{% endblock %}
+{% block head_extra %}
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [
+  {"@type": "Organization", "@id": "{{ PLATFORM_URL }}/#org", "name": "CRM بیمه", "alternateName": ["bimcrm", "سی آر ام بیمه"], "url": "{{ PLATFORM_URL }}/", "logo": "{{ PLATFORM_URL }}{% static 'img/icon-512.png' %}"{% if platform.support_phone %}, "telephone": "{{ platform.support_phone|escapejs }}"{% endif %}},
+  {"@type": "WebSite", "@id": "{{ PLATFORM_URL }}/#site", "name": "CRM بیمه", "url": "{{ PLATFORM_URL }}/", "inLanguage": "fa-IR", "publisher": {"@id": "{{ PLATFORM_URL }}/#org"}},
+  {"@type": "SoftwareApplication", "name": "CRM بیمه", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "url": "{{ PLATFORM_URL }}/",
+   "description": "سایت و پنل مدیریت دفتر نمایندگی بیمه: استعلام آنلاین، مشتری و بیمه‌نامه، یادآور تمدید، اقساط، کارمزد، خسارت، شعبه‌ها و بازاریاب‌ها."{% if package %},
+   "offers": {"@type": "Offer", "price": "{{ package.monthly_price }}0", "priceCurrency": "IRR", "description": "پکیج پایه ماهانه؛ {{ platform.trial_days }} روز رایگان"}{% endif %}},
+  {"@type": "FAQPage", "mainEntity": [
+    {"@type": "Question", "name": "نماینده کدام شرکت بیمه باشم؟", "acceptedAnswer": {"@type": "Answer", "text": "فرقی نمی‌کند. سایت و پنل مال دفتر شماست و برای همه شرکت‌ها و همه رشته‌ها کار می‌کند."}},
+    {"@type": "Question", "name": "باید چیزی نصب کنم یا سایت‌سازی بلد باشم؟", "acceptedAnswer": {"@type": "Answer", "text": "نه. قالب‌ها آماده‌اند؛ فقط اسم دفتر، رشته‌ها و شماره تماس را وارد می‌کنید. پنل روی مرورگر موبایل و کامپیوتر کار می‌کند."}},
+    {"@type": "Question", "name": "پول بیمه‌نامه‌ها به حساب چه کسی می‌رود؟", "acceptedAnswer": {"@type": "Answer", "text": "به حساب خود دفتر. درگاه پرداخت و پنل پیامک را با قرارداد و حساب خودتان وصل می‌کنید."}},
+    {"@type": "Question", "name": "دامنه ir خودم را چطور وصل کنم؟", "acceptedAnswer": {"@type": "Answer", "text": "سایت از روز اول روی زیردامنه رایگان کار می‌کند. هر وقت دامنه ir گرفتید، NSهای ما را در ایرنیک بگذارید و دامنه را در پنل وارد کنید."}}
+  ]}
+]}
+</script>
+{% endblock %}
+
 {% block content %}
 
 {# ───────── Hero: claim your address; the mock browser updates as you type ───────── #}
