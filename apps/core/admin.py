@@ -1,7 +1,9 @@
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
+from django.core.exceptions import ImproperlyConfigured
 
+from .crypto import fernet
 from .dns import check_domain
 from .models import Domain, InsuranceCompany, LineOfBusiness, PlatformSettings, ReservedSubdomain, Tenant
 
@@ -33,6 +35,15 @@ class PlatformSettingsForm(forms.ModelForm):
 
     def clean(self):
         data = super().clean()
+        if data.get("smsir_api_key_input"):
+            try:
+                fernet()
+            except ImproperlyConfigured:
+                self.add_error(
+                    "smsir_api_key_input",
+                    "کلید رمزنگاری سرور (FIELD_ENCRYPTION_KEY) معتبر نیست؛ مقدارش را در Coolify اصلاح کنید "
+                    "(۴۴ نویسه که به = ختم می‌شود).",
+                )
         if data.get("sms_backend") == PlatformSettings.SmsBackend.SMSIR:
             has_key = bool(data.get("smsir_api_key_input")) or (
                 bool(self.instance.smsir_api_key) and not data.get("clear_smsir_api_key")

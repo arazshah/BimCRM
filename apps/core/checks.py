@@ -1,4 +1,6 @@
-from django.core.checks import Warning, register
+from django.conf import settings
+from django.core.checks import Error, Warning, register
+from django.core.exceptions import ImproperlyConfigured
 from django.db import connection
 
 
@@ -21,4 +23,23 @@ def rls_effective(app_configs, **kwargs):
                 id="bimcrm.W001",
             )
         ]
+    return []
+
+
+@register(deploy=True)
+def encryption_key_valid(app_configs, **kwargs):
+    """Saving any API key (platform or agent) fails if the encryption key is malformed."""
+    from .crypto import fernet
+
+    if not settings.FIELD_ENCRYPTION_KEY:
+        return [
+            Warning(
+                "FIELD_ENCRYPTION_KEY is empty; keys are encrypted with a key derived from SECRET_KEY.",
+                id="bimcrm.W002",
+            )
+        ]
+    try:
+        fernet()
+    except ImproperlyConfigured as exc:
+        return [Error(str(exc), id="bimcrm.E001")]
     return []
