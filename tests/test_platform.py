@@ -728,3 +728,33 @@ def test_custom_domain_gets_host_only_cookies(client, tenant):
     SiteSettings.all_objects.filter(tenant=tenant).update(is_published=True)
     resp = client.get("/", HTTP_HOST="alborz1234.ir")  # the quote form sets the CSRF cookie
     assert resp.status_code == 200 and resp.cookies["csrftoken"]["domain"] == ""
+
+
+def test_pay_from_panel_is_same_origin(tenant, owner, monkeypatch):
+    """Browsers send Origin: null on a cross-site POST under our referrer policy, so the panel pays on its own host."""
+    from django.test import Client
+
+    seen = {}
+
+    def fake(amount, desc, callback, mobile=None):
+        seen["callback"] = callback
+        return "A2", "https://pay/StartPay/A2"
+
+    monkeypatch.setattr("apps.billing.zarinpal.request_payment", fake)
+    c = Client(enforce_csrf_checks=True)
+    c.force_login(owner)
+    sub_host = host(tenant)
+    page = c.get("/panel/billing/", HTTP_HOST=sub_host, secure=True).content.decode()
+    assert 'action="/panel/billing/pay/"' in page
+    token = c.cookies["csrftoken"].value
+    resp = c.post(
+        "/panel/billing/pay/",
+        {"period": "yearly", "csrfmiddlewaretoken": token},
+        HTTP_HOST=sub_host,
+        HTTP_ORIGIN=f"https://{sub_host}",
+        secure=True,
+    )
+    assert resp.status_code == 302 and resp["Location"] == "https://pay/StartPay/A2"
+    assert seen["callback"].startswith(f"http://{MAIN}/pay/callback/") or seen["callback"].startswith(
+        f"https://{MAIN}/pay/callback/"
+    )

@@ -3,12 +3,12 @@ import io
 from datetime import timedelta
 
 from django import forms
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -627,6 +627,17 @@ def team_remove(request, pk):
 # ---------------- Subscription ----------------
 
 
+@require_POST
+@panel_view(write_ok_when_expired=True)
+def billing_pay(request):
+    """Same-origin payment start (posting from the subdomain to bimcrm.ir is blocked by browsers' Origin: null)."""
+    from apps.main.views import start_subscription_payment
+
+    if request.membership.role not in MANAGERS or not request.subscription:
+        return redirect("panel:billing")
+    return start_subscription_payment(request, request.tenant)
+
+
 @panel_view(write_ok_when_expired=True)
 def billing(request):
     sub = request.subscription
@@ -656,7 +667,7 @@ def billing(request):
             "periods": Period.choices,
             "invoices": Invoice.objects.filter(tenant=request.tenant)[:20],
             "used": storage_used_bytes(request.tenant),
-            "pay_url": f"{settings.PLATFORM_SCHEME}://{settings.PLATFORM_DOMAIN}/pay/{request.tenant.slug}/",
+            "pay_url": reverse("panel:billing_pay"),
             "monthly": sub.renewal_amount(Period.MONTHLY) if sub else 0,
             "yearly": sub.renewal_amount(Period.YEARLY) if sub else 0,
             "can_manage": request.membership.role in MANAGERS,
