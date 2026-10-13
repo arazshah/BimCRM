@@ -327,9 +327,14 @@ def sitemap(request):
     site = _site(request)
     urls = [("/", "1.0"), ("/track/", "0.3")] if site.is_published else []
     rows = "".join(
-        f"  <url><loc>{request.build_absolute_uri(path)}</loc><priority>{prio}</priority></url>\n" for path, prio in urls
+        f"  <url><loc>{request.build_absolute_uri(path)}</loc><priority>{prio}</priority></url>\n"
+        for path, prio in urls
     )
-    xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + rows + "</urlset>\n"
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + rows
+        + "</urlset>\n"
+    )
     return HttpResponse(xml, content_type="application/xml")
 
 

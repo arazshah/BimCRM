@@ -138,7 +138,7 @@ class PlatformSettings(models.Model):
         "کد تأیید گوگل (Search Console)",
         max_length=120,
         blank=True,
-        help_text="فقط مقدار content از تگ <meta name=\"google-site-verification\" content=\"...\">. "
+        help_text='فقط مقدار content از تگ <meta name="google-site-verification" content="...">. '
         "اگر سایت را با رکورد DNS تأیید کرده‌اید، لازم نیست.",
     )
     footer_badges_html = models.TextField(
