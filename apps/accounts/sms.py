@@ -3,7 +3,8 @@
 import logging
 
 import requests
-from django.conf import settings
+
+from apps.core.platform_config import sms_backend, smsir_config
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class SmsIrClient:
 
     def send_verify(self, mobile: str, code: str):
         if not self.otp_template_id:
-            raise SmsError("SMSIR_OTP_TEMPLATE_ID is not set")
+            raise SmsError("شناسه قالب کد تأیید sms.ir تنظیم نشده است.")
         return self._post(
             "/send/verify",
             {
@@ -64,19 +65,19 @@ class SmsIrClient:
 
 
 def send_platform_otp(mobile: str, code: str):
-    if settings.SMS_BACKEND == "console":
+    if sms_backend() == "console":
         log.warning("OTP for %s: %s", mobile, code)
         return
-    SmsIrClient(settings.SMSIR_API_KEY, settings.SMSIR_LINE_NUMBER, settings.SMSIR_OTP_TEMPLATE_ID).send_verify(
-        mobile, code
-    )
+    cfg = smsir_config()
+    SmsIrClient(cfg.api_key, cfg.line_number, cfg.otp_template_id).send_verify(mobile, code)
 
 
 def send_platform_text(mobile: str, text: str):
-    if settings.SMS_BACKEND == "console":
+    if sms_backend() == "console":
         log.warning("SMS to %s: %s", mobile, text)
         return
     try:
-        SmsIrClient(settings.SMSIR_API_KEY, settings.SMSIR_LINE_NUMBER).send_text(mobile, text)
+        cfg = smsir_config()
+        SmsIrClient(cfg.api_key, cfg.line_number).send_text(mobile, text)
     except SmsError:
         log.exception("platform SMS to %s failed", mobile)

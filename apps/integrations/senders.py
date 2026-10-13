@@ -3,9 +3,9 @@
 import logging
 
 import requests
-from django.conf import settings
 
 from apps.accounts.sms import SmsError, SmsIrClient
+from apps.core.platform_config import sms_backend
 
 from .models import active_integration
 
@@ -33,7 +33,7 @@ def send_tenant_otp(tenant, mobile: str, code: str):
     if integ is None:
         raise SmsError("این دفتر هنوز پنل پیامک وصل نکرده است.")
     cfg = integ.config
-    if settings.SMS_BACKEND == "console":
+    if sms_backend() == "console":
         log.warning("[tenant %s] OTP for %s: %s", tenant.slug, mobile, code)
         return
     if integ.provider == "smsir":
@@ -62,7 +62,7 @@ def send_tenant_text(tenant, mobile: str, text: str):
     if integ is None:
         raise SmsError("این دفتر هنوز پنل پیامک وصل نکرده است.")
     cfg = integ.config
-    if settings.SMS_BACKEND == "console":
+    if sms_backend() == "console":
         log.warning("[tenant %s] SMS to %s: %s", tenant.slug, mobile, text)
         return
     if integ.provider == "smsir":
