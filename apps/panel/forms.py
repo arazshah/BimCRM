@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from apps.accounts.models import Membership, normalize_mobile, validate_mobile
+from apps.billing.models import Invoice, Period
 from apps.core.dns import HOSTNAME_RE, normalize_hostname
 from apps.core.models import Domain
 from apps.crm.models import Branch, Customer, Policy, QuoteRequest
@@ -269,3 +270,24 @@ class ImportForm(forms.Form):
         label="فایل CSV مشتریان",
         help_text="ستون‌ها: نام، موبایل، کد ملی، شهر (ردیف اول عنوان). از اکسل «ذخیره به CSV UTF-8» بگیرید.",
     )
+
+
+class RenewalOrderForm(forms.Form):
+    period = forms.ChoiceField(label="دوره", choices=Period.choices, initial=Period.YEARLY, widget=forms.RadioSelect)
+    contact_mobile = forms.CharField(label="موبایل برای تماس کارشناس", max_length=20)
+    contact_time = forms.ChoiceField(
+        label="زمان مناسب تماس", choices=Invoice.ContactTime.choices, initial=Invoice.ContactTime.ANY
+    )
+    note = forms.CharField(
+        label="توضیح (اختیاری)", required=False, max_length=500, widget=forms.Textarea(attrs={"rows": 2})
+    )
+
+    def __init__(self, *args, initial_mobile="", **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.is_bound:
+            self.fields["contact_mobile"].initial = initial_mobile
+
+    def clean_contact_mobile(self):
+        mobile = normalize_mobile(self.cleaned_data["contact_mobile"])
+        validate_mobile(mobile)
+        return mobile

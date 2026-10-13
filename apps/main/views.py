@@ -231,6 +231,8 @@ def pay(request, tenant_slug):
     tenant = get_object_or_404(
         Tenant, slug=tenant_slug, memberships__user=request.user, memberships__role__in=["owner", "manager"]
     )
+    if PlatformSettings.load().payment_mode != PlatformSettings.PaymentMode.ONLINE:
+        return redirect(tenant.panel_url() + "billing/")
     return start_subscription_payment(request, tenant)
 
 

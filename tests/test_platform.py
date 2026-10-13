@@ -414,7 +414,12 @@ def test_subscription_lifecycle(tenant):
     assert sub.status == Subscription.Status.ACTIVE and sub.current_period_end > now + timedelta(days=29)
 
 
+def online_payments():
+    PlatformSettings.objects.update_or_create(pk=1, defaults={"payment_mode": "online"})
+
+
 def test_payment_callback_extends_subscription(client, tenant, owner, monkeypatch):
+    online_payments()
     monkeypatch.setattr("apps.billing.zarinpal.request_payment", lambda *a, **k: ("A123", "https://pay/StartPay/A123"))
     monkeypatch.setattr("apps.billing.zarinpal.verify_payment", lambda amount, authority: "REF9")
     client.force_login(owner)
@@ -575,6 +580,9 @@ def _settings_form(**over):
         "smsir_line_number": "",
         "zarinpal_mode": "",
         "zarinpal_merchant_id": "",
+        "payment_mode": "order",
+        "order_grace_days": 3,
+        "order_payment_info": "",
     }
     base.update(over)
     return base
@@ -705,6 +713,7 @@ def test_pay_from_panel_subdomain_passes_csrf(tenant, owner, monkeypatch):
     """The billing page lives on the subdomain but posts to the main domain (cross-origin, HTTPS)."""
     from django.test import Client
 
+    online_payments()
     monkeypatch.setattr("apps.billing.zarinpal.request_payment", lambda *a, **k: ("A1", "https://pay/StartPay/A1"))
     c = Client(enforce_csrf_checks=True)
     c.force_login(owner)
@@ -734,6 +743,7 @@ def test_pay_from_panel_is_same_origin(tenant, owner, monkeypatch):
     """Browsers send Origin: null on a cross-site POST under our referrer policy, so the panel pays on its own host."""
     from django.test import Client
 
+    online_payments()
     seen = {}
 
     def fake(amount, desc, callback, mobile=None):
@@ -758,3 +768,116 @@ def test_pay_from_panel_is_same_origin(tenant, owner, monkeypatch):
     assert seen["callback"].startswith(f"http://{MAIN}/pay/callback/") or seen["callback"].startswith(
         f"https://{MAIN}/pay/callback/"
     )
+
+
+# ---------- Renewal by order (no online gateway) ----------
+
+
+def test_renewal_order_end_to_end(client, tenant, owner, monkeypatch, django_user_model):
+    from datetime import timedelta
+
+    from apps.billing import orders
+    from apps.billing.models import Invoice
+    from apps.tickets.models import Ticket
+
+    sent = []
+    monkeypatch.setattr("apps.billing.orders.send_platform_text", lambda m, t: sent.append((m, t)))
+    sub = tenant.subscription
+    sub.current_period_end = timezone.now() + timedelta(days=1)
+    sub.save()
+    client.force_login(owner)
+    h = host(tenant)
+    page = client.get("/panel/billing/", HTTP_HOST=h).content.decode()
+    assert "ثبت سفارش تمدید" in page and "/panel/billing/pay/" not in page
+
+    resp = client.post(
+        "/panel/billing/order/",
+        {"period": "yearly", "contact_mobile": "09121112233", "contact_time": "morning", "note": "کارت به کارت"},
+        HTTP_HOST=h,
+    )
+    inv = Invoice.objects.get(tenant=tenant)
+    assert resp.status_code == 302 and resp["Location"].endswith(f"/panel/billing/orders/{inv.pk}/")
+    assert inv.method == "order" and inv.is_open_order and inv.amount == sub.renewal_amount("yearly")
+    assert inv.lines and sum(r["amount"] for r in inv.lines) == inv.amount
+    ticket = Ticket.all_objects.get(pk=inv.ticket_id)
+    assert ticket.category == "billing" and inv.number in ticket.subject
+    assert any(m == "09121112233" for m, _ in sent)  # the office gets a confirmation
+    # Grace: still active for a few days while the order is arranged
+    sub.refresh_from_db()
+    assert inv.grace_from is not None and sub.days_left >= 2
+
+    detail = client.get(f"/panel/billing/orders/{inv.pk}/", HTTP_HOST=h).content.decode()
+    assert "پیش‌فاکتور" in detail and inv.number in detail and "در انتظار تماس کارشناس" in detail
+
+    # A second order is not created while one is open
+    client.post(
+        "/panel/billing/order/",
+        {"period": "monthly", "contact_mobile": "09121112233", "contact_time": "any"},
+        HTTP_HOST=h,
+    )
+    assert Invoice.objects.filter(tenant=tenant).count() == 1
+
+    # Platform owner: contacted, then confirms payment -> extended from the real end, not the grace end
+    admin_user = django_user_model.objects.create_superuser("09120009999", password="x")
+    orders.mark_contacted(inv, admin_user)
+    inv.refresh_from_db()
+    assert inv.contacted_at is not None
+    orders.confirm_payment(inv, admin_user, ref_id="CARD-1234")
+    inv.refresh_from_db()
+    sub.refresh_from_db()
+    assert inv.status == "paid" and inv.ref_id == "CARD-1234" and sub.status == "active"
+    assert abs((sub.current_period_end - (inv.grace_from + timedelta(days=365))).total_seconds()) < 60
+    ticket.refresh_from_db()
+    assert ticket.status == "closed"
+
+
+def test_order_cancel_by_office_and_online_mode_hides_order(client, tenant, owner, monkeypatch):
+    from apps.billing.models import Invoice
+
+    monkeypatch.setattr("apps.billing.orders.send_platform_text", lambda m, t: None)
+    client.force_login(owner)
+    h = host(tenant)
+    client.post(
+        "/panel/billing/order/",
+        {"period": "monthly", "contact_mobile": "09121112233", "contact_time": "any"},
+        HTTP_HOST=h,
+    )
+    inv = Invoice.objects.get(tenant=tenant)
+    client.post(f"/panel/billing/orders/{inv.pk}/", {"cancel": "1"}, HTTP_HOST=h)
+    inv.refresh_from_db()
+    assert inv.status == "cancelled"
+    online_payments()
+    page = client.get("/panel/billing/", HTTP_HOST=h).content.decode()
+    assert "/panel/billing/pay/" in page and 'id="renew"' not in page
+
+
+def test_staff_cannot_place_order(client, tenant):
+    from apps.billing.models import Invoice
+
+    clerk = User.objects.create_user("09125550001")
+    Membership.objects.create(user=clerk, tenant=tenant, role=Membership.Role.STAFF)
+    client.force_login(clerk)
+    client.post(
+        "/panel/billing/order/",
+        {"period": "monthly", "contact_mobile": "09121112233", "contact_time": "any"},
+        HTTP_HOST=host(tenant),
+    )
+    assert not Invoice.objects.filter(tenant=tenant).exists()
+
+
+def test_admin_confirm_action(client, tenant, owner, monkeypatch):
+    from apps.billing import orders
+    from apps.billing.models import Invoice
+
+    monkeypatch.setattr("apps.billing.orders.send_platform_text", lambda m, t: None)
+    inv = orders.place_order(
+        tenant=tenant, user=owner, period="monthly", contact_mobile="09121112233", contact_time="any"
+    )
+    h = _admin_client(client)
+    resp = client.post(
+        "/admin/billing/invoice/",
+        {"action": "action_confirm", "_selected_action": [inv.pk]},
+        HTTP_HOST=h,
+    )
+    assert resp.status_code == 302
+    assert Invoice.objects.get(pk=inv.pk).status == "paid"

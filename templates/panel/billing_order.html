@@ -1,0 +1,72 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}پیش‌فاکتور {{ invoice.number }}{% endblock %}
+{% block content %}
+<div class="page-head no-print">
+  <div><h1>سفارش {{ invoice.number }}</h1><p class="page-sub">{{ invoice.description }}</p></div>
+  <div class="head-actions">
+    <button class="btn btn-ghost btn-sm" type="button" onclick="window.print()">چاپ یا ذخیره PDF</button>
+    {% if invoice.ticket_id %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:ticket' invoice.ticket_id %}">گفتگو درباره سفارش</a>{% endif %}
+    <a class="btn btn-ghost btn-sm" href="{% url 'panel:billing' %}">بازگشت</a>
+  </div>
+</div>
+
+<ol class="order-track no-print" aria-label="مراحل سفارش">
+  {% for label, when, done in steps %}
+  <li class="{% if done %}done{% elif forloop.counter0 == 1 and invoice.is_open_order or forloop.counter0 == 2 and invoice.contacted_at and invoice.is_open_order %}now{% endif %}">
+    <span class="ot-dot" aria-hidden="true">{% if done %}<svg><use href="#p-check"/></svg>{% else %}{{ forloop.counter|fa }}{% endif %}</span>
+    <strong>{{ label }}</strong>
+    <span>{% if when %}{{ when|jdate:"time" }}{% elif invoice.status == 'cancelled' %}—{% else %}در انتظار{% endif %}</span>
+  </li>
+  {% endfor %}
+</ol>
+
+<article class="proforma">
+  <header class="pf-head">
+    <div class="pf-brand"><span class="pf-mark" aria-hidden="true"></span><div><strong>CRM بیمه</strong><span class="ltr">{{ PLATFORM_DOMAIN }}</span></div></div>
+    <div class="pf-title">
+      <h2>{% if invoice.status == 'paid' %}فاکتور{% else %}پیش‌فاکتور{% endif %}</h2>
+      <dl>
+        <div><dt>شماره</dt><dd class="ltr">{{ invoice.number }}</dd></div>
+        <div><dt>تاریخ</dt><dd>{{ invoice.created_at|jdate }}</dd></div>
+        <div><dt>وضعیت</dt><dd><span class="tag {% if invoice.status == 'paid' %}ok{% elif invoice.status == 'pending' %}warm{% endif %}">{% if invoice.is_open_order %}{% if invoice.contacted_at %}در انتظار واریز{% else %}در انتظار تماس کارشناس{% endif %}{% else %}{{ invoice.get_status_display }}{% endif %}</span></dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <section class="pf-parties">
+    <div><span class="pf-label">ارائه‌دهنده</span><strong>CRM بیمه</strong><span>فضا و ابزار آنلاین دفترهای نمایندگی بیمه</span></div>
+    <div><span class="pf-label">خریدار</span><strong>{{ invoice.tenant.name }}</strong><span class="ltr">{{ invoice.tenant.primary_host }}</span>{% if invoice.contact_mobile %}<span>موبایل: <span class="ltr num">{{ invoice.contact_mobile|fa }}</span></span>{% endif %}</div>
+  </section>
+
+  <table class="pf-table">
+    <thead><tr><th>ردیف</th><th>شرح</th><th>تعداد</th><th>مبلغ (تومان)</th></tr></thead>
+    <tbody>
+      {% for row in invoice.lines %}<tr><td class="num">{{ forloop.counter|fa }}</td><td>{{ row.title }}</td><td class="num">{{ row.qty|fa }}</td><td class="num">{% if row.amount %}{{ row.amount|toman }}{% else %}داخل پکیج{% endif %}</td></tr>
+      {% empty %}<tr><td class="num">۱</td><td>{{ invoice.description }}</td><td class="num">۱</td><td class="num">{{ invoice.amount|toman }}</td></tr>{% endfor %}
+    </tbody>
+    <tfoot><tr><td colspan="3">جمع قابل پرداخت</td><td class="num"><strong>{{ invoice.amount|toman }}</strong> تومان</td></tr></tfoot>
+  </table>
+
+  <section class="pf-pay">
+    {% if invoice.status == 'paid' %}
+      <p><strong>پرداخت شد</strong> در {{ invoice.paid_at|jdate:"long" }}{% if invoice.ref_id %}، کد پیگیری <span class="ltr num">{{ invoice.ref_id|fa }}</span>{% endif %}.</p>
+    {% elif invoice.status == 'cancelled' %}
+      <p>این سفارش لغو شده است.</p>
+    {% else %}
+      <h3>نحوه پرداخت</h3>
+      {% if platform.order_payment_info %}<p class="pf-info">{{ platform.order_payment_info|linebreaksbr }}</p>{% endif %}
+      <p>کارشناس حساب {% if invoice.contact_time != 'any' %}در بازه «{{ invoice.get_contact_time_display }}» {% endif %}با شماره <span class="ltr num">{{ invoice.contact_mobile|fa }}</span> تماس می‌گیرد و روش پرداخت (کارت به کارت، واریز به حساب یا فیش بانکی) را با شما هماهنگ می‌کند. لطفاً پس از واریز، تصویر رسید را در «گفتگو درباره سفارش» بفرستید.</p>
+      {% if invoice.grace_from %}<p class="pf-grace">تا تأیید پرداخت، دفتر شما فعال است و کاری لازم نیست.</p>{% endif %}
+    {% endif %}
+  </section>
+
+  <footer class="pf-foot">دوره جدید از پایان دوره فعلی اشتراک محاسبه می‌شود. پرسش درباره این سفارش: پنل دفتر › پشتیبانی.</footer>
+</article>
+
+{% if invoice.is_open_order and can_manage %}
+<form method="post" class="no-print cancel-order" onsubmit="return confirm('سفارش {{ invoice.number }} لغو شود؟');">
+  {% csrf_token %}<button class="linkish danger" name="cancel" value="1">لغو این سفارش</button>
+</form>
+{% endif %}
+{% endblock %}

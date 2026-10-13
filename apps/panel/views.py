@@ -37,6 +37,7 @@ from .forms import (
     MemberForm,
     PolicyForm,
     QuoteUpdateForm,
+    RenewalOrderForm,
     ReplyForm,
     SiteContentForm,
     TestimonialFormSet,
@@ -635,7 +636,63 @@ def billing_pay(request):
 
     if request.membership.role not in MANAGERS or not request.subscription:
         return redirect("panel:billing")
+    if PlatformSettings.load().payment_mode != PlatformSettings.PaymentMode.ONLINE:
+        return redirect("panel:billing")
     return start_subscription_payment(request, request.tenant)
+
+
+@require_POST
+@panel_view(write_ok_when_expired=True)
+def billing_order(request):
+    """Renewal by order: itemised pre-invoice, a billing ticket, and a call from the platform to arrange payment."""
+    from apps.billing import orders
+
+    sub = request.subscription
+    if request.membership.role not in MANAGERS or not sub:
+        return redirect("panel:billing")
+    existing = orders.open_order(request.tenant)
+    if existing:
+        messages.info(request, f"سفارش {existing.number} هنوز باز است؛ همان را پیگیری می‌کنیم.")
+        return redirect("panel:billing_order_detail", pk=existing.pk)
+    form = RenewalOrderForm(request.POST, initial_mobile=request.user.mobile)
+    if not form.is_valid():
+        messages.error(request, "دوره و شماره موبایل درست را وارد کنید.")
+        return redirect("panel:billing")
+    invoice = orders.place_order(
+        tenant=request.tenant,
+        user=request.user,
+        period=form.cleaned_data["period"],
+        contact_mobile=form.cleaned_data["contact_mobile"],
+        contact_time=form.cleaned_data["contact_time"],
+        note=form.cleaned_data["note"],
+    )
+    return redirect("panel:billing_order_detail", pk=invoice.pk)
+
+
+@panel_view(write_ok_when_expired=True)
+def billing_order_detail(request, pk):
+    from apps.billing import orders
+
+    invoice = get_object_or_404(Invoice, pk=pk, tenant=request.tenant)
+    if request.method == "POST" and request.POST.get("cancel") and request.membership.role in MANAGERS:
+        orders.cancel_order(invoice, request.user, staff=False)
+        messages.success(request, f"سفارش {invoice.number} لغو شد.")
+        return redirect("panel:billing")
+    steps = [
+        ("ثبت سفارش", invoice.created_at, True),
+        ("تماس کارشناس حساب", invoice.contacted_at, bool(invoice.contacted_at)),
+        ("پرداخت و فعال‌سازی", invoice.paid_at, invoice.status == Invoice.Status.PAID),
+    ]
+    return render(
+        request,
+        "panel/billing_order.html",
+        {
+            "invoice": invoice,
+            "steps": steps,
+            "platform": PlatformSettings.load(),
+            "can_manage": request.membership.role in MANAGERS,
+        },
+    )
 
 
 @panel_view(write_ok_when_expired=True)
@@ -656,6 +713,9 @@ def billing(request):
         messages.success(request, "تغییرات ثبت شد و از همین حالا فعال است؛ مبلغ آن در تمدید بعدی حساب می‌شود.")
         return redirect("panel:billing")
     items = {i.addon.code: i.quantity for i in sub.items.select_related("addon")} if sub else {}
+    platform = PlatformSettings.load()
+    from apps.billing.orders import open_order
+
     return render(
         request,
         "panel/billing.html",
@@ -671,6 +731,10 @@ def billing(request):
             "monthly": sub.renewal_amount(Period.MONTHLY) if sub else 0,
             "yearly": sub.renewal_amount(Period.YEARLY) if sub else 0,
             "can_manage": request.membership.role in MANAGERS,
+            "platform": platform,
+            "online": platform.payment_mode == PlatformSettings.PaymentMode.ONLINE,
+            "open_order": open_order(request.tenant),
+            "order_form": RenewalOrderForm(initial_mobile=request.user.mobile),
         },
     )
 

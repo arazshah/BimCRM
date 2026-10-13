@@ -31,6 +31,8 @@ urlpatterns = [
     path("branches/<int:pk>/edit/", views.branch_edit, name="branch_edit"),
     path("billing/", views.billing, name="billing"),
     path("billing/pay/", views.billing_pay, name="billing_pay"),
+    path("billing/order/", views.billing_order, name="billing_order"),
+    path("billing/orders/<int:pk>/", views.billing_order_detail, name="billing_order_detail"),
     path("support/", views.tickets, name="tickets"),
     path("support/<int:pk>/", views.ticket_detail, name="ticket"),
     # Reminders (base package)

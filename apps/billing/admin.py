@@ -1,5 +1,6 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 
+from . import orders
 from .models import Addon, Invoice, Package, StorageTier, Subscription, SubscriptionItem
 
 
@@ -36,7 +37,53 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ("id", "tenant", "amount", "period", "status", "ref_id", "created_at", "paid_at")
-    list_filter = ("status",)
-    search_fields = ("tenant__slug", "ref_id", "authority")
-    readonly_fields = ("authority", "ref_id", "paid_at")
+    list_display = (
+        "order_number",
+        "tenant",
+        "amount",
+        "period",
+        "method",
+        "order_state",
+        "contact_mobile",
+        "contact_time",
+        "created_at",
+        "paid_at",
+    )
+    list_filter = ("status", "method", "contact_time")
+    search_fields = ("tenant__slug", "tenant__name", "ref_id", "authority", "contact_mobile")
+    readonly_fields = ("authority", "paid_at", "contacted_at", "grace_from", "lines", "ticket")
+    actions = ["action_contacted", "action_confirm", "action_cancel"]
+
+    @admin.display(description="شماره", ordering="pk")
+    def order_number(self, obj):
+        return obj.number
+
+    @admin.display(description="وضعیت")
+    def order_state(self, obj):
+        if obj.is_open_order:
+            return "در انتظار واریز" if obj.contacted_at else "در انتظار تماس"
+        return obj.get_status_display()
+
+    @admin.action(description="ثبت شد: با دفتر تماس گرفتم")
+    def action_contacted(self, request, queryset):
+        n = 0
+        for inv in queryset.filter(method=Invoice.Method.ORDER, status=Invoice.Status.PENDING):
+            orders.mark_contacted(inv, request.user)
+            n += 1
+        self.message_user(request, f"{n} سفارش به «تماس گرفته شد» رفت.")
+
+    @admin.action(description="تأیید پرداخت و تمدید اشتراک")
+    def action_confirm(self, request, queryset):
+        n = 0
+        for inv in queryset.exclude(status=Invoice.Status.PAID):
+            orders.confirm_payment(inv, request.user)
+            n += 1
+        self.message_user(request, f"{n} سفارش تأیید و اشتراکش تمدید شد. به دفتر پیامک رفت.", messages.SUCCESS)
+
+    @admin.action(description="لغو سفارش")
+    def action_cancel(self, request, queryset):
+        n = 0
+        for inv in queryset.filter(method=Invoice.Method.ORDER, status=Invoice.Status.PENDING):
+            orders.cancel_order(inv, request.user)
+            n += 1
+        self.message_user(request, f"{n} سفارش لغو شد.")
