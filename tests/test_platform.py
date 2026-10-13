@@ -7,7 +7,7 @@ from apps.accounts.models import Membership, OTPCode, User, normalize_mobile
 from apps.billing.models import Subscription
 from apps.billing.tasks import run_lifecycle
 from apps.core.dns import check_domain, normalize_hostname
-from apps.core.models import Domain, InsuranceCompany, LineOfBusiness, Tenant, is_subdomain_available
+from apps.core.models import Domain, InsuranceCompany, LineOfBusiness, PlatformSettings, Tenant, is_subdomain_available
 from apps.core.tenancy import tenant_context
 from apps.crm.models import Customer, Policy, QuoteRequest
 from apps.integrations.models import Integration
@@ -654,3 +654,17 @@ def test_invalid_encryption_key_is_reported_not_a_500(client, settings, db):
     assert resp.status_code == 200 and "FIELD_ENCRYPTION_KEY" in resp.content.decode()
     settings.FIELD_ENCRYPTION_KEY = "wQIdH1CaIYJvAVTs_DOOgyQqRvTZ8rcppwC5lOvFodM="
     assert encryption_key_valid(None) == []
+
+
+def test_enamad_meta_tag_and_verification_file(client):
+    s = PlatformSettings.load()
+    assert 'name="enamad"' not in client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert client.get("/42186568.txt", HTTP_HOST=MAIN).status_code == 404
+    s.enamad_code = "42186568"
+    s.footer_badges_html = '<a href="https://trustseal.enamad.ir/">نماد</a>'
+    s.save()
+    page = client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert '<meta name="enamad" content="42186568" />' in page and "trustseal.enamad.ir" in page
+    resp = client.get("/42186568.txt", HTTP_HOST=MAIN)
+    assert resp.status_code == 200 and resp.content == b""
+    assert client.get("/99999.txt", HTTP_HOST=MAIN).status_code == 404

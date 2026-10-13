@@ -18,5 +18,6 @@ urlpatterns = [
     path("pay/<str:tenant_slug>/", views.pay, name="pay"),
     path("pay/callback/<int:invoice_id>/", views.pay_callback, name="pay_callback"),
     path("robots.txt", views.robots),
+    path("<str:name>.txt", views.verification_file, name="verification_file"),
     path("healthz", views.health, name="health"),
 ]

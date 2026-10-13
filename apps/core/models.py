@@ -2,6 +2,7 @@ import re
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
 
@@ -105,6 +106,20 @@ class PlatformSettings(models.Model):
     smsir_line_number = models.CharField("شماره خط sms.ir", max_length=30, blank=True)
     zarinpal_merchant_id = models.CharField("مرچنت کد زرین‌پال", max_length=64, blank=True)
     zarinpal_mode = models.CharField("حالت زرین‌پال", max_length=10, choices=ZarinpalMode.choices, blank=True)
+
+    # --- Trust seals of the platform site itself (bimcrm.ir) ---
+    enamad_code = models.CharField(
+        "کد تأیید اینماد",
+        max_length=20,
+        blank=True,
+        validators=[RegexValidator(r"^\d+$", "فقط عدد؛ همان کدی که اینماد داده، مثلاً 42186568.")],
+        help_text="با وارد کردن این کد، متاتگ اینماد در صفحه اصلی و فایل خالی «کد.txt» در ریشه سایت خودکار ساخته می‌شود.",
+    )
+    footer_badges_html = models.TextField(
+        "کد نمادهای اعتماد در فوتر",
+        blank=True,
+        help_text="کد HTML نشان اینماد، ساماندهی و … که بعد از صدور نماد می‌گیرید. در فوتر همه صفحات bimcrm.ir نمایش داده می‌شود.",
+    )
 
     @property
     def smsir_api_key(self) -> str:

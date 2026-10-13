@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -284,6 +284,14 @@ def _mark_paid(invoice: Invoice, ref_id: str):
     invoice.paid_at = timezone.now()
     invoice.save(update_fields=["status", "ref_id", "paid_at"])
     invoice.tenant.subscription.extend(invoice.period)
+
+
+def verification_file(request, name):
+    """Empty file at the site root that seal providers (eNamad) ask for to prove domain ownership."""
+    code = PlatformSettings.load().enamad_code
+    if not code or name != code:
+        raise Http404
+    return HttpResponse("", content_type="text/plain")
 
 
 def robots(request):
