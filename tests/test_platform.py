@@ -668,3 +668,34 @@ def test_enamad_meta_tag_and_verification_file(client):
     resp = client.get("/42186568.txt", HTTP_HOST=MAIN)
     assert resp.status_code == 200 and resp.content == b""
     assert client.get("/99999.txt", HTTP_HOST=MAIN).status_code == 404
+
+
+def test_dashboard_kpis_trend_and_pipeline(client, tenant, owner):
+    from apps.core import jalali
+
+    today = timezone.localdate()
+    this_start, _, _ = jalali.month_bounds(today)
+    prev_start, _, _ = jalali.month_bounds(today, -1)
+    line = LineOfBusiness.objects.get(slug="third-party")
+    company = InsuranceCompany.objects.first()
+    with tenant_context(tenant):
+        c = Customer.objects.create(full_name="رضا", mobile="09121234567")
+        for n, start, premium in [("A", this_start, 3_000_000), ("B", prev_start, 2_000_000)]:
+            Policy.objects.create(
+                customer=c,
+                line=line,
+                company=company,
+                number=n,
+                start_date=start,
+                end_date=start + timedelta(days=365),
+                premium=premium,
+            )
+        QuoteRequest.objects.create(line=line, full_name="لید تازه", mobile="09121110000")
+    client.force_login(owner)
+    resp = client.get("/panel/", HTTP_HOST=host(tenant))
+    stats, trend = resp.context["stats"], resp.context["trend"]
+    assert stats["month_premium"] == 3_000_000 and stats["premium_delta"] == 50
+    assert len(trend) == 6 and trend[-1]["pct"] == 100 and trend[-2]["pct"] == 67
+    assert stats["new_quotes"] == 1 and stats["open_quotes"] == 1
+    page = resp.content.decode()
+    assert "حق بیمه صادره" in page and "لید تازه" in page

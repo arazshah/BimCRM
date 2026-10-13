@@ -78,6 +78,31 @@ def dashboard(request):
         ("سایت را منتشر کنید", site.is_published, "panel:site"),
     ]
     month_start, month_end, _ = jalali.month_bounds(today)
+    live = policies.exclude(status=Policy.Status.CANCELLED)
+
+    # Premium written per Jalali month, last six months (oldest first) for the trend chart.
+    trend = []
+    for offset in range(-5, 1):
+        start, end, label = jalali.month_bounds(today, offset)
+        agg = live.filter(start_date__gte=start, start_date__lt=end).aggregate(s=Sum("premium"), n=Count("id"))
+        trend.append({"label": label.split(" ")[0], "full": label, "value": agg["s"] or 0, "count": agg["n"]})
+    peak = max((t["value"] for t in trend), default=0)
+    for t in trend:
+        t["pct"] = round(t["value"] * 100 / peak) if peak else 0
+    month_premium, prev_premium = trend[-1]["value"], trend[-2]["value"]
+    delta = round((month_premium - prev_premium) * 100 / prev_premium) if prev_premium else None
+
+    upcoming = policies.filter(
+        status=Policy.Status.ACTIVE, end_date__gte=today, end_date__lte=today + timedelta(days=30)
+    )
+    status_labels = dict(QuoteRequest.Status.choices)
+    open_statuses = ["new", "contacted", "waiting_docs"]
+    open_counts = {
+        row["status"]: row["n"]
+        for row in quotes_qs.filter(status__in=open_statuses).values("status").annotate(n=Count("id"))
+    }
+    pipeline = [{"key": k, "label": status_labels.get(k, k), "n": open_counts.get(k, 0)} for k in open_statuses]
+
     alerts = []
     if "finance" in request.features:
         overdue = scoped(request, Installment.objects.all(), "policy__branch").filter(
@@ -95,6 +120,7 @@ def dashboard(request):
         )
         if n:
             alerts.append((f"{n} خسارت تازه از پنل مشتری", "panel:claims", "?s=reported"))
+    name = (request.user.full_name or "").split(" ")[0]
     return render(
         request,
         "panel/dashboard.html",
@@ -104,18 +130,24 @@ def dashboard(request):
             "stats": {
                 "customers": customers_qs.count(),
                 "active_policies": policies.filter(status=Policy.Status.ACTIVE, end_date__gte=today).count(),
-                "month_premium": policies.filter(start_date__gte=month_start, start_date__lt=month_end)
-                .exclude(status=Policy.Status.CANCELLED)
-                .aggregate(s=Sum("premium"))["s"]
-                or 0,
-                "open_quotes": quotes_qs.filter(status__in=["new", "contacted", "waiting_docs"]).count(),
+                "month_premium": month_premium,
+                "prev_premium": prev_premium,
+                "premium_delta": delta,
+                "open_quotes": sum(p["n"] for p in pipeline),
+                "new_quotes": open_counts.get("new", 0),
+                "renewals_30": upcoming.count(),
+                "renewals_7": upcoming.filter(end_date__lte=today + timedelta(days=7)).count(),
             },
+            "trend": trend,
+            "trend_peak": peak,
+            "pipeline": pipeline,
             "checklist": checklist,
             "alerts": alerts,
             "checklist_done": sum(1 for c in checklist if c[1]),
             "welcome": request.GET.get("welcome"),
             "site": site,
             "today": today,
+            "greeting_name": name,
         },
     )
 
