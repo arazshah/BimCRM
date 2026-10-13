@@ -1,0 +1,25 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}مشتریان{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>مشتریان</h1>
+  <div class="head-actions"><a class="btn btn-sm" href="{% url 'panel:customer_new' %}">مشتری جدید</a><a class="btn btn-ghost btn-sm" href="{% url 'panel:customer_import' %}">ورود از اکسل</a></div>
+</div>
+<form class="toolbar" method="get"><input type="search" name="q" value="{{ q }}" placeholder="نام، موبایل یا کد ملی" aria-label="جستجو"><button class="btn btn-ghost btn-sm" type="submit">جستجو</button></form>
+{% if page.object_list %}
+<div class="table-wrap">
+<table class="data">
+  <thead><tr><th>نام</th><th>موبایل</th><th>شهر</th><th>بیمه‌نامه</th><th>ثبت</th></tr></thead>
+  <tbody>
+  {% for c in page %}
+    <tr><td><a href="{% url 'panel:customer' c.pk %}">{{ c.full_name }}</a></td><td class="ltr num">{{ c.mobile|fa }}</td><td>{{ c.city }}</td><td class="num">{{ c.n_policies|fa }}</td><td class="muted">{{ c.created_at|jdate }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "panel/_pager.html" %}
+{% else %}
+<p class="empty">{% if q %}مشتری‌ای با «{{ q }}» پیدا نشد.{% else %}هنوز مشتری‌ای ثبت نشده. مشتریان قبلی را از اکسل وارد کنید یا اولین نفر را دستی اضافه کنید.{% endif %}</p>
+{% endif %}
+{% endblock %}

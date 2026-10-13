@@ -1,0 +1,25 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}بیمه‌نامه‌ها{% endblock %}
+{% block content %}
+<div class="page-head"><h1>بیمه‌نامه‌ها و تمدید</h1><a class="btn btn-sm" href="{% url 'panel:policy_new' %}">بیمه‌نامه جدید</a></div>
+<div class="toolbar">
+  <nav class="tabs" aria-label="فیلتر">
+    <a href="?" {% if not f %}aria-current="true"{% endif %}>همه</a>
+    <a href="?f=expiring" {% if f == "expiring" %}aria-current="true"{% endif %}>تمدید ۳۰ روز آینده</a>
+    <a href="?f=expired" {% if f == "expired" %}aria-current="true"{% endif %}>تمام‌شده و تمدیدنشده</a>
+  </nav>
+  <form method="get"><input type="hidden" name="f" value="{{ f }}"><input type="search" name="q" value="{{ q }}" placeholder="شماره، نام بیمه‌گذار یا موضوع" aria-label="جستجو"></form>
+</div>
+{% if page.object_list %}
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>بیمه‌گذار</th><th>رشته</th><th>شرکت</th><th>شماره</th><th>پایان</th><th>حق بیمه (تومان)</th><th></th></tr></thead>
+  <tbody>{% for p in page %}{% with d=p.end_date|days_until %}
+    <tr class="{% if p.status == 'cancelled' %}dim{% endif %}"><td><a href="{% url 'panel:customer' p.customer_id %}">{{ p.customer.full_name }}</a></td><td>{{ p.line }}</td><td>{{ p.company }}</td><td class="ltr">{{ p.number }}</td>
+      <td>{{ p.end_date|jdate }} {% if p.status == 'active' and d >= 0 and d <= 30 %}<span class="tag {% if d <= 7 %}hot{% else %}warm{% endif %}">{{ d|fa }} روز</span>{% endif %}</td>
+      <td class="num">{{ p.premium|toman }}</td><td class="row-actions"><a href="{% url 'panel:policy_edit' p.pk %}">ویرایش</a><a href="{% url 'panel:policy_new' %}?renew={{ p.pk }}">تمدید</a></td></tr>
+  {% endwith %}{% endfor %}</tbody>
+</table></div>
+{% include "panel/_pager.html" %}
+{% else %}<p class="empty">بیمه‌نامه‌ای با این فیلتر نیست.</p>{% endif %}
+{% endblock %}

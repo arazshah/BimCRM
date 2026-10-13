@@ -1,0 +1,39 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}{{ customer.full_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ customer.full_name }}</h1>
+  <div class="head-actions"><a class="btn btn-sm" href="{% url 'panel:policy_new' %}?customer={{ customer.pk }}">بیمه‌نامه جدید</a><a class="btn btn-ghost btn-sm" href="{% url 'panel:customer_edit' customer.pk %}">ویرایش</a></div>
+</div>
+<dl class="facts">
+  <div><dt>موبایل</dt><dd class="ltr num">{{ customer.mobile|fa }}</dd></div>
+  {% if customer.national_code %}<div><dt>کد ملی</dt><dd class="ltr num">{{ customer.national_code|fa }}</dd></div>{% endif %}
+  {% if customer.birth_date %}<div><dt>تولد</dt><dd>{{ customer.birth_date|jdate:"long" }}</dd></div>{% endif %}
+  {% if customer.city %}<div><dt>شهر</dt><dd>{{ customer.city }}</dd></div>{% endif %}
+  <div><dt>منبع</dt><dd>{{ customer.get_source_display }}</dd></div>
+</dl>
+{% if customer.notes %}<p class="note">{{ customer.notes|linebreaksbr }}</p>{% endif %}
+
+<section class="panel-box">
+  <h2 class="h2">بیمه‌نامه‌ها</h2>
+  {% if policies %}
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>رشته</th><th>شرکت</th><th>شماره</th><th>موضوع</th><th>پایان</th><th>حق بیمه</th><th></th></tr></thead>
+    <tbody>{% for p in policies %}{% with d=p.end_date|days_until %}
+      <tr class="{% if p.status == 'cancelled' %}dim{% endif %}"><td>{{ p.line }}</td><td>{{ p.company }}</td><td class="ltr">{{ p.number }}</td><td>{{ p.subject }}</td>
+        <td>{{ p.end_date|jdate }} {% if p.status == 'active' and d >= 0 and d <= 30 %}<span class="tag warm">{{ d|fa }} روز</span>{% elif d < 0 %}<span class="tag">تمام‌شده</span>{% endif %}</td>
+        <td class="num">{{ p.premium|toman }}</td>
+        <td class="row-actions">{% if p.file %}<a href="{{ p.file.url }}" target="_blank" rel="noopener">فایل</a>{% endif %}<a href="{% url 'panel:policy_edit' p.pk %}">ویرایش</a><a href="{% url 'panel:policy_new' %}?renew={{ p.pk }}">تمدید</a></td></tr>
+    {% endwith %}{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">بیمه‌نامه‌ای ثبت نشده است.</p>{% endif %}
+</section>
+
+{% if quotes %}
+<section class="panel-box">
+  <h2 class="h2">درخواست‌های سایت</h2>
+  <ul class="plain-list">{% for q in quotes %}<li><a href="{% url 'panel:quote' q.pk %}">{{ q.line }} — {{ q.get_status_display }}</a><span class="muted small">{{ q.created_at|jdate }}</span></li>{% endfor %}</ul>
+</section>
+{% endif %}
+{% endblock %}

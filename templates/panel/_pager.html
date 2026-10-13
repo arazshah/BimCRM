@@ -1,0 +1,7 @@
+{% load fa %}{% if page.has_other_pages %}
+<nav class="pager" aria-label="صفحه‌ها">
+  {% if page.has_previous %}<a class="btn btn-ghost btn-sm" href="?page={{ page.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if f %}&f={{ f }}{% endif %}{% if s %}&s={{ s }}{% endif %}">قبلی</a>{% endif %}
+  <span class="muted">صفحه {{ page.number|fa }} از {{ page.paginator.num_pages|fa }}</span>
+  {% if page.has_next %}<a class="btn btn-ghost btn-sm" href="?page={{ page.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if f %}&f={{ f }}{% endif %}{% if s %}&s={{ s }}{% endif %}">بعدی</a>{% endif %}
+</nav>
+{% endif %}

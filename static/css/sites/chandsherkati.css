@@ -1,0 +1,58 @@
+/* چندشرکتی: structured and comparative. Kufi headings, ruled tables, a quiet blue grid. */
+.t-chand { background: #f5f7fb; color: #172038; }
+.t-chand h1, .t-chand h2, .c-brand { font-family: "Kufi", "Vazirmatn", sans-serif; font-weight: 700; }
+.c-topline { background: var(--brand); color: #dbe4ff; font-size: 13px; }
+.c-topline-inner { display: flex; gap: 1.6rem; height: 34px; align-items: center; }
+.c-topline a { color: #fff; text-decoration: none; font-weight: 700; }
+.c-header { background: #fff; border-bottom: 1px solid #dde3ef; }
+.c-header-inner { display: flex; justify-content: space-between; align-items: center; height: 68px; }
+.c-brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; color: var(--brand); font-size: 18px; }
+.c-brand img { max-height: 40px; }
+.c-nav { display: flex; align-items: center; gap: 1.4rem; font-size: 14.5px; }
+.c-nav a { text-decoration: none; color: #3b4663; }
+.c-login { border: 1.5px solid var(--brand); color: var(--brand) !important; padding: .3rem .9rem; border-radius: 6px; font-weight: 700; }
+
+.c-hero { padding: 56px 0; background-image: linear-gradient(#e7ecf7 1px, transparent 1px), linear-gradient(90deg, #e7ecf7 1px, transparent 1px); background-size: 32px 32px; background-color: #fff; border-bottom: 1px solid #dde3ef; }
+.c-hero-grid { display: grid; grid-template-columns: 1fr 460px; gap: 48px; align-items: center; }
+.c-hero h1 { font-size: clamp(28px, 3.8vw, 42px); line-height: 1.6; }
+.c-sub { font-size: 17px; color: #4a5677; }
+.c-count { display: inline-flex; gap: .6rem; align-items: baseline; background: #fff; border: 1px solid #dde3ef; border-radius: 8px; padding: .5rem 1rem; margin-top: .6rem; }
+.c-count strong { font-size: 28px; color: var(--brand); }
+.c-form { background: #fff; border: 1px solid #cfd7ea; border-radius: 8px; padding: 24px; box-shadow: 6px 6px 0 color-mix(in srgb, var(--brand) 18%, transparent); }
+.c-form h2 { font-size: 19px; margin-bottom: .9rem; }
+.t-chand .qf-submit { border-radius: 6px; }
+
+.c-compare, .c-partners, .c-split, .c-faq { padding: 64px 0; }
+.t-chand h2 { font-size: 24px; color: #172038; margin-bottom: 1.2rem; }
+.c-table-wrap { overflow-x: auto; background: #fff; border: 1px solid #dde3ef; border-radius: 8px; }
+.c-table { width: 100%; border-collapse: collapse; }
+.c-table thead th { background: #eef2fb; font-size: 13px; color: #4a5677; text-align: right; padding: .7rem 1rem; }
+.c-table th[scope=row] { display: flex; align-items: center; gap: .6rem; font-weight: 700; padding: .9rem 1rem; white-space: nowrap; }
+.c-table svg { width: 22px; height: 22px; color: var(--brand); }
+.c-table td { padding: .9rem 1rem; color: #4a5677; border-top: 1px solid #edf0f7; }
+.c-table tbody tr th { border-top: 1px solid #edf0f7; }
+.c-table td a { color: var(--brand); font-weight: 700; white-space: nowrap; }
+.c-table tbody tr:hover { background: #f7f9fe; }
+
+.c-partners { background: #fff; border-block: 1px solid #dde3ef; }
+.c-logos { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; border-top: 1px solid #dde3ef; border-right: 1px solid #dde3ef; }
+.c-logos li { display: grid; place-items: center; text-align: center; min-height: 80px; padding: 10px; border-left: 1px solid #dde3ef; border-bottom: 1px solid #dde3ef; font-size: 14px; color: #3b4663; }
+.c-logos img { max-height: 44px; }
+.c-split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; line-height: 2; }
+.c-voices { list-style: none; padding: 0; margin: 0; }
+.c-voices li { border-inline-start: 3px solid var(--brand); padding: .2rem 1rem; margin-bottom: 1rem; background: #fff; }
+.c-voices p { margin: 0; }
+.c-voices span { font-size: 13px; color: #4a5677; }
+.c-faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem 1.4rem; }
+.c-faq details { background: #fff; border: 1px solid #dde3ef; border-radius: 6px; padding: .8rem 1rem; }
+.c-faq summary { cursor: pointer; font-weight: 700; }
+.c-footer { background: #172038; color: #b8c2dc; padding: 36px 0; font-size: 14px; }
+.c-footer strong { color: #fff; }
+.c-footer-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 32px; }
+
+@media (max-width: 900px) {
+  .c-hero-grid, .c-split-grid, .c-faq-grid, .c-footer-grid { grid-template-columns: 1fr; }
+  .c-logos { grid-template-columns: repeat(3, 1fr); }
+  .c-nav a:not(.c-login) { display: none; }
+  .c-topline span { display: none; }
+}

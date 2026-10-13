@@ -1,0 +1,59 @@
+{% load static fa %}<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{% block title %}پنل{% endblock %} — {{ request.tenant.name }}</title>
+  <link rel="preload" href="{% static 'fonts/Vazirmatn-VF.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/panel.css' %}">
+</head>
+<body class="panel">
+  <a class="skip" href="#main">رفتن به محتوا</a>
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <span class="office">{{ request.tenant.name }}</span>
+      <a class="ltr side-url" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener">{{ request.tenant.primary_host }}</a>
+    </div>
+    {% with u=request.resolver_match.url_name %}
+    <nav class="side-nav" aria-label="منوی پنل">
+      <a href="{% url 'panel:dashboard' %}" {% if u == "dashboard" %}aria-current="page"{% endif %}>داشبورد</a>
+      <span class="nav-group">کار روزانه</span>
+      <a href="{% url 'panel:quotes' %}" {% if u == "quotes" or u == "quote" %}aria-current="page"{% endif %}>درخواست‌های سایت</a>
+      <a href="{% url 'panel:customers' %}" {% if "customer" in u %}aria-current="page"{% endif %}>مشتریان</a>
+      <a href="{% url 'panel:policies' %}" {% if "polic" in u %}aria-current="page"{% endif %}>بیمه‌نامه‌ها و تمدید</a>
+      <span class="nav-group">سایت</span>
+      <a href="{% url 'panel:site' %}" {% if u == "site" %}aria-current="page"{% endif %}>محتوای سایت</a>
+      <a href="{% url 'panel:site_template' %}" {% if u == "site_template" %}aria-current="page"{% endif %}>قالب</a>
+      <a href="{% url 'panel:domains' %}" {% if u == "domains" %}aria-current="page"{% endif %}>دامنه</a>
+      <span class="nav-group">دفتر</span>
+      <a href="{% url 'panel:integrations' %}" {% if "integration" in u %}aria-current="page"{% endif %}>اتصالات</a>
+      <a href="{% url 'panel:team' %}" {% if u == "team" %}aria-current="page"{% endif %}>همکاران</a>
+      <a href="{% url 'panel:billing' %}" {% if u == "billing" %}aria-current="page"{% endif %}>اشتراک</a>
+      <a href="{% url 'panel:tickets' %}" {% if "ticket" in u %}aria-current="page"{% endif %}>پشتیبانی</a>
+    </nav>
+    {% endwith %}
+    <div class="side-foot">
+      <span>{{ request.user }}</span>
+      <a href="{{ PLATFORM_URL }}/me/?all=1">محیط‌های من</a> · <a href="{{ PLATFORM_URL }}/logout/">خروج</a>
+    </div>
+  </aside>
+  <div class="content">
+    <header class="content-top">
+      <button class="menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">منو</button>
+      {% with sub=request.subscription %}{% if sub %}
+        {% if sub.status == "trial" %}<p class="sub-note">آزمایشی رایگان: {{ sub.days_left|fa }} روز مانده. <a href="{% url 'panel:billing' %}">پرداخت اشتراک</a></p>
+        {% elif sub.status == "grace" %}<p class="sub-note warn">اشتراک تمام شده و در مهلت پرداخت هستید. <a href="{% url 'panel:billing' %}">تمدید</a></p>
+        {% elif sub.status == "expired" %}<p class="sub-note bad">اشتراک منقضی شده؛ محیط فقط‌خواندنی است. <a href="{% url 'panel:billing' %}">تمدید</a></p>
+        {% endif %}
+      {% endif %}{% endwith %}
+    </header>
+    <main id="main" class="main">
+      {% if messages %}<ul class="flash" role="status">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

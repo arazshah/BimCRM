@@ -1,0 +1,36 @@
+{% extends "main/base.html" %}
+{% block title %}ساخت محیط — CRM بیمه{% endblock %}
+{% block content %}
+<section class="narrow wide">
+  {% include "main/_steps.html" %}
+  <h1>دفترتان را معرفی کنید</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <p class="claim-status" id="slug-status" aria-live="polite"></p>
+    <button class="btn btn-block" type="submit">ادامه</button>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const input = document.getElementById("id_slug");
+  const status = document.getElementById("slug-status");
+  if (!input) return;
+  let t;
+  const check = () => {
+    input.value = input.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    clearTimeout(t);
+    if (input.value.length < 3) { status.textContent = ""; return; }
+    t = setTimeout(async () => {
+      const d = await (await fetch("{% url 'main:check_slug' %}?slug=" + encodeURIComponent(input.value))).json();
+      status.textContent = d.ok ? input.value + ".{{ PLATFORM_DOMAIN }} آزاد است." : d.message;
+      status.className = "claim-status " + (d.ok ? "ok" : "bad");
+    }, 300);
+  };
+  input.addEventListener("input", check);
+  if (input.value) check();
+})();
+</script>
+{% endblock %}

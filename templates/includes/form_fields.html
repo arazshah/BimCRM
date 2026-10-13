@@ -1,0 +1,17 @@
+{% if form.non_field_errors %}<ul class="flash"><li class="error">{{ form.non_field_errors|join:" " }}</li></ul>{% endif %}
+{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+{% for field in form.visible_fields %}
+  <div class="field{% if field.errors %} has-error{% endif %}">
+    {% if field.widget_type == "checkbox" %}
+      <label class="inline-check">{{ field }} {{ field.label }}</label>
+    {% elif field.widget_type == "checkboxselectmultiple" %}
+      <span class="field-label">{{ field.label }}</span>
+      <ul class="checklist">{% for opt in field %}<li><label>{{ opt.tag }} {{ opt.choice_label }}</label></li>{% endfor %}</ul>
+    {% else %}
+      <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="optional">(اختیاری)</span>{% endif %}</label>
+      {{ field }}
+    {% endif %}
+    {% if field.help_text %}<div class="help">{{ field.help_text|safe }}</div>{% endif %}
+    {% if field.errors %}<ul class="errors">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+{% endfor %}

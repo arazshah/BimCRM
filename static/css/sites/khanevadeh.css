@@ -1,0 +1,47 @@
+/* خانواده: warm and personal. Naskh headings, rounded shapes, a roof arc over three figures. */
+.t-khanevadeh { --soft: color-mix(in srgb, var(--brand) 7%, #fff); background: #fffdfd; color: #2c1d24; }
+.t-khanevadeh h1, .t-khanevadeh h2, .k-brand, .k-tiles strong { font-family: "Naskh", serif; font-weight: 700; }
+.k-header-inner { display: flex; justify-content: space-between; align-items: center; min-height: 72px; }
+.k-brand { display: flex; align-items: center; gap: .6rem; color: var(--brand); text-decoration: none; font-size: 21px; }
+.k-brand img { max-height: 44px; border-radius: 50%; }
+.k-nav { display: flex; gap: 1.3rem; align-items: center; font-size: 14.5px; }
+.k-nav a { text-decoration: none; color: #5a4650; }
+.k-wa { background: var(--brand); color: #fff !important; padding: .35rem 1rem; border-radius: 999px; }
+
+.k-hero { background: var(--soft); border-radius: 0 0 48px 48px; padding: 48px 0 72px; }
+.k-hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+.k-roof { width: 180px; color: var(--brand); display: block; margin-bottom: .5rem; }
+.k-hero h1 { font-size: clamp(32px, 4.4vw, 50px); line-height: 1.45; }
+.k-sub { font-size: 17.5px; color: #5e4a54; max-width: 30em; }
+.k-btn { border-radius: 999px; padding: .7em 1.6em; margin-top: .6rem; }
+.k-form { background: #fff; border-radius: 28px; padding: 28px; box-shadow: 0 18px 40px -24px color-mix(in srgb, var(--brand) 60%, transparent); }
+.k-form h2 { font-size: 22px; margin-bottom: .8rem; }
+.t-khanevadeh .qf-submit { border-radius: 999px; }
+.t-khanevadeh input, .t-khanevadeh select, .t-khanevadeh textarea { border-radius: 14px; }
+
+.k-protect, .k-voices, .k-about, .k-faq { padding: 72px 0; }
+.t-khanevadeh h2 { font-size: 30px; color: #3a1f2b; }
+.k-tiles { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.k-tiles a { display: grid; grid-template-columns: 52px 1fr; grid-template-rows: auto auto; column-gap: 14px; padding: 20px; border-radius: 22px; background: #fff; border: 1.5px solid #f1dfe6; text-decoration: none; height: 100%; }
+.k-tiles a:hover { border-color: var(--brand); }
+.k-tiles svg { grid-row: span 2; width: 52px; height: 52px; padding: 12px; border-radius: 50%; background: var(--soft); color: var(--brand); }
+.k-tiles strong { font-size: 19px; }
+.k-tiles span { color: #6d5862; font-size: 14px; }
+
+.k-voices { background: var(--soft); }
+.k-voices ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.bubble { background: #fff; border-radius: 22px 22px 22px 4px; padding: 18px 20px; margin-bottom: .7rem; position: relative; }
+.k-voices span { font-weight: 700; color: var(--brand); padding-inline-start: .6rem; }
+.k-about-inner { max-width: 760px; font-size: 17px; line-height: 2.1; }
+.k-faq-inner { max-width: 760px; }
+.k-faq details { background: #fff; border: 1.5px solid #f1dfe6; border-radius: 16px; padding: .9rem 1.2rem; margin-bottom: .6rem; }
+.k-faq summary { cursor: pointer; font-weight: 700; }
+
+.k-footer { background: #3a1f2b; color: #e9d6de; padding: 36px 0; border-radius: 40px 40px 0 0; font-size: 14px; }
+.k-footer a { color: #fff; }
+
+@media (max-width: 860px) {
+  .k-hero-grid { grid-template-columns: 1fr; }
+  .k-tiles, .k-voices ul { grid-template-columns: 1fr; }
+  .k-nav a:not(.k-wa) { display: none; }
+}

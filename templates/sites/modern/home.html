@@ -1,0 +1,53 @@
+{% extends "sites/modern/base.html" %}
+{% block main %}
+<section class="m-hero">
+  <div class="site-wrap m-hero-grid">
+    <div class="m-hero-copy">
+      <h1>{{ site.hero_title|default:tenant.name }}</h1>
+      {% if site.hero_subtitle %}<p>{{ site.hero_subtitle }}</p>{% endif %}
+      {% if lines %}
+      <ul class="m-chips">{% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg>{{ l.name }}</a></li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+    <div class="m-card" id="quote">
+      <h2>استعلام قیمت</h2>
+      {% include "sites/_quote_form.html" with submit_label="دریافت قیمت" %}
+    </div>
+  </div>
+</section>
+
+<section class="m-how">
+  <div class="site-wrap">
+    <h2>از استعلام تا بیمه‌نامه</h2>
+    <ol class="m-steps">
+      <li><strong>فرم را پر کنید</strong><span>نوع بیمه و اطلاعات اصلی؛ کمتر از یک دقیقه.</span></li>
+      <li><strong>تماس و مقایسه</strong><span>قیمت و پوشش‌ها را با شما مرور می‌کنیم.</span></li>
+      <li><strong>صدور و تحویل</strong><span>بیمه‌نامه صادر می‌شود و وضعیت را با کد پیگیری می‌بینید.</span></li>
+    </ol>
+  </div>
+</section>
+
+{% if site.about %}
+<section class="m-about"><div class="site-wrap m-about-inner"><h2>درباره ما</h2><div>{{ site.about|linebreaks }}</div></div></section>
+{% endif %}
+
+{% if testimonials %}
+<section class="m-voices"><div class="site-wrap">
+  <h2>مشتریان می‌گویند</h2>
+  <ul>{% for t in testimonials %}<li><p>{{ t.text }}</p><span>{{ t.name }}</span></li>{% endfor %}</ul>
+</div></section>
+{% endif %}
+
+{% if faqs %}
+<section class="m-faq"><div class="site-wrap m-faq-inner">
+  <h2>سؤالات متداول</h2>
+  <div>{% for f in faqs %}<details><summary>{{ f.question }}</summary>{{ f.answer|linebreaks }}</details>{% endfor %}</div>
+</div></section>
+{% endif %}
+
+<section class="m-contact"><div class="site-wrap m-contact-grid">
+  {% if site.phone %}<a href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg><span class="ltr">{{ site.phone }}</span></a>{% endif %}
+  {% if site.address %}<span><svg aria-hidden="true"><use href="#i-pin"/></svg>{{ site.address }}</span>{% endif %}
+  {% if site.working_hours %}<span><svg aria-hidden="true"><use href="#i-clock"/></svg>{{ site.working_hours }}</span>{% endif %}
+</div></section>
+{% endblock %}

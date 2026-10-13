@@ -1,0 +1,22 @@
+{% extends "panel/base.html" %}
+{% block title %}اتصالات{% endblock %}
+{% block content %}
+<div class="page-head"><h1>اتصالات</h1></div>
+<p class="note">سرویس‌های خود دفتر را اینجا وصل کنید. قرارداد، هزینه و مسئولیت هر سرویس با خود شماست؛ ما فقط اطلاعاتش را رمزنگاری‌شده نگه می‌داریم و از طرف شما صدا می‌زنیم.</p>
+{% for g in groups %}
+<section class="panel-box">
+  <h2 class="h2">{{ g.label }}</h2>
+  <ul class="integration-list">
+    {% for p in g.providers %}
+    <li>
+      <span><strong>{{ p.label }}</strong>
+        {% if p.obj %}{% if p.obj.enabled %}<span class="tag ok">فعال</span>{% else %}<span class="tag">غیرفعال</span>{% endif %}{% endif %}</span>
+      <a class="btn btn-ghost btn-sm" href="{% url 'panel:integration_edit' g.kind p.key %}">{% if p.obj %}ویرایش{% else %}اتصال{% endif %}</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if g.kind == "sms" %}<p class="muted small">با پنل پیامک: یادآور تمدید به مشتریان و ورود مشتری به پنل مشتری سایت فعال می‌شود.</p>{% endif %}
+  {% if g.kind == "payment" or g.kind == "sms" %}<p class="muted small">در هر دسته فقط یک سرویس فعال می‌ماند.</p>{% endif %}
+</section>
+{% endfor %}
+{% endblock %}

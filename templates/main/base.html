@@ -1,0 +1,39 @@
+{% load static %}<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}CRM بیمه — سایت و پنل کامل دفتر نمایندگی بیمه{% endblock %}</title>
+  <meta name="description" content="{% block description %}سایت حرفه‌ای و پنل مدیریت دفتر نمایندگی بیمه، روی آدرس اختصاصی خودتان. ۱۴ روز رایگان.{% endblock %}">
+  <link rel="preload" href="{% static 'fonts/Vazirmatn-VF.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="{{ PLATFORM_URL }}/"><span class="brand-mark" aria-hidden="true"></span>CRM بیمه</a>
+      <nav class="topnav" aria-label="منوی اصلی">
+        <a href="{{ PLATFORM_URL }}/#templates">قالب‌ها</a>
+        <a href="{{ PLATFORM_URL }}/#pricing">قیمت</a>
+        {% if user.is_authenticated %}
+          <a class="btn btn-ghost btn-sm" href="{{ PLATFORM_URL }}/me/?all=1">محیط‌های من</a>
+        {% else %}
+          <a class="btn btn-ghost btn-sm" href="{{ PLATFORM_URL }}/login/">ورود</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  <main>
+    {% if messages %}<div class="wrap"><ul class="flash" role="status">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul></div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <span>CRM بیمه — فضا و ابزار برای دفاتر نمایندگی بیمه</span>
+      <span class="muted">پشتیبانی از داخل پنل، با تیکت</span>
+    </div>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

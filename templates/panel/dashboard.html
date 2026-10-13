@@ -1,0 +1,61 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}داشبورد{% endblock %}
+{% block content %}
+{% if welcome %}
+<section class="welcome">
+  <h1>محیط {{ request.tenant.name }} آماده است</h1>
+  <p>سایت و پنل روی <a class="ltr" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener">{{ request.tenant.subdomain_host }}</a> کار می‌کند. سایت تا وقتی منتشرش نکنید فقط برای شما و همکارانتان دیده می‌شود.</p>
+</section>
+{% endif %}
+
+<div class="page-head">
+  <h1>{% if not welcome %}امروز، {{ today|jdate:"long" }}{% else %}قدم‌های بعدی{% endif %}</h1>
+  <div class="head-actions"><a class="btn btn-sm" href="{% url 'panel:policy_new' %}">ثبت بیمه‌نامه</a><a class="btn btn-ghost btn-sm" href="{% url 'panel:customer_new' %}">مشتری جدید</a></div>
+</div>
+
+{% if checklist_done < checklist|length %}
+<section class="setup">
+  <h2 class="h2">راه‌اندازی <span class="muted num">{{ checklist_done|fa }} از {{ checklist|length|fa }}</span></h2>
+  <ul class="setup-list">
+    {% for label, done, url in checklist %}<li class="{% if done %}done{% endif %}"><a href="{% url url %}">{{ label }}</a></li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<dl class="stats">
+  <div><dt>مشتری</dt><dd class="num">{{ stats.customers|fa }}</dd></div>
+  <div><dt>بیمه‌نامه فعال</dt><dd class="num">{{ stats.active_policies|fa }}</dd></div>
+  <div><dt>درخواست باز</dt><dd class="num">{{ stats.open_quotes|fa }}</dd></div>
+  <div><dt>حق بیمه صادره این ماه</dt><dd class="num">{{ stats.month_premium|toman }} <small>تومان</small></dd></div>
+</dl>
+
+<div class="two-col">
+  <section class="panel-box">
+    <div class="box-head"><h2 class="h2">تمدیدهای ۳۰ روز آینده</h2><a href="{% url 'panel:policies' %}?f=expiring">همه</a></div>
+    {% if renewals %}
+    <ol class="renewals">
+      {% for p in renewals %}{% with d=p.end_date|days_until %}
+      <li>
+        <span class="days {% if d <= 7 %}hot{% elif d <= 15 %}warm{% endif %}"><b class="num">{{ d|fa }}</b> روز</span>
+        <span class="who"><a href="{% url 'panel:customer' p.customer_id %}">{{ p.customer.full_name }}</a><span class="muted small">{{ p.line }} · {{ p.company }}{% if p.subject %} · {{ p.subject }}{% endif %}</span></span>
+        <a class="btn btn-ghost btn-sm" href="{% url 'panel:policy_new' %}?renew={{ p.pk }}">تمدید</a>
+      </li>
+      {% endwith %}{% endfor %}
+    </ol>
+    {% else %}
+      <p class="empty">تمدیدی در ۳۰ روز آینده ندارید. بیمه‌نامه‌های فعلی مشتریان را ثبت کنید تا یادآورها از همین‌جا شروع شود.</p>
+    {% endif %}
+  </section>
+  <section class="panel-box">
+    <div class="box-head"><h2 class="h2">درخواست‌های جدید سایت</h2><a href="{% url 'panel:quotes' %}">همه</a></div>
+    {% if new_quotes %}
+    <ul class="plain-list">
+      {% for q in new_quotes %}<li><a href="{% url 'panel:quote' q.pk %}"><strong>{{ q.full_name }}</strong> — {{ q.line }}</a><span class="muted small">{{ q.created_at|jdate:"time" }}</span></li>{% endfor %}
+    </ul>
+    {% else %}
+      <p class="empty">درخواست تازه‌ای نیست. وقتی کسی در سایت فرم استعلام را پر کند، اینجا می‌آید.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

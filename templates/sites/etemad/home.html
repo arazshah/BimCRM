@@ -1,0 +1,63 @@
+{% extends "sites/etemad/base.html" %}
+{% load fa %}
+{% block main %}
+<section class="e-hero">
+  <div class="site-wrap e-hero-grid">
+    <div>
+      <h1>{{ site.hero_title|default:tenant.name }}</h1>
+      {% if site.hero_subtitle %}<p class="e-sub">{{ site.hero_subtitle }}</p>{% endif %}
+      {% if site.years_active or site.customers_count %}
+      <dl class="e-record">
+        {% if site.years_active %}<div><dt>سال سابقه</dt><dd>{{ site.years_active|fa }}</dd></div>{% endif %}
+        {% if site.customers_count %}<div><dt>بیمه‌گذار</dt><dd>{{ site.customers_count|toman }}</dd></div>{% endif %}
+        {% if tenant.agency_code %}<div><dt>کد نمایندگی</dt><dd>{{ tenant.agency_code|fa }}</dd></div>{% endif %}
+      </dl>
+      {% endif %}
+    </div>
+    <div class="e-form-frame" id="quote">
+      <h2>درخواست مشاوره و استعلام</h2>
+      {% include "sites/_quote_form.html" with submit_label="ثبت درخواست" %}
+    </div>
+  </div>
+</section>
+
+{% if lines %}
+<section class="e-lines" id="lines">
+  <div class="site-wrap">
+    <h2 class="e-title">رشته‌های بیمه</h2>
+    <ul class="e-line-list">
+      {% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><span class="e-line-name">{{ l.name }}</span><span class="e-line-sum">{{ l.summary }}</span></a></li>{% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
+{% if site.about %}
+<section class="e-about" id="about">
+  <div class="site-wrap e-about-grid">
+    <h2 class="e-title">درباره دفتر</h2>
+    <div class="e-about-text">{{ site.about|linebreaks }}</div>
+  </div>
+</section>
+{% endif %}
+
+{% if companies %}
+<section class="e-companies"><div class="site-wrap"><p class="e-co-label">همکاری با</p><ul>{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}">{% else %}{{ c.name }}{% endif %}</li>{% endfor %}</ul></div></section>
+{% endif %}
+
+{% if testimonials %}
+<section class="e-voices">
+  <div class="site-wrap">
+    <h2 class="e-title">از زبان بیمه‌گذاران</h2>
+    <div class="e-voice-grid">{% for t in testimonials %}<figure><blockquote>{{ t.text }}</blockquote><figcaption>{{ t.name }}</figcaption></figure>{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+{% if faqs %}
+<section class="e-faq"><div class="site-wrap narrow-col">
+  <h2 class="e-title">پرسش‌های رایج</h2>
+  {% for f in faqs %}<details><summary>{{ f.question }}</summary><div>{{ f.answer|linebreaks }}</div></details>{% endfor %}
+</div></section>
+{% endif %}
+{% endblock %}

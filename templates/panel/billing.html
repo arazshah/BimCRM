@@ -1,0 +1,55 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}اشتراک{% endblock %}
+{% block content %}
+<div class="page-head"><h1>اشتراک</h1></div>
+{% if sub %}
+<section class="panel-box sub-summary">
+  <dl class="facts">
+    <div><dt>وضعیت</dt><dd><span class="tag {% if sub.status == 'active' %}ok{% elif sub.status == 'trial' %}warm{% else %}hot{% endif %}">{{ sub.get_status_display }}</span></dd></div>
+    <div><dt>تا</dt><dd>{{ sub.current_period_end|jdate:"long" }} <span class="muted">({{ sub.days_left|fa }} روز)</span></dd></div>
+    <div><dt>پکیج</dt><dd>{{ sub.package.name }}</dd></div>
+    <div><dt>فضا</dt><dd>{{ used|filesize_fa }} از {{ sub.storage_tier.storage_label|fa }}</dd></div>
+  </dl>
+  <div class="meter" role="progressbar" aria-valuenow="{{ used|percent_of:sub.storage_limit_bytes }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ used|percent_of:sub.storage_limit_bytes }}%"></span></div>
+  {% if can_manage %}
+  <div class="pay-row">
+    <form method="post" action="{{ pay_url }}">{% csrf_token %}<input type="hidden" name="period" value="monthly"><button class="btn">پرداخت ماهانه: {{ monthly|toman }} تومان</button></form>
+    <form method="post" action="{{ pay_url }}">{% csrf_token %}<input type="hidden" name="period" value="yearly"><button class="btn btn-ghost">پرداخت سالانه: {{ yearly|toman }} تومان</button></form>
+  </div>
+  <p class="muted small">پرداخت با زرین‌پال؛ دوره جدید از پایان دوره فعلی شروع می‌شود.</p>
+  {% endif %}
+</section>
+
+{% if can_manage %}
+<form method="post" class="panel-box">
+  {% csrf_token %}
+  <h2 class="h2">فضا و افزونه‌ها</h2>
+  <div class="option-rows">
+    {% for t in tiers %}<label class="option-row"><input type="radio" name="storage_tier" value="{{ t.pk }}" {% if t.pk == sub.storage_tier_id %}checked{% endif %}><span>{{ t.name }}</span><span class="muted">{% if t.monthly_price %}{{ t.monthly_price|toman }} تومان در ماه{% else %}داخل پکیج{% endif %}</span></label>{% endfor %}
+  </div>
+  <div class="option-rows">
+    {% for a in addons %}{% with q=items|get_item:a.code %}
+    <label class="option-row">
+      {% if a.per_unit %}<input type="number" class="qty" name="addon_{{ a.code }}" value="{{ q|default:0 }}" min="0" max="50">{% else %}<input type="checkbox" name="addon_{{ a.code }}" {% if q %}checked{% endif %}>{% endif %}
+      <span>{{ a.name }}<br><span class="muted small">{{ a.description }}</span></span>
+      <span class="muted">{{ a.monthly_price|toman }} تومان در ماه{% if a.per_unit %} برای هر عدد{% endif %}</span>
+    </label>
+    {% endwith %}{% endfor %}
+  </div>
+  <button class="btn" type="submit">ثبت تغییرات</button>
+  <p class="muted small">تغییرات از همین حالا فعال می‌شود و مبلغش در پرداخت بعدی حساب می‌شود.</p>
+</form>
+{% endif %}
+{% endif %}
+
+<section class="panel-box">
+  <h2 class="h2">فاکتورها</h2>
+  {% if invoices %}
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>شماره</th><th>شرح</th><th>مبلغ (تومان)</th><th>وضعیت</th><th>کد پیگیری</th><th>تاریخ</th></tr></thead>
+    <tbody>{% for i in invoices %}<tr><td class="num">{{ i.pk|fa }}</td><td>{{ i.description }}</td><td class="num">{{ i.amount|toman }}</td><td>{{ i.get_status_display }}</td><td class="ltr num">{{ i.ref_id|fa|default:"—" }}</td><td>{{ i.created_at|jdate }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">هنوز فاکتوری ندارید.</p>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}همکاران{% endblock %}
+{% block content %}
+<div class="page-head"><h1>همکاران</h1></div>
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>نام</th><th>موبایل</th><th>نقش</th><th>وضعیت</th><th></th></tr></thead>
+  <tbody>{% for m in members %}
+    <tr class="{% if not m.is_active %}dim{% endif %}"><td>{{ m.user.full_name|default:"—" }}</td><td class="ltr num">{{ m.user.mobile|fa }}</td><td>{{ m.get_role_display }}</td>
+      <td>{% if m.is_active %}فعال{% else %}غیرفعال{% endif %}</td>
+      <td>{% if m.role != "owner" and m.is_active %}<form method="post" action="{% url 'panel:team_remove' m.pk %}">{% csrf_token %}<button class="linkish danger">برداشتن دسترسی</button></form>{% endif %}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+<section class="panel-box">
+  <h2 class="h2">افزودن همکار <span class="muted small num">({{ members|length|fa }} از {{ limit|fa }})</span></h2>
+  <form method="post" class="inline-form" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">افزودن</button></form>
+  <p class="muted small">همکار با همین موبایل از bimcrm.ir وارد می‌شود و این محیط را می‌بیند.</p>
+</section>
+{% endblock %}

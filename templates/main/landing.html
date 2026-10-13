@@ -1,0 +1,130 @@
+{% extends "main/base.html" %}
+{% load fa %}
+{% block body_class %}landing{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <h1>دفتر بیمه‌تان، روی آدرس خودش.</h1>
+      <p class="lead">سایت فروش با فرم استعلام، پنل مشتریان و بیمه‌نامه‌ها، یادآور تمدید و پنل مشتری با ورود موبایلی. همه در یک محیط که فقط مال دفتر شماست.</p>
+    </div>
+    <form class="claim" action="{% url 'main:login' %}" method="get" id="claim-form" novalidate>
+      <label class="claim-label" for="claim-slug">آدرس سایتتان را انتخاب کنید</label>
+      <div class="claim-row" dir="ltr">
+        <input id="claim-slug" name="slug" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+               autocapitalize="off" placeholder="alborz1234" maxlength="30" aria-describedby="claim-status">
+        <span class="claim-suffix">.{{ PLATFORM_DOMAIN }}</span>
+      </div>
+      <p class="claim-status" id="claim-status" aria-live="polite">حروف کوچک انگلیسی، عدد و خط تیره</p>
+      <input type="hidden" name="next" id="claim-next" value="/signup/">
+      <button class="btn claim-btn" type="submit">شروع {{ platform.trial_days|fa }} روز رایگان</button>
+      <p class="claim-note">ثبت‌نام با شماره موبایل؛ بدون کارت بانکی. بعداً دامنه ir خودتان را هم وصل می‌کنید.</p>
+    </form>
+  </div>
+</section>
+
+<section class="inside">
+  <div class="wrap">
+    <h2>هر کاری که در دفتر انجام می‌دهید، یک جا</h2>
+    <div class="inside-grid">
+      <dl>
+        <dt>تمدید، قبل از اینکه یادتان برود</dt>
+        <dd>بیمه‌نامه‌هایی که تا ۳۰ روز دیگر تمام می‌شوند، صبح اول داشبورد است؛ پیامک یادآور از پنل پیامک خودتان می‌رود.</dd>
+        <dt>درخواست‌های سایت، در یک صندوق</dt>
+        <dd>مشتری فرم استعلام را پر می‌کند و کد پیگیری می‌گیرد. شما وضعیت را جلو می‌برید و او از سایت پیگیری می‌کند.</dd>
+        <dt>مشتری‌ها و بیمه‌نامه‌ها</dt>
+        <dd>پرونده کامل هر بیمه‌گذار، با فایل بیمه‌نامه‌ها. مشتریان قبلی را از اکسل وارد کنید.</dd>
+      </dl>
+      <dl>
+        <dt>سایتی که خودتان پر می‌کنید</dt>
+        <dd>پنج قالب، عوض‌کردنشان بدون از دست رفتن محتوا. لوگو، رنگ، رشته‌ها، نظرات مشتریان و سؤالات.</dd>
+        <dt>سرویس‌های خودتان را وصل کنید</dt>
+        <dd>درگاه پرداخت، پنل پیامک، اینماد و ساماندهی و کدهای دلخواه، با حساب و قرارداد خود دفتر.</dd>
+        <dt>همکاران با دسترسی جدا</dt>
+        <dd>هر همکار با موبایل خودش وارد می‌شود. مالی، خسارت، بازاریاب و چندشعبه‌ای را هر وقت لازم شد اضافه کنید.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="templates" id="templates">
+  <div class="wrap">
+    <h2>پنج قالب، هر کدام برای یک جور دفتر</h2>
+    <ul class="tpl-list">
+      {% for t in templates %}
+      <li class="tpl tpl-{{ t.key }}" style="--tpl: {{ t.default_color }}">
+        <a href="{% url 'main:template_preview' t.key %}" target="_blank" rel="noopener">
+          <span class="tpl-face" aria-hidden="true">{{ t.name }}</span>
+          <span class="tpl-name">{{ t.name }}</span>
+          <span class="tpl-desc">{{ t.tagline }}</span>
+          <span class="tpl-for">مناسب {{ t.best_for }}</span>
+          <span class="tpl-link">پیش‌نمایش زنده</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="wrap pricing-grid">
+    <div>
+      <h2>قیمت: یک پکیج پایه، بعد هرچه لازم دارید</h2>
+      {% if package %}
+      <div class="base-pack">
+        <p class="pack-price"><strong class="num">{{ package.monthly_price|toman }}</strong> تومان در ماه</p>
+        <p class="muted">یا {{ package.yearly_price|toman }} تومان سالانه{% if platform.yearly_discount_note %} ({{ platform.yearly_discount_note }}){% endif %}</p>
+        <ul class="ticks">{% for f in package.feature_lines %}<li>{{ f }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+    </div>
+    <div>
+      <h3>فضا</h3>
+      <table class="price-table">
+        <tbody>{% for t in tiers %}<tr><th scope="row">{{ t.name }}</th><td>{% if t.monthly_price %}{{ t.monthly_price|toman }} تومان در ماه{% else %}داخل پکیج{% endif %}</td></tr>{% endfor %}</tbody>
+      </table>
+      <h3>افزونه‌ها</h3>
+      <table class="price-table">
+        <tbody>{% for a in addons %}<tr><th scope="row">{{ a.name }}<span class="muted small">{{ a.description }}</span></th><td>{{ a.monthly_price|toman }} تومان{% if a.per_unit %} برای هر عدد{% endif %}</td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="domain-steps">
+  <div class="wrap">
+    <h2>اتصال دامنه ir خودتان</h2>
+    <ol class="steps">
+      <li><strong>از روز اول</strong> سایت و پنل روی <span class="ltr">yourname.{{ PLATFORM_DOMAIN }}</span> کار می‌کند.</li>
+      <li><strong>دامنه را هر جا خواستید ثبت کنید</strong> و در پنل ایرنیک، NSهای ما را برایش بگذارید.</li>
+      <li><strong>دامنه را در پنل وارد کنید.</strong> بقیه خودکار است: بررسی NS، گواهی SSL و انتقال سایت.</li>
+    </ol>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const input = document.getElementById("claim-slug");
+  const status = document.getElementById("claim-status");
+  const next = document.getElementById("claim-next");
+  const form = document.getElementById("claim-form");
+  let timer;
+  input.addEventListener("input", () => {
+    input.value = input.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    clearTimeout(timer);
+    status.className = "claim-status";
+    if (input.value.length < 3) { status.textContent = "حروف کوچک انگلیسی، عدد و خط تیره"; return; }
+    timer = setTimeout(async () => {
+      try {
+        const r = await fetch("{% url 'main:check_slug' %}?slug=" + encodeURIComponent(input.value));
+        const d = await r.json();
+        status.textContent = d.ok ? input.value + ".{{ PLATFORM_DOMAIN }} آزاد است." : d.message;
+        status.className = "claim-status " + (d.ok ? "ok" : "bad");
+      } catch (e) { status.textContent = ""; }
+    }, 300);
+  });
+  form.addEventListener("submit", () => { next.value = "/signup/?slug=" + encodeURIComponent(input.value); input.disabled = true; });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "sites/khanevadeh/base.html" %}
+{% block main %}
+<section class="k-hero">
+  <div class="site-wrap k-hero-grid">
+    <div>
+      <svg class="k-roof" viewBox="0 0 220 120" aria-hidden="true"><path d="M10 70 Q110 -20 210 70" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><circle cx="80" cy="92" r="13" fill="currentColor" opacity=".9"/><circle cx="112" cy="86" r="17" fill="currentColor"/><circle cx="142" cy="96" r="10" fill="currentColor" opacity=".75"/></svg>
+      <h1>{{ site.hero_title|default:tenant.name }}</h1>
+      {% if site.hero_subtitle %}<p class="k-sub">{{ site.hero_subtitle }}</p>{% endif %}
+      <a class="site-btn k-btn" href="#quote">مشاوره رایگان بگیرید</a>
+    </div>
+    <div class="k-form" id="quote">
+      <h2>بگویید دنبال چه بیمه‌ای هستید</h2>
+      {% include "sites/_quote_form.html" with submit_label="درخواست تماس" %}
+    </div>
+  </div>
+</section>
+
+{% if lines %}
+<section class="k-protect" id="protect">
+  <div class="site-wrap">
+    <h2>از چه چیزی محافظت کنیم؟</h2>
+    <ul class="k-tiles">
+      {% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg><strong>{{ l.name }}</strong><span>{{ l.summary }}</span></a></li>{% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
+{% if testimonials %}
+<section class="k-voices"><div class="site-wrap">
+  <h2>خانواده‌هایی که کنارشان بوده‌ایم</h2>
+  <ul>{% for t in testimonials %}<li><p class="bubble">{{ t.text }}</p><span>{{ t.name }}</span></li>{% endfor %}</ul>
+</div></section>
+{% endif %}
+
+{% if site.about %}
+<section class="k-about"><div class="site-wrap k-about-inner"><h2>ما چه کسانی هستیم</h2>{{ site.about|linebreaks }}</div></section>
+{% endif %}
+
+{% if faqs %}
+<section class="k-faq"><div class="site-wrap k-faq-inner"><h2>سؤال‌هایی که زیاد می‌پرسند</h2>
+  {% for f in faqs %}<details><summary>{{ f.question }}</summary>{{ f.answer|linebreaks }}</details>{% endfor %}
+</div></section>
+{% endif %}
+{% endblock %}

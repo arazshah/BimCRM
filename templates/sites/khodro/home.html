@@ -1,0 +1,52 @@
+{% extends "sites/khodro/base.html" %}
+{% load fa %}
+{% block main %}
+<section class="d-hero">
+  <div class="site-wrap d-hero-grid">
+    <div>
+      <div class="plate" aria-hidden="true" dir="ltr">
+        <span class="plate-flag"><i></i><i></i><i></i><b>I.R.<br>IRAN</b></span>
+        <span class="plate-main">۱۲ <em>ب</em> ۳۴۵</span>
+        <span class="plate-region"><small>ایران</small>۶۷</span>
+      </div>
+      <h1>{{ site.hero_title|default:tenant.name }}</h1>
+      {% if site.hero_subtitle %}<p class="d-sub">{{ site.hero_subtitle }}</p>{% endif %}
+      <div class="d-quick">
+        {% for l in lines|slice:":3" %}<a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}">{{ l.name }}</a>{% endfor %}
+      </div>
+    </div>
+    <div class="d-form" id="quote">
+      <h2>استعلام و تمدید</h2>
+      {% include "sites/_quote_form.html" with submit_label="استعلام قیمت" %}
+    </div>
+  </div>
+</section>
+
+{% if site.years_active or site.customers_count %}
+<section class="d-numbers"><div class="site-wrap d-numbers-inner">
+  {% if site.years_active %}<p><strong>{{ site.years_active|fa }}</strong> سال کار</p>{% endif %}
+  {% if site.customers_count %}<p><strong>{{ site.customers_count|toman }}</strong> بیمه‌گذار</p>{% endif %}
+  {% if tenant.agency_code %}<p><strong>{{ tenant.agency_code|fa }}</strong> کد نمایندگی</p>{% endif %}
+</div></section>
+{% endif %}
+
+{% if lines %}
+<section class="d-lines"><div class="site-wrap">
+  <h2>همه رشته‌ها</h2>
+  <ul>{% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg><span><strong>{{ l.name }}</strong>{{ l.summary }}</span></a></li>{% endfor %}</ul>
+</div></section>
+{% endif %}
+
+{% if testimonials %}
+<section class="d-voices"><div class="site-wrap">
+  <h2>تجربه مشتری‌ها</h2>
+  <ul>{% for t in testimonials %}<li><p>{{ t.text }}</p><span>— {{ t.name }}</span></li>{% endfor %}</ul>
+</div></section>
+{% endif %}
+
+{% if site.about %}<section class="d-about"><div class="site-wrap"><h2>درباره ما</h2>{{ site.about|linebreaks }}</div></section>{% endif %}
+
+{% if faqs %}
+<section class="d-faq"><div class="site-wrap"><h2>سؤالات</h2>{% for f in faqs %}<details><summary>{{ f.question }}</summary>{{ f.answer|linebreaks }}</details>{% endfor %}</div></section>
+{% endif %}
+{% endblock %}

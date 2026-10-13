@@ -1,0 +1,87 @@
+# CRM بیمه on Coolify ("Docker Compose" build pack).
+# Set the domains of the `web` service in the Coolify UI (see DEPLOY.md), and the
+# environment variables marked "set in Coolify" in its Environment Variables tab.
+
+services:
+  web:
+    build: .
+    command: ["web"]
+    restart: unless-stopped
+    environment: &app-env
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY}                         # set in Coolify
+      FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY}     # set in Coolify
+      PLATFORM_DOMAIN: ${PLATFORM_DOMAIN:-bimcrm.ir}
+      PLATFORM_NAMESERVERS: ${PLATFORM_NAMESERVERS:-ns1.bimcrm.ir,ns2.bimcrm.ir}
+      SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-.bimcrm.ir}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://bimcrm.ir,https://*.bimcrm.ir}
+      SECURE_SSL: "True"
+      DATABASE_URL: postgres://bimcrm:${POSTGRES_PASSWORD}@db:5432/bimcrm
+      REDIS_URL: redis://redis:6379/0
+      SMS_BACKEND: ${SMS_BACKEND:-smsir}
+      SMSIR_API_KEY: ${SMSIR_API_KEY}                   # set in Coolify
+      SMSIR_OTP_TEMPLATE_ID: ${SMSIR_OTP_TEMPLATE_ID}   # set in Coolify
+      SMSIR_LINE_NUMBER: ${SMSIR_LINE_NUMBER}           # set in Coolify
+      ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID}     # set in Coolify
+      ZARINPAL_SANDBOX: ${ZARINPAL_SANDBOX:-False}
+      SUPERADMIN_MOBILE: ${SUPERADMIN_MOBILE}           # set in Coolify
+      MEDIA_ROOT: /data/media
+    volumes:
+      - media:/data/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  worker:
+    build: .
+    command: ["worker"]
+    restart: unless-stopped
+    environment: *app-env
+    volumes:
+      - media:/data/media
+    depends_on:
+      - web
+
+  beat:
+    build: .
+    command: ["beat"]
+    restart: unless-stopped
+    environment: *app-env
+    depends_on:
+      - web
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bimcrm
+      POSTGRES_USER: bimcrm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}           # set in Coolify
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bimcrm -d bimcrm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
+  media:

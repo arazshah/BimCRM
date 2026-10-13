@@ -1,0 +1,12 @@
+{% extends base_template %}
+{% load fa %}
+{% block main %}
+<section class="subpage">
+  <h1>درخواستتان ثبت شد</h1>
+  <p>{{ quote.full_name }} عزیز، درخواست {{ quote.line }} به دفتر رسید و به‌زودی با شماره <span class="ltr">{{ quote.mobile|fa }}</span> تماس می‌گیریم.</p>
+  <p>کد پیگیری:</p>
+  <p><span class="big-code num">{{ quote.tracking_code|fa }}</span></p>
+  <p>با این کد و موبایلتان از صفحه <a href="/track/?code={{ quote.tracking_code }}&mobile={{ quote.mobile }}">پیگیری</a> وضعیت را ببینید.</p>
+  <a class="site-btn" href="/">بازگشت به صفحه اصلی</a>
+</section>
+{% endblock %}

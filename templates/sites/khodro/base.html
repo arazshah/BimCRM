@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>{% include "sites/_head.html" %}</head>
+<body class="t-khodro">
+  {% include "includes/icons.html" %}
+  {% include "sites/_preview_bar.html" %}
+  <header class="d-header">
+    <div class="site-wrap d-header-inner">
+      <a class="d-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% endif %}{{ tenant.name }}</a>
+      <nav class="d-nav" aria-label="منو">
+        <a href="/track/">پیگیری</a>
+        {% if can_portal %}<a href="/account/">ورود مشتریان</a>{% endif %}
+        {% if site.phone %}<a class="d-call ltr" href="tel:{{ site.phone }}">{{ site.phone }}</a>{% endif %}
+      </nav>
+    </div>
+  </header>
+  <main>{% block main %}{% endblock %}</main>
+  <footer class="d-footer">
+    <div class="site-wrap d-footer-inner">
+      <span>{{ tenant.name }}{% if tenant.agency_code %} · کد {{ tenant.agency_code }}{% endif %}</span>
+      <span>{{ site.address }}</span>
+      <span>{{ site.working_hours }}</span>
+      <span class="trust-badges">{% for b in trust_badges %}{{ b }}{% endfor %}</span>
+    </div>
+  </footer>
+  {% include "sites/_scripts.html" %}
+</body>
+</html>
