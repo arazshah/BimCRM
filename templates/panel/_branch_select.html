@@ -1,0 +1,9 @@
+{% if branches %}<form method="get" class="branch-select">
+  {% if f %}<input type="hidden" name="f" value="{{ f }}">{% endif %}{% if s %}<input type="hidden" name="s" value="{{ s }}">{% endif %}{% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+  <label><span class="muted small">شعبه</span>
+  <select name="b" onchange="this.form.submit()">
+    <option value="">همه شعبه‌ها</option>
+    {% for br in branches %}<option value="{{ br.pk }}" {% if b == br.pk|stringformat:"d" %}selected{% endif %}>{{ br.name }}</option>{% endfor %}
+  </select></label>
+  <noscript><button class="btn btn-ghost btn-sm">نمایش</button></noscript>
+</form>{% endif %}

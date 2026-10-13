@@ -19,6 +19,7 @@
     </div>
   </header>
   <main>{% block main %}{% endblock %}</main>
+  {% include "sites/_branches.html" %}
   <footer class="c-footer">
     <div class="site-wrap c-footer-grid">
       <div><strong>{{ tenant.name }}</strong><p>{{ site.address }}</p></div>

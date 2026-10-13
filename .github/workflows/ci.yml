@@ -23,8 +23,13 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U bimcrm" --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      DATABASE_URL: postgres://bimcrm:bimcrm@localhost:5432/bimcrm
+      # Tests connect as a non-superuser: superusers bypass row-level security and would hide RLS bugs.
+      DATABASE_URL: postgres://bimcrm_test:bimcrm_test@localhost:5432/bimcrm
     steps:
+      - name: Create non-superuser test role
+        run: |
+          PGPASSWORD=bimcrm psql -h localhost -U bimcrm -d bimcrm -c \
+            "CREATE ROLE bimcrm_test LOGIN CREATEDB NOSUPERUSER NOBYPASSRLS PASSWORD 'bimcrm_test';"
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:

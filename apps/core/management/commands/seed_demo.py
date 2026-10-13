@@ -1,6 +1,6 @@
 """Sample workspace for local development: python manage.py seed_demo
 
-Creates the owner 09120000000 and the workspace demo-alborz with customers, policies and quote requests.
+Creates the owner 09120000000, a Karaj branch employee 09120000002, and the workspace demo-alborz with customers, policies and quote requests.
 Never run this on production.
 """
 
@@ -10,13 +10,13 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
-from apps.accounts.models import User
+from apps.accounts.models import Membership, User
 from apps.billing.models import Addon, StorageTier, SubscriptionItem
 from apps.billing.services import create_workspace
 from apps.claims.models import Claim, ClaimEvent
 from apps.core.models import InsuranceCompany, LineOfBusiness, Tenant
 from apps.core.tenancy import tenant_context
-from apps.crm.models import Customer, Policy, QuoteRequest
+from apps.crm.models import Branch, Customer, Policy, QuoteRequest
 from apps.finance.models import CommissionRule, Installment, LedgerEntry
 from apps.network.models import Marketer
 from apps.sites.models import FAQ, SiteSettings, Testimonial
@@ -95,12 +95,30 @@ class Command(BaseCommand):
     def _addons(self, tenant, today):
         """Every add-on switched on, with a little data in each."""
         for addon in Addon.objects.filter(
-            code__in=["finance", "claims", "marketers", "sms_campaigns", "advanced_reports"]
+            code__in=["finance", "claims", "marketers", "sms_campaigns", "advanced_reports", "branches"]
         ):
             SubscriptionItem.objects.get_or_create(subscription=tenant.subscription, addon=addon)
         if Marketer.objects.exists():
             return
         CommissionRule.objects.create(rate=8)
+        hq = Branch.objects.create(
+            name="دفتر مرکزی",
+            city="تهران",
+            address="خیابان ولیعصر، نرسیده به ونک، پلاک ۱۲",
+            phone="02188776655",
+            order=0,
+        )
+        karaj = Branch.objects.create(
+            name="شعبه کرج", city="کرج", address="عظیمیه، میدان مهران، ساختمان نگین", phone="02632554433", order=1
+        )
+        for i, c in enumerate(Customer.objects.order_by("pk")):
+            c.branch = karaj if i % 3 == 2 else hq
+            c.save(update_fields=["branch"])
+            c.policies.update(branch=c.branch)
+        clerk, _ = User.objects.get_or_create(mobile="09120000002", defaults={"full_name": "کارمند شعبه کرج"})
+        Membership.objects.get_or_create(
+            user=clerk, tenant=tenant, defaults={"role": Membership.Role.STAFF, "branch": karaj}
+        )
         lead = Marketer.objects.create(full_name="فرهاد سرگروه", mobile="09122000001", rate=2, override_rate=1)
         rep = Marketer.objects.create(full_name="نیلوفر بازاریاب", mobile="09122000002", parent=lead, rate=3)
         policies = list(Policy.objects.select_related("customer").order_by("pk"))

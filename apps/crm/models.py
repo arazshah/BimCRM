@@ -6,6 +6,32 @@ from django.db import models
 from apps.core.models import InsuranceCompany, LineOfBusiness, TenantOwned
 
 
+class Branch(TenantOwned):
+    """A branch office (شعبه). Add-on: branches."""
+
+    name = models.CharField("نام شعبه", max_length=80)
+    city = models.CharField("شهر", max_length=60, blank=True)
+    address = models.CharField("نشانی", max_length=255, blank=True)
+    phone = models.CharField("تلفن", max_length=20, blank=True)
+    show_on_site = models.BooleanField("نمایش در سایت", default=True)
+    is_active = models.BooleanField("فعال", default=True)
+    order = models.PositiveIntegerField("ترتیب", default=0)
+
+    class Meta:
+        verbose_name = "شعبه"
+        verbose_name_plural = "شعبه‌ها"
+        ordering = ["order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+def _branch_field(related_name):
+    return models.ForeignKey(
+        Branch, null=True, blank=True, on_delete=models.SET_NULL, related_name=related_name, verbose_name="شعبه"
+    )
+
+
 class Customer(TenantOwned):
     class Source(models.TextChoices):
         WEBSITE = "website", "سایت"
@@ -31,6 +57,7 @@ class Customer(TenantOwned):
         verbose_name="بازاریاب معرف",
     )
     sms_opt_out = models.BooleanField("پیامک تبلیغاتی نمی‌خواهد", default=False)
+    branch = _branch_field("customers")
     created_at = models.DateTimeField("ثبت", auto_now_add=True)
 
     class Meta:
@@ -79,6 +106,7 @@ class Policy(TenantOwned):
         related_name="policies",
         verbose_name="بازاریاب",
     )
+    branch = _branch_field("policies")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -101,10 +129,12 @@ class Policy(TenantOwned):
             from apps.finance.models import CommissionRule
 
             self.commission_rate = CommissionRule.rate_for(self.tenant_id, self.company_id, self.line_id)
-        if self.marketer_id is None and self.customer_id:
-            self.marketer_id = (
-                Customer.all_objects.filter(pk=self.customer_id).values_list("marketer_id", flat=True).first()
-            )
+        if self.customer_id and (self.marketer_id is None or self.branch_id is None):
+            marketer_id, branch_id = Customer.all_objects.filter(pk=self.customer_id).values_list(
+                "marketer_id", "branch_id"
+            ).first() or (None, None)
+            self.marketer_id = self.marketer_id or marketer_id
+            self.branch_id = self.branch_id or branch_id
         if self.file and hasattr(self.file, "size"):
             try:
                 self.file_size = self.file.size
@@ -145,6 +175,7 @@ class QuoteRequest(TenantOwned):
         related_name="quotes",
         verbose_name="بازاریاب معرف",
     )
+    branch = _branch_field("quotes")
     created_at = models.DateTimeField("ثبت", auto_now_add=True)
 
     class Meta:
