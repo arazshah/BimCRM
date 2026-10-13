@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import messages
 from django.core import signing
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
@@ -308,3 +309,32 @@ def account_claim_upload(request, claim_id):
         ClaimDocument.objects.create(claim=claim, title=title, file=f, uploaded_by_customer=True)
         messages.success(request, "مدرک رسید.")
     return redirect("sites:account")
+
+
+def robots(request):
+    site = _site(request)
+    if not site.is_published:
+        body = "User-agent: *\nDisallow: /\n"
+    else:
+        body = (
+            "User-agent: *\nAllow: /\nDisallow: /panel/\nDisallow: /account/\nDisallow: /quote/\n\n"
+            f"Sitemap: {request.build_absolute_uri('/sitemap.xml')}\n"
+        )
+    return HttpResponse(body, content_type="text/plain")
+
+
+def sitemap(request):
+    site = _site(request)
+    urls = [("/", "1.0"), ("/track/", "0.3")] if site.is_published else []
+    rows = "".join(
+        f"  <url><loc>{request.build_absolute_uri(path)}</loc><priority>{prio}</priority></url>\n" for path, prio in urls
+    )
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + rows + "</urlset>\n"
+    return HttpResponse(xml, content_type="application/xml")
+
+
+def favicon(request):
+    site = _site(request)
+    if site.logo:
+        return redirect(site.logo.url)
+    return HttpResponse(status=204)

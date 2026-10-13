@@ -7,6 +7,23 @@
   <meta name="description" content="{% block description %}سایت فروش، پنل مدیریت مشتری و بیمه‌نامه، یادآور تمدید، مالی و خسارت برای نماینده‌های همه شرکت‌های بیمه. ۱۴ روز رایگان، بدون کارت بانکی.{% endblock %}">
   <meta name="theme-color" content="#0f1f38">
   {% if PLATFORM_SETTINGS.enamad_code %}<meta name="enamad" content="{{ PLATFORM_SETTINGS.enamad_code }}" />{% endif %}
+  {% if PLATFORM_SETTINGS.google_site_verification %}<meta name="google-site-verification" content="{{ PLATFORM_SETTINGS.google_site_verification }}">{% endif %}
+  {% block robots %}{% endblock %}
+  <link rel="canonical" href="{{ PLATFORM_URL }}{{ request.path }}">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="icon" href="{% static 'img/favicon-32.png' %}" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CRM بیمه">
+  <meta property="og:locale" content="fa_IR">
+  <meta property="og:title" content="{% block og_title %}CRM بیمه — سایت و پنل کامل دفتر نمایندگی بیمه{% endblock %}">
+  <meta property="og:description" content="سایت فروش با استعلام آنلاین، پنل مشتری و بیمه‌نامه، یادآور تمدید، مالی و خسارت برای نماینده‌های همه شرکت‌های بیمه. ۱۴ روز رایگان.">
+  <meta property="og:url" content="{{ PLATFORM_URL }}{{ request.path }}">
+  <meta property="og:image" content="{{ PLATFORM_URL }}{% static 'img/og-image.jpg' %}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  {% block head_extra %}{% endblock %}
   <link rel="preload" href="{% static 'fonts/Vazirmatn-VF.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
