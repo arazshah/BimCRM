@@ -623,3 +623,34 @@ def test_admin_refuses_real_sms_or_live_payment_without_credentials(client, sett
     body = resp.content.decode()
     assert resp.status_code == 200
     assert "کلید API لازم است" in body and "شناسه قالب" in body and "مرچنت کد لازم است" in body
+
+
+def test_encryption_key_survives_common_paste_damage(settings):
+    from apps.core.crypto import decrypt_text, encrypt_text
+
+    good = "wQIdH1CaIYJvAVTs_DOOgyQqRvTZ8rcppwC5lOvFodM="
+    settings.FIELD_ENCRYPTION_KEY = good
+    token = encrypt_text("secret")
+    for damaged in (good.rstrip("="), f'"{good}"', f"  {good}\n", f"'{good.rstrip('=')}'"):
+        settings.FIELD_ENCRYPTION_KEY = damaged
+        assert decrypt_text(token) == "secret", damaged
+
+
+def test_invalid_encryption_key_is_reported_not_a_500(client, settings, db):
+    from django.core.exceptions import ImproperlyConfigured
+
+    from apps.core.checks import encryption_key_valid
+    from apps.core.crypto import encrypt_text
+    from apps.core.models import PlatformSettings
+
+    settings.FIELD_ENCRYPTION_KEY = "definitely-not-a-fernet-key"
+    with pytest.raises(ImproperlyConfigured):
+        encrypt_text("x")
+    assert [e.id for e in encryption_key_valid(None)] == ["bimcrm.E001"]
+    settings.SMSIR_API_KEY = settings.SMSIR_OTP_TEMPLATE_ID = ""
+    PlatformSettings.load()
+    h = _admin_client(client)
+    resp = client.post("/admin/core/platformsettings/1/change/", _settings_form(smsir_api_key_input="K"), HTTP_HOST=h)
+    assert resp.status_code == 200 and "FIELD_ENCRYPTION_KEY" in resp.content.decode()
+    settings.FIELD_ENCRYPTION_KEY = "wQIdH1CaIYJvAVTs_DOOgyQqRvTZ8rcppwC5lOvFodM="
+    assert encryption_key_valid(None) == []
