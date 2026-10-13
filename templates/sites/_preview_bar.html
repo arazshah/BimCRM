@@ -1,4 +1,4 @@
-{% if is_demo %}
+{% if is_demo and not is_embed %}
 <div class="preview-bar" role="note">پیش‌نمایش قالب «{{ tpl.name }}» با محتوای نمونه. <a href="/signup/">همین قالب را برای دفترم می‌خواهم</a></div>
 {% elif is_preview %}
 <div class="preview-bar" role="note">این سایت هنوز منتشر نشده و فقط شما و همکارانتان آن را می‌بینید. <a href="/panel/site/">انتشار از پنل</a></div>

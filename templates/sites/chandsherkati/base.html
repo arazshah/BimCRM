@@ -5,28 +5,24 @@
   {% include "includes/icons.html" %}
   {% include "sites/_preview_bar.html" %}
   <div class="c-topline"><div class="site-wrap c-topline-inner">
-    {% if site.phone %}<a class="ltr" href="tel:{{ site.phone }}">{{ site.phone }}</a>{% endif %}
-    {% if site.working_hours %}<span>{{ site.working_hours }}</span>{% endif %}
+    {% if site.phone %}<a href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg><span class="ltr">{{ site.phone }}</span></a>{% endif %}
+    {% if site.working_hours %}<span><svg aria-hidden="true"><use href="#i-clock"/></svg>{{ site.working_hours }}</span>{% endif %}
     {% if tenant.agency_code %}<span>کد نمایندگی {{ tenant.agency_code }}</span>{% endif %}
   </div></div>
   <header class="c-header">
     <div class="site-wrap c-header-inner">
-      <a class="c-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% endif %}{{ tenant.name }}</a>
+      <a class="c-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% else %}<span class="c-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>{% endif %}<span>{{ tenant.name }}</span></a>
       <nav class="c-nav" aria-label="منو">
-        <a href="/#compare">رشته‌ها</a>{% if companies %}<a href="/#partners">شرکت‌ها</a>{% endif %}<a href="/track/">پیگیری</a>
-        {% if can_portal %}<a class="c-login" href="/account/">ورود مشتریان</a>{% endif %}
+        <a href="/#compare">رشته‌ها</a>{% if companies %}<a href="/#partners">شرکت‌ها</a>{% endif %}<a href="/#faq">سؤالات</a><a href="/track/">پیگیری</a>
+        {% if can_portal %}<a class="c-login" href="/account/"><svg aria-hidden="true"><use href="#i-user"/></svg>ورود مشتریان</a>{% endif %}
+        <a class="c-cta" href="/#quote">درخواست مقایسه</a>
       </nav>
     </div>
   </header>
   <main>{% block main %}{% endblock %}</main>
   {% include "sites/_branches.html" %}
-  <footer class="c-footer">
-    <div class="site-wrap c-footer-grid">
-      <div><strong>{{ tenant.name }}</strong><p>{{ site.address }}</p></div>
-      <div><p>{{ site.working_hours }}</p>{% if site.email %}<p class="ltr">{{ site.email }}</p>{% endif %}</div>
-      <div class="trust-badges">{% for b in trust_badges %}{{ b }}{% endfor %}</div>
-    </div>
-  </footer>
+  {% include "sites/parts/footer.html" %}
+  {% include "sites/parts/mobile_bar.html" %}
   {% include "sites/_scripts.html" %}
 </body>
 </html>

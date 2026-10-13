@@ -1,0 +1,23 @@
+{% load fa %}<footer class="s-footer">
+  <div class="site-wrap s-footer-grid">
+    <div class="s-footer-about">
+      <strong class="s-footer-name">{{ tenant.name }}</strong>
+      {% if tenant.agency_code %}<p>کد نمایندگی {{ tenant.agency_code|fa }}</p>{% endif %}
+      {% if site.about %}<p class="s-footer-blurb">{{ site.about|truncatewords:28 }}</p>{% endif %}
+    </div>
+    <nav aria-label="دسترسی">
+      <h2>دسترسی</h2>
+      <a href="/#quote">استعلام آنلاین</a>
+      <a href="/track/">پیگیری درخواست</a>
+      {% if can_portal %}<a href="/account/">ورود مشتریان</a>{% endif %}
+      {% if faqs %}<a href="/#faq">سؤالات متداول</a>{% endif %}
+    </nav>
+    <div>
+      <h2>تماس</h2>
+      {% if site.phone %}<p><a class="ltr" href="tel:{{ site.phone }}">{{ site.phone }}</a></p>{% endif %}
+      {% if site.address %}<p>{{ site.address }}</p>{% endif %}
+      {% if site.working_hours %}<p>{{ site.working_hours }}</p>{% endif %}
+    </div>
+    <div class="trust-badges">{% for b in trust_badges %}{{ b }}{% endfor %}</div>
+  </div>
+</footer>

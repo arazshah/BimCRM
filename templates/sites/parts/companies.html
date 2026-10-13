@@ -1,0 +1,8 @@
+{% if companies %}
+<section class="s-companies" id="partners" aria-labelledby="s-co-title">
+  <div class="site-wrap">
+    <h2 class="s-title" id="s-co-title">{{ title|default:"شرکت‌های بیمه همکار" }}</h2>
+    <ul class="s-co-list">{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}" loading="lazy">{% else %}<span>{{ c.name }}</span>{% endif %}</li>{% endfor %}</ul>
+  </div>
+</section>
+{% endif %}

@@ -3,43 +3,61 @@
 {% block main %}
 <section class="c-hero">
   <div class="site-wrap c-hero-grid">
-    <div>
+    <div class="c-hero-copy">
       <h1>{{ site.hero_title|default:tenant.name }}</h1>
       {% if site.hero_subtitle %}<p class="c-sub">{{ site.hero_subtitle }}</p>{% endif %}
-      {% if companies %}<p class="c-count"><strong>{{ companies|length|fa }}</strong> شرکت بیمه، یک دفتر؛ پوشش و قیمت را کنار هم می‌بینید.</p>{% endif %}
+      <dl class="c-facts">
+        {% if companies %}<div><dd>{{ companies|length|fa }}</dd><dt>شرکت بیمه</dt></div>{% endif %}
+        {% if lines %}<div><dd>{{ lines|length|fa }}</dd><dt>رشته بیمه</dt></div>{% endif %}
+        {% if site.customers_count %}<div><dd>{{ site.customers_count|toman }}</dd><dt>بیمه‌گذار</dt></div>{% endif %}
+        {% if site.years_active %}<div><dd>{{ site.years_active|fa }}</dd><dt>سال سابقه</dt></div>{% endif %}
+      </dl>
+      {% if companies %}<p class="c-count">پوشش و قیمت شرکت‌های مختلف را کنار هم می‌بینید و با خیال راحت انتخاب می‌کنید.</p>{% endif %}
     </div>
     <div class="c-form" id="quote">
       <h2>درخواست مقایسه و استعلام</h2>
+      <p class="c-form-note">قیمت چند شرکت را برایتان مقایسه می‌کنیم.</p>
       {% include "sites/_quote_form.html" with submit_label="ثبت درخواست مقایسه" %}
     </div>
   </div>
 </section>
 
 {% if lines %}
-<section class="c-compare" id="compare"><div class="site-wrap">
-  <h2>رشته‌ها</h2>
+<section class="c-compare" id="compare" aria-labelledby="c-compare-title"><div class="site-wrap">
+  <div class="c-sec-head"><h2 id="c-compare-title">رشته‌ها و پوشش‌ها</h2><p>برای هر رشته، از همه شرکت‌های همکار استعلام می‌گیریم.</p></div>
   <div class="c-table-wrap">
   <table class="c-table">
-    <thead><tr><th scope="col">رشته</th><th scope="col">پوشش اصلی</th><th scope="col"><span class="visually-hidden">استعلام</span></th></tr></thead>
-    <tbody>{% for l in lines %}<tr><th scope="row"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg>{{ l.name }}</th><td>{{ l.summary }}</td><td><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}">استعلام</a></td></tr>{% endfor %}</tbody>
+    <thead><tr><th scope="col">رشته</th><th scope="col">پوشش اصلی</th>{% if companies %}<th scope="col">شرکت‌ها</th>{% endif %}<th scope="col"><span class="visually-hidden">استعلام</span></th></tr></thead>
+    <tbody>{% for l in lines %}<tr><th scope="row"><span class="c-ico"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg></span>{{ l.name }}</th><td>{{ l.summary }}</td>{% if companies %}<td class="c-n">{{ companies|length|fa }} شرکت</td>{% endif %}<td><a class="c-go" href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}">استعلام و مقایسه</a></td></tr>{% endfor %}</tbody>
   </table>
   </div>
 </div></section>
 {% endif %}
 
 {% if companies %}
-<section class="c-partners" id="partners"><div class="site-wrap">
-  <h2>شرکت‌های همکار</h2>
-  <ul class="c-logos">{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}">{% else %}{{ c.name }}{% endif %}</li>{% endfor %}</ul>
+<section class="c-partners" id="partners" aria-labelledby="c-partners-title"><div class="site-wrap">
+  <div class="c-sec-head"><h2 id="c-partners-title">شرکت‌های همکار</h2><p>نماینده رسمی چند شرکت هستیم؛ انتخاب با شماست.</p></div>
+  <ul class="c-logos">{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}" loading="lazy">{% else %}{{ c.name }}{% endif %}</li>{% endfor %}</ul>
 </div></section>
 {% endif %}
 
+<section class="c-why" aria-labelledby="c-why-title"><div class="site-wrap">
+  <h2 id="c-why-title">چرا از یک دفتر چندشرکتی بخرید؟</h2>
+  <ul class="c-why-grid">
+    <li><svg aria-hidden="true"><use href="#i-search"/></svg><strong>مقایسه واقعی</strong><span>قیمت و تعهدات چند شرکت را کنار هم می‌بینید، نه فقط یک پیشنهاد.</span></li>
+    <li><svg aria-hidden="true"><use href="#i-shield"/></svg><strong>پوشش متناسب</strong><span>پوشش‌های اضافه‌ای را که لازم ندارید نمی‌خرید.</span></li>
+    <li><svg aria-hidden="true"><use href="#i-briefcase"/></svg><strong>یک پرونده برای همه</strong><span>بیمه‌نامه‌های همه شرکت‌ها در یک دفتر و یک پنل.</span></li>
+    <li><svg aria-hidden="true"><use href="#i-clock"/></svg><strong>یادآور تمدید</strong><span>پیش از سررسید هر بیمه‌نامه خبرتان می‌کنیم.</span></li>
+  </ul>
+</div></section>
+
+{% include "sites/parts/steps.html" %}
+
 <section class="c-split"><div class="site-wrap c-split-grid">
-  {% if site.about %}<div><h2>درباره دفتر</h2>{{ site.about|linebreaks }}</div>{% endif %}
+  {% if site.about %}<div><h2>درباره دفتر</h2><div class="c-about">{{ site.about|linebreaks }}</div></div>{% endif %}
   {% if testimonials %}<div><h2>نظر مشتریان</h2><ul class="c-voices">{% for t in testimonials %}<li><p>{{ t.text }}</p><span>{{ t.name }}</span></li>{% endfor %}</ul></div>{% endif %}
 </div></section>
 
-{% if faqs %}
-<section class="c-faq"><div class="site-wrap"><h2>سؤالات متداول</h2><div class="c-faq-grid">{% for f in faqs %}<details><summary>{{ f.question }}</summary>{{ f.answer|linebreaks }}</details>{% endfor %}</div></div></section>
-{% endif %}
+{% include "sites/parts/faq.html" %}
+{% include "sites/parts/contact.html" with title="برای مقایسه قیمت، همین حالا درخواست بدهید" %}
 {% endblock %}

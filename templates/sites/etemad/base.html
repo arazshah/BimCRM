@@ -4,25 +4,24 @@
 <body class="t-etemad">
   {% include "includes/icons.html" %}
   {% include "sites/_preview_bar.html" %}
+  <div class="e-topline"><div class="site-wrap e-topline-inner">
+    {% if site.working_hours %}<span><svg aria-hidden="true"><use href="#i-clock"/></svg>{{ site.working_hours }}</span>{% endif %}
+    {% if site.address %}<span class="e-top-addr"><svg aria-hidden="true"><use href="#i-pin"/></svg>{{ site.address }}</span>{% endif %}
+    {% if can_portal %}<a href="/account/">ورود مشتریان</a>{% endif %}
+  </div></div>
   <header class="e-header">
     <div class="site-wrap e-header-inner">
-      <a class="e-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% endif %}<span>{{ tenant.name }}</span></a>
+      <a class="e-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% else %}<span class="e-emblem" aria-hidden="true"><svg><use href="#i-shield"/></svg></span>{% endif %}<span>{{ tenant.name }}</span></a>
       <nav class="e-nav" aria-label="منو">
         <a href="/#lines">رشته‌ها</a><a href="/#about">درباره دفتر</a><a href="/track/">پیگیری</a>
-        {% if can_portal %}<a href="/account/">ورود مشتریان</a>{% endif %}
-        {% if site.phone %}<a class="e-phone ltr" href="tel:{{ site.phone }}">{{ site.phone }}</a>{% endif %}
+        {% if site.phone %}<a class="e-phone" href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg><span class="ltr">{{ site.phone }}</span></a>{% endif %}
       </nav>
     </div>
   </header>
   <main>{% block main %}{% endblock %}</main>
   {% include "sites/_branches.html" %}
-  <footer class="e-footer">
-    <div class="site-wrap e-footer-grid">
-      <div><strong>{{ tenant.name }}</strong>{% if tenant.agency_code %}<p>کد نمایندگی {{ tenant.agency_code }}</p>{% endif %}</div>
-      <div>{% if site.address %}<p>{{ site.address }}</p>{% endif %}{% if site.working_hours %}<p>{{ site.working_hours }}</p>{% endif %}</div>
-      <div class="trust-badges">{% for b in trust_badges %}{{ b }}{% endfor %}</div>
-    </div>
-  </footer>
+  {% include "sites/parts/footer.html" %}
+  {% include "sites/parts/mobile_bar.html" %}
   {% include "sites/_scripts.html" %}
 </body>
 </html>

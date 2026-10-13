@@ -1,0 +1,19 @@
+<section class="s-contact" id="contact" aria-labelledby="s-contact-title">
+  <div class="site-wrap s-contact-grid">
+    <div class="s-contact-copy">
+      <h2 id="s-contact-title">{{ title|default:"برای خرید یا تمدید، کنارتان هستیم" }}</h2>
+      <p>فرم استعلام را پر کنید یا مستقیم تماس بگیرید. بعد از صدور هم برای تمدید و خسارت همراهتان هستیم.</p>
+      <div class="s-contact-actions">
+        <a class="s-btn" href="/#quote">درخواست استعلام</a>
+        {% if site.phone %}<a class="s-btn s-btn-alt" href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg><span class="ltr">{{ site.phone }}</span></a>{% endif %}
+        {% if site.whatsapp %}<a class="s-btn s-btn-alt" href="https://wa.me/98{{ site.whatsapp|slice:'1:' }}" rel="noopener"><svg aria-hidden="true"><use href="#i-chat"/></svg>گفتگو در واتس‌اپ</a>{% endif %}
+      </div>
+    </div>
+    <ul class="s-contact-list">
+      {% if site.address %}<li><svg aria-hidden="true"><use href="#i-pin"/></svg><span><strong>نشانی</strong>{{ site.address }}</span></li>{% endif %}
+      {% if site.working_hours %}<li><svg aria-hidden="true"><use href="#i-clock"/></svg><span><strong>ساعت کاری</strong>{{ site.working_hours }}</span></li>{% endif %}
+      {% if site.email %}<li><svg aria-hidden="true"><use href="#i-mail"/></svg><span><strong>ایمیل</strong><a class="ltr" href="mailto:{{ site.email }}">{{ site.email }}</a></span></li>{% endif %}
+      <li><svg aria-hidden="true"><use href="#i-search"/></svg><span><strong>پیگیری درخواست</strong><a href="/track/">با کد پیگیری و موبایل</a></span></li>
+    </ul>
+  </div>
+</section>

@@ -8,6 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.accounts.otp import OTPError, issue_code, verify_code
@@ -15,7 +16,7 @@ from apps.accounts.sms import SmsError, send_platform_otp
 from apps.billing import zarinpal
 from apps.billing.models import Addon, Invoice, Package, Period, StorageTier, Subscription
 from apps.billing.services import create_workspace
-from apps.core.models import PlatformSettings, Tenant, is_subdomain_available
+from apps.core.models import InsuranceCompany, PlatformSettings, Tenant, is_subdomain_available
 from apps.sites import registry
 from apps.sites.demo import demo_context
 
@@ -39,14 +40,19 @@ def landing(request):
             "tiers": StorageTier.objects.filter(is_active=True),
             "addons": Addon.objects.filter(is_active=True),
             "platform": PlatformSettings.load(),
+            "companies": InsuranceCompany.objects.filter(is_active=True),
         },
     )
 
 
+@xframe_options_sameorigin
 def template_preview(request, key):
+    """Live demo of a template. The landing page frames it (?embed=1) to show the real output."""
     if key not in registry.BY_KEY:
         return redirect("main:landing")
-    return render(request, f"sites/{key}/home.html", demo_context(key))
+    ctx = demo_context(key)
+    ctx["is_embed"] = request.GET.get("embed") == "1"
+    return render(request, f"sites/{key}/home.html", ctx)
 
 
 @require_GET

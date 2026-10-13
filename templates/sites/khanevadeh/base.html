@@ -6,23 +6,19 @@
   {% include "sites/_preview_bar.html" %}
   <header class="k-header">
     <div class="site-wrap k-header-inner">
-      <a class="k-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% endif %}{{ tenant.name }}</a>
+      <a class="k-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% else %}<span class="k-mark" aria-hidden="true"><svg><use href="#i-heart"/></svg></span>{% endif %}<span>{{ tenant.name }}</span></a>
       <nav class="k-nav" aria-label="منو">
-        <a href="/#protect">بیمه‌ها</a><a href="/track/">پیگیری</a>
+        <a href="/#protect">بیمه‌ها</a><a href="/#faq">سؤالات</a><a href="/track/">پیگیری</a>
         {% if can_portal %}<a href="/account/">ورود مشتریان</a>{% endif %}
-        {% if site.whatsapp %}<a class="k-wa" href="https://wa.me/98{{ site.whatsapp|slice:'1:' }}" rel="noopener">گفتگو با ما</a>{% endif %}
+        {% if site.whatsapp %}<a class="k-wa" href="https://wa.me/98{{ site.whatsapp|slice:'1:' }}" rel="noopener"><svg aria-hidden="true"><use href="#i-chat"/></svg>گفتگو با ما</a>
+        {% elif site.phone %}<a class="k-wa" href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg>تماس با ما</a>{% endif %}
       </nav>
     </div>
   </header>
   <main>{% block main %}{% endblock %}</main>
   {% include "sites/_branches.html" %}
-  <footer class="k-footer">
-    <div class="site-wrap k-footer-inner">
-      <p><strong>{{ tenant.name }}</strong>{% if tenant.agency_code %} — کد نمایندگی {{ tenant.agency_code }}{% endif %}</p>
-      <p>{{ site.address }}{% if site.phone %} · <a class="ltr" href="tel:{{ site.phone }}">{{ site.phone }}</a>{% endif %}</p>
-      <div class="trust-badges">{% for b in trust_badges %}{{ b }}{% endfor %}</div>
-    </div>
-  </footer>
+  {% include "sites/parts/footer.html" %}
+  {% include "sites/parts/mobile_bar.html" %}
   {% include "sites/_scripts.html" %}
 </body>
 </html>

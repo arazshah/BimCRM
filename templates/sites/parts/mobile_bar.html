@@ -1,0 +1,7 @@
+{% if not is_embed %}
+<nav class="s-mbar" aria-label="دسترسی سریع">
+  {% if site.phone %}<a href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg>تماس</a>{% endif %}
+  <a class="s-mbar-main" href="/#quote"><svg aria-hidden="true"><use href="#i-doc"/></svg>استعلام قیمت</a>
+  {% if site.whatsapp %}<a href="https://wa.me/98{{ site.whatsapp|slice:'1:' }}" rel="noopener"><svg aria-hidden="true"><use href="#i-chat"/></svg>واتس‌اپ</a>{% elif can_portal %}<a href="/account/"><svg aria-hidden="true"><use href="#i-user"/></svg>ورود</a>{% endif %}
+</nav>
+{% endif %}

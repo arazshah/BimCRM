@@ -1,45 +1,63 @@
 {% extends "sites/khanevadeh/base.html" %}
+{% load fa %}
 {% block main %}
 <section class="k-hero">
   <div class="site-wrap k-hero-grid">
-    <div>
-      <svg class="k-roof" viewBox="0 0 220 120" aria-hidden="true"><path d="M10 70 Q110 -20 210 70" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><circle cx="80" cy="92" r="13" fill="currentColor" opacity=".9"/><circle cx="112" cy="86" r="17" fill="currentColor"/><circle cx="142" cy="96" r="10" fill="currentColor" opacity=".75"/></svg>
+    <div class="k-hero-copy">
+      <svg class="k-roof" viewBox="0 0 240 130" aria-hidden="true">
+        <path d="M14 76 Q120 -18 226 76" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+        <path d="M120 22 V8" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="84" cy="100" r="14" fill="currentColor" opacity=".85"/><circle cx="120" cy="92" r="19" fill="currentColor"/>
+        <circle cx="154" cy="104" r="11" fill="currentColor" opacity=".7"/><circle cx="178" cy="110" r="7" fill="currentColor" opacity=".5"/>
+      </svg>
       <h1>{{ site.hero_title|default:tenant.name }}</h1>
       {% if site.hero_subtitle %}<p class="k-sub">{{ site.hero_subtitle }}</p>{% endif %}
-      <a class="site-btn k-btn" href="#quote">مشاوره رایگان بگیرید</a>
+      <div class="k-hero-actions">
+        <a class="s-btn k-btn" href="#quote">مشاوره رایگان بگیرید</a>
+        {% if site.phone %}<a class="k-call" href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg><span class="ltr">{{ site.phone }}</span></a>{% endif %}
+      </div>
+      {% if site.years_active or site.customers_count %}
+      <p class="k-proof">{% if site.customers_count %}<strong>{{ site.customers_count|toman }}</strong> خانواده و کسب‌وکار{% endif %}{% if site.customers_count and site.years_active %}، {% endif %}{% if site.years_active %}<strong>{{ site.years_active|fa }}</strong> سال همراهی{% endif %}</p>
+      {% endif %}
     </div>
     <div class="k-form" id="quote">
       <h2>بگویید دنبال چه بیمه‌ای هستید</h2>
+      <p class="k-form-note">با هم بهترین پوشش را برای خانواده‌تان پیدا می‌کنیم.</p>
       {% include "sites/_quote_form.html" with submit_label="درخواست تماس" %}
     </div>
   </div>
 </section>
 
 {% if lines %}
-<section class="k-protect" id="protect">
+<section class="k-protect" id="protect" aria-labelledby="k-protect-title">
   <div class="site-wrap">
-    <h2>از چه چیزی محافظت کنیم؟</h2>
+    <h2 class="s-title k-center" id="k-protect-title">از چه چیزی محافظت کنیم؟</h2>
     <ul class="k-tiles">
-      {% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg><strong>{{ l.name }}</strong><span>{{ l.summary }}</span></a></li>{% endfor %}
+      {% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><span class="k-tile-icon"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg></span><strong>{{ l.name }}</strong><span>{{ l.summary }}</span></a></li>{% endfor %}
     </ul>
   </div>
 </section>
 {% endif %}
 
-{% if testimonials %}
-<section class="k-voices"><div class="site-wrap">
-  <h2>خانواده‌هایی که کنارشان بوده‌ایم</h2>
-  <ul>{% for t in testimonials %}<li><p class="bubble">{{ t.text }}</p><span>{{ t.name }}</span></li>{% endfor %}</ul>
-</div></section>
-{% endif %}
+{% include "sites/parts/stats.html" %}
 
 {% if site.about %}
-<section class="k-about"><div class="site-wrap k-about-inner"><h2>ما چه کسانی هستیم</h2>{{ site.about|linebreaks }}</div></section>
+<section class="k-about" aria-labelledby="k-about-title">
+  <div class="site-wrap k-about-grid">
+    <div class="k-about-art" aria-hidden="true">
+      <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="92" fill="currentColor" opacity=".08"/><path d="M50 108 L100 66 L150 108 V150 H50 Z" fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/><path d="M86 150 V122 H114 V150" fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/><path d="M100 40 C 60 40, 40 70, 40 70 L 160 70 C 160 70, 140 40, 100 40 Z" fill="currentColor" opacity=".9"/><path d="M100 40 V30" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>
+    </div>
+    <div>
+      <h2 class="s-title" id="k-about-title">ما چه کسانی هستیم</h2>
+      <div class="k-about-text">{{ site.about|linebreaks }}</div>
+    </div>
+  </div>
+</section>
 {% endif %}
 
-{% if faqs %}
-<section class="k-faq"><div class="site-wrap k-faq-inner"><h2>سؤال‌هایی که زیاد می‌پرسند</h2>
-  {% for f in faqs %}<details><summary>{{ f.question }}</summary>{{ f.answer|linebreaks }}</details>{% endfor %}
-</div></section>
-{% endif %}
+{% include "sites/parts/steps.html" with title="کنار شما، قدم‌به‌قدم" %}
+{% include "sites/parts/voices.html" with title="خانواده‌هایی که کنارشان بوده‌ایم" %}
+{% include "sites/parts/companies.html" %}
+{% include "sites/parts/faq.html" with title="سؤال‌هایی که زیاد می‌پرسند" %}
+{% include "sites/parts/contact.html" with title="خیالتان از بیمه راحت باشد" %}
 {% endblock %}

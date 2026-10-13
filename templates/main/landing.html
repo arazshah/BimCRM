@@ -2,116 +2,415 @@
 {% load fa %}
 {% block body_class %}landing{% endblock %}
 {% block content %}
-<section class="hero">
+
+{# ───────── Hero: claim your address; the mock browser updates as you type ───────── #}
+<section class="hero" id="start">
   <div class="wrap hero-grid">
     <div class="hero-copy">
-      <h1>دفتر بیمه‌تان، روی آدرس خودش.</h1>
-      <p class="lead">سایت فروش با فرم استعلام، پنل مشتریان و بیمه‌نامه‌ها، یادآور تمدید و پنل مشتری با ورود موبایلی. همه در یک محیط که فقط مال دفتر شماست.</p>
+      <p class="hero-kicker">برای نماینده‌های همه شرکت‌های بیمه</p>
+      <h1>سایت، پنل و حساب‌وکتاب دفتر بیمه‌تان، یک‌جا و آنلاین</h1>
+      <p class="lead">آدرس سایتتان را بنویسید. چند دقیقه بعد سایت فروش با فرم استعلام، پرونده مشتری‌ها و بیمه‌نامه‌ها، یادآور تمدید و پنل مشتری آماده است. مالی، خسارت، شعبه‌ها و بازاریاب‌ها را هم هر وقت لازم شد اضافه می‌کنید.</p>
+
+      <form class="claim" action="{% url 'main:login' %}" method="get" id="claim-form" novalidate>
+        <label class="claim-label" for="claim-slug">آدرس سایت دفترتان</label>
+        <div class="claim-row">
+          <div class="claim-input" dir="ltr">
+            <input id="claim-slug" name="slug" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+                   autocapitalize="off" placeholder="alborz1234" maxlength="30" aria-describedby="claim-status">
+            <span class="claim-suffix">.{{ PLATFORM_DOMAIN }}</span>
+          </div>
+          <button class="btn claim-btn" type="submit">شروع {{ platform.trial_days|fa }} روز رایگان</button>
+        </div>
+        <p class="claim-status" id="claim-status" aria-live="polite">حروف کوچک انگلیسی، عدد و خط تیره</p>
+        <input type="hidden" name="next" id="claim-next" value="/signup/">
+      </form>
+      <ul class="hero-facts">
+        <li>ثبت‌نام با شماره موبایل</li>
+        <li>بدون کارت بانکی</li>
+        <li>اتصال دامنه ir خودتان</li>
+      </ul>
     </div>
-    <form class="claim" action="{% url 'main:login' %}" method="get" id="claim-form" novalidate>
-      <label class="claim-label" for="claim-slug">آدرس سایتتان را انتخاب کنید</label>
-      <div class="claim-row" dir="ltr">
-        <input id="claim-slug" name="slug" type="text" inputmode="url" autocomplete="off" spellcheck="false"
-               autocapitalize="off" placeholder="alborz1234" maxlength="30" aria-describedby="claim-status">
-        <span class="claim-suffix">.{{ PLATFORM_DOMAIN }}</span>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="win win-site">
+        <div class="win-bar"><i></i><i></i><i></i><span class="win-url" dir="ltr">https://<b id="mock-slug">alborz1234</b>.{{ PLATFORM_DOMAIN }}</span></div>
+        <div class="ms">
+          <div class="ms-nav"><span class="ms-logo"></span><span>نمایندگی بیمه</span><em>استعلام آنلاین</em></div>
+          <div class="ms-body">
+            <div class="ms-copy">
+              <strong>بیمه خودرو، منزل و درمان؛ استعلام آنلاین</strong>
+              <span class="ln w90"></span><span class="ln w70"></span>
+              <div class="ms-chips"><span>شخص ثالث</span><span>بدنه</span><span>آتش‌سوزی</span><span>درمان</span></div>
+            </div>
+            <div class="ms-form">
+              <span class="ms-label">نوع بیمه</span><span class="ms-input">شخص ثالث</span>
+              <span class="ms-label">موبایل</span><span class="ms-input ltr">0912…</span>
+              <span class="ms-btn">دریافت قیمت</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <p class="claim-status" id="claim-status" aria-live="polite">حروف کوچک انگلیسی، عدد و خط تیره</p>
-      <input type="hidden" name="next" id="claim-next" value="/signup/">
-      <button class="btn claim-btn" type="submit">شروع {{ platform.trial_days|fa }} روز رایگان</button>
-      <p class="claim-note">ثبت‌نام با شماره موبایل؛ بدون کارت بانکی. بعداً دامنه ir خودتان را هم وصل می‌کنید.</p>
-    </form>
-  </div>
-</section>
-
-<section class="inside">
-  <div class="wrap">
-    <h2>هر کاری که در دفتر انجام می‌دهید، یک جا</h2>
-    <div class="inside-grid">
-      <dl>
-        <dt>تمدید، قبل از اینکه یادتان برود</dt>
-        <dd>بیمه‌نامه‌هایی که تا ۳۰ روز دیگر تمام می‌شوند، صبح اول داشبورد است؛ پیامک یادآور از پنل پیامک خودتان می‌رود.</dd>
-        <dt>درخواست‌های سایت، در یک صندوق</dt>
-        <dd>مشتری فرم استعلام را پر می‌کند و کد پیگیری می‌گیرد. شما وضعیت را جلو می‌برید و او از سایت پیگیری می‌کند.</dd>
-        <dt>مشتری‌ها و بیمه‌نامه‌ها</dt>
-        <dd>پرونده کامل هر بیمه‌گذار، با فایل بیمه‌نامه‌ها. مشتریان قبلی را از اکسل وارد کنید.</dd>
-      </dl>
-      <dl>
-        <dt>سایتی که خودتان پر می‌کنید</dt>
-        <dd>پنج قالب، عوض‌کردنشان بدون از دست رفتن محتوا. لوگو، رنگ، رشته‌ها، نظرات مشتریان و سؤالات.</dd>
-        <dt>سرویس‌های خودتان را وصل کنید</dt>
-        <dd>درگاه پرداخت، پنل پیامک، اینماد و ساماندهی و کدهای دلخواه، با حساب و قرارداد خود دفتر.</dd>
-        <dt>همکاران با دسترسی جدا</dt>
-        <dd>هر همکار با موبایل خودش وارد می‌شود. مالی، خسارت، بازاریاب و چندشعبه‌ای را هر وقت لازم شد اضافه کنید.</dd>
-      </dl>
+      <div class="win win-panel">
+        <div class="mp-head"><strong>تمدیدهای این هفته</strong><span class="mp-count">۷</span></div>
+        <ul class="mp-list">
+          <li><span>مریم رضایی</span><em>ثالث · ۳ روز</em><b>یادآور رفت</b></li>
+          <li><span>حمید کریمی</span><em>بدنه · ۵ روز</em><b class="go">ارسال پیامک</b></li>
+          <li><span>شرکت آرین</span><em>آتش‌سوزی · ۶ روز</em><b class="go">ارسال پیامک</b></li>
+        </ul>
+      </div>
+      <div class="stamp"><span>{{ platform.trial_days|fa }}</span>روز رایگان</div>
     </div>
   </div>
 </section>
 
-<section class="templates" id="templates">
-  <div class="wrap">
-    <h2>پنج قالب، هر کدام برای یک جور دفتر</h2>
-    <ul class="tpl-list">
-      {% for t in templates %}
-      <li class="tpl tpl-{{ t.key }}" style="--tpl: {{ t.default_color }}">
-        <a href="{% url 'main:template_preview' t.key %}" target="_blank" rel="noopener">
-          <span class="tpl-face" aria-hidden="true">{{ t.name }}</span>
-          <span class="tpl-name">{{ t.name }}</span>
-          <span class="tpl-desc">{{ t.tagline }}</span>
-          <span class="tpl-for">مناسب {{ t.best_for }}</span>
-          <span class="tpl-link">پیش‌نمایش زنده</span>
-        </a>
-      </li>
-      {% endfor %}
+{# ───────── Insurers ───────── #}
+<section class="insurers" aria-labelledby="insurers-title">
+  <div class="wrap insurers-inner">
+    <h2 id="insurers-title">نماینده کدام شرکت هستید؟ فرقی نمی‌کند.</h2>
+    <p>سایت و پنل برای خود دفتر شماست، نه یک شرکت خاص. اگر نماینده چند شرکت هستید، همه را کنار هم نشان دهید.</p>
+    {% if companies %}
+    <ul class="insurer-list">
+      {% for c in companies %}<li>{{ c.name }}</li>{% endfor %}
     </ul>
+    {% endif %}
   </div>
 </section>
 
-<section class="pricing" id="pricing">
-  <div class="wrap pricing-grid">
-    <div>
-      <h2>قیمت: یک پکیج پایه، بعد هرچه لازم دارید</h2>
-      {% if package %}
-      <div class="base-pack">
-        <p class="pack-price"><strong class="num">{{ package.monthly_price|toman }}</strong> تومان در ماه</p>
-        <p class="muted">یا {{ package.yearly_price|toman }} تومان سالانه{% if platform.yearly_discount_note %} ({{ platform.yearly_discount_note }}){% endif %}</p>
-        <ul class="ticks">{% for f in package.feature_lines %}<li>{{ f }}</li>{% endfor %}</ul>
-      </div>
-      {% endif %}
-    </div>
-    <div>
-      <h3>فضا</h3>
-      <table class="price-table">
-        <tbody>{% for t in tiers %}<tr><th scope="row">{{ t.name }}</th><td>{% if t.monthly_price %}{{ t.monthly_price|toman }} تومان در ماه{% else %}داخل پکیج{% endif %}</td></tr>{% endfor %}</tbody>
-      </table>
-      <h3>افزونه‌ها</h3>
-      <table class="price-table">
-        <tbody>{% for a in addons %}<tr><th scope="row">{{ a.name }}<span class="muted small">{{ a.description }}</span></th><td>{{ a.monthly_price|toman }} تومان{% if a.per_unit %} برای هر عدد{% endif %}</td></tr>{% endfor %}</tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<section class="domain-steps">
+{# ───────── The office, stage by stage ───────── #}
+<section class="journey" id="features" aria-labelledby="journey-title">
   <div class="wrap">
-    <h2>اتصال دامنه ir خودتان</h2>
-    <ol class="steps">
-      <li><strong>از روز اول</strong> سایت و پنل روی <span class="ltr">yourname.{{ PLATFORM_DOMAIN }}</span> کار می‌کند.</li>
-      <li><strong>دامنه را هر جا خواستید ثبت کنید</strong> و در پنل ایرنیک، NSهای ما را برایش بگذارید.</li>
-      <li><strong>دامنه را در پنل وارد کنید.</strong> بقیه خودکار است: بررسی NS، گواهی SSL و انتقال سایت.</li>
+    <header class="sec-head">
+      <h2 id="journey-title">از اولین بازدید مشتری تا تسویه کارمزد</h2>
+      <p>هر کاری که در دفتر انجام می‌شود، جایی در پنل دارد. مسیر یک مشتری را دنبال کنید.</p>
+    </header>
+
+    <div class="jr" data-tabs>
+      <div class="jr-tabs" role="tablist" aria-label="بخش‌های پنل">
+        <button role="tab" id="jt-1" aria-controls="jp-1" aria-selected="true"><b>۱</b><span>سایت و جذب مشتری</span></button>
+        <button role="tab" id="jt-2" aria-controls="jp-2" aria-selected="false" tabindex="-1"><b>۲</b><span>درخواست‌ها و فروش</span></button>
+        <button role="tab" id="jt-3" aria-controls="jp-3" aria-selected="false" tabindex="-1"><b>۳</b><span>مشتری‌ها و بیمه‌نامه‌ها</span></button>
+        <button role="tab" id="jt-4" aria-controls="jp-4" aria-selected="false" tabindex="-1"><b>۴</b><span>تمدید و پیامک</span></button>
+        <button role="tab" id="jt-5" aria-controls="jp-5" aria-selected="false" tabindex="-1"><b>۵</b><span>پنل مشتری و خسارت</span></button>
+        <button role="tab" id="jt-6" aria-controls="jp-6" aria-selected="false" tabindex="-1"><b>۶</b><span>مالی، اقساط و کارمزد</span></button>
+        <button role="tab" id="jt-7" aria-controls="jp-7" aria-selected="false" tabindex="-1"><b>۷</b><span>همکاران، شعبه‌ها و بازاریاب‌ها</span></button>
+      </div>
+
+      <div class="jr-panels">
+        <article class="jr-panel" role="tabpanel" id="jp-1" aria-labelledby="jt-1">
+          <div class="jr-text">
+            <h3>سایتی که مشتری را به فرم استعلام می‌رساند</h3>
+            <p>پنج قالب آماده، با لوگو و رنگ و متن خودتان. رشته‌هایی که می‌فروشید، نظرات مشتری‌ها، سؤالات رایج و شعبه‌ها روی سایت می‌آید و هر رشته فرم استعلام مخصوص خودش را دارد.</p>
+            <ul class="ticks"><li>زیردامنه رایگان از روز اول، دامنه ir خودتان هر وقت خواستید</li><li>گواهی امنیتی (SSL) خودکار</li><li>نماد اعتماد، ساماندهی و کد دلخواه</li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk mk-site">
+              <div class="mk-bar" dir="ltr">yourname.{{ PLATFORM_DOMAIN }}</div>
+              <div class="mk-hero"><strong>نمایندگی بیمه، کد ۱۲۳۴</strong><span>استعلام آنلاین ثالث، بدنه و درمان</span></div>
+              <div class="mk-tiles"><span>شخص ثالث</span><span>بدنه خودرو</span><span>آتش‌سوزی منازل</span><span>درمان تکمیلی</span><span>عمر</span><span>مسافرتی</span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-2" aria-labelledby="jt-2" hidden>
+          <div class="jr-text">
+            <h3>همه درخواست‌های سایت، در یک صندوق</h3>
+            <p>هر استعلام با نوع بیمه و اطلاعاتی که مشتری وارد کرده می‌رسد. وضعیتش را جلو می‌برید و مشتری با کد پیگیری، بدون تماس، از سایت می‌بیند کار به کجا رسیده.</p>
+            <ul class="ticks"><li>کد پیگیری برای هر درخواست</li><li>واگذاری به همکار یا شعبه</li><li>اتصال درخواست به پرونده مشتری</li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk">
+              <div class="mk-title">درخواست‌های سایت</div>
+              <ul class="mk-rows">
+                <li><span>سارا محمدی</span><em>شخص ثالث</em><b class="st new">جدید</b></li>
+                <li><span>علی نوری</span><em>درمان تکمیلی</em><b class="st wip">در حال بررسی</b></li>
+                <li><span>فرشته امینی</span><em>آتش‌سوزی منازل</em><b class="st wip">قیمت داده شد</b></li>
+                <li><span>رضا احمدی</span><em>بدنه خودرو</em><b class="st done">صادر شد</b></li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-3" aria-labelledby="jt-3" hidden>
+          <div class="jr-text">
+            <h3>پرونده کامل هر بیمه‌گذار</h3>
+            <p>مشخصات، بیمه‌نامه‌ها با فایل و تاریخ شروع و پایان، شرکت بیمه و حق بیمه. مشتری‌های فعلی‌تان را یک‌جا از فایل اکسل وارد کنید.</p>
+            <ul class="ticks"><li>جست‌وجو با نام، موبایل یا شماره بیمه‌نامه</li><li>بیمه‌نامه‌های همه شرکت‌ها در یک فهرست</li><li>ورود از اکسل</li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk">
+              <div class="mk-profile"><span class="mk-avatar">ح</span><div><strong>حمید کریمی</strong><em class="ltr">0912 345 6789</em></div></div>
+              <table class="mk-table"><tbody>
+                <tr><th>بدنه خودرو</th><td>بیمه البرز</td><td>تا ۱۴۰۵/۰۸/۲۰</td></tr>
+                <tr><th>شخص ثالث</th><td>بیمه دانا</td><td>تا ۱۴۰۶/۰۱/۱۲</td></tr>
+                <tr><th>آتش‌سوزی منازل</th><td>بیمه ایران</td><td>تا ۱۴۰۵/۱۱/۰۳</td></tr>
+              </tbody></table>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-4" aria-labelledby="jt-4" hidden>
+          <div class="jr-text">
+            <h3>تمدیدی از دست نمی‌رود</h3>
+            <p>بیمه‌نامه‌هایی که تا ۳۰ روز دیگر تمام می‌شوند، اول داشبورد است. پیامک یادآور از پنل پیامک خود دفتر و به نام خود دفتر می‌رود. با افزونه کمپین، پیامک گروهی و مناسبتی هم دارید.</p>
+            <ul class="ticks"><li>فهرست تمدیدهای پیش‌رو در داشبورد</li><li>پیامک یادآور خودکار</li><li>کمپین پیامکی برای گروه‌های مشتری <span class="tag">افزونه</span></li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk mk-phone">
+              <div class="sms"><small>نمایندگی بیمه البرز</small>مریم رضایی عزیز، بیمه شخص ثالث شما ۳ روز دیگر تمام می‌شود. برای تمدید با ما تماس بگیرید یا از سایت استعلام کنید.</div>
+              <div class="sms me">ممنون، الان استعلام می‌گیرم</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-5" aria-labelledby="jt-5" hidden>
+          <div class="jr-text">
+            <h3>مشتری خودش بیمه‌نامه‌ها و خسارتش را می‌بیند</h3>
+            <p>مشتری با موبایل و کد یک‌بارمصرف وارد پنل خودش روی سایت شما می‌شود: بیمه‌نامه‌ها، قسط‌ها و وضعیت درخواست‌ها. با افزونه خسارت، خسارت را با مدارک اعلام می‌کند و شما مرحله‌به‌مرحله پیگیری می‌کنید.</p>
+            <ul class="ticks"><li>ورود مشتری با کد پیامکی</li><li>دانلود فایل بیمه‌نامه</li><li>اعلام و پیگیری خسارت با بارگذاری مدارک <span class="tag">افزونه</span></li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk">
+              <div class="mk-title">خسارت بدنه، پرونده ۴۰۲۱</div>
+              <ol class="mk-steps">
+                <li class="done">اعلام خسارت</li><li class="done">مدارک رسید</li><li class="now">کارشناسی</li><li>پرداخت</li>
+              </ol>
+              <p class="mk-note">مدارک فرستاده‌شده: کروکی، گواهی‌نامه، کارت خودرو</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-6" aria-labelledby="jt-6" hidden>
+          <div class="jr-text">
+            <h3>حساب‌وکتاب دفتر، بدون دفترچه و اکسل</h3>
+            <p>اقساط و چک‌های مشتری با سررسید، یادآور قسط، کارمزد هر بیمه‌نامه و دفتر درآمد و هزینه. گزارش پیشرفته تولید هر رشته، شرکت و همکار و نرخ تمدید را نشان می‌دهد.</p>
+            <ul class="ticks"><li>اقساط، چک و یادآور سررسید <span class="tag">افزونه</span></li><li>کارمزد و دفتر درآمد و هزینه <span class="tag">افزونه</span></li><li>گزارش تولید و نرخ تمدید <span class="tag">افزونه</span></li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk">
+              <div class="mk-title">مهر ۱۴۰۵</div>
+              <div class="mk-kpis"><div><em>تولید</em><strong>۸۴۰</strong><small>میلیون تومان</small></div><div><em>کارمزد</em><strong>۹۶</strong><small>میلیون تومان</small></div><div><em>قسط معوق</em><strong>۳</strong><small>مورد</small></div></div>
+              <div class="mk-bars"><span style="--h:45%"></span><span style="--h:62%"></span><span style="--h:54%"></span><span style="--h:78%"></span><span style="--h:70%"></span><span style="--h:92%"></span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-7" aria-labelledby="jt-7" hidden>
+          <div class="jr-text">
+            <h3>دفتر بزرگ‌تر می‌شود، پنل هم</h3>
+            <p>هر همکار با موبایل خودش وارد می‌شود و فقط به بخش‌هایی دسترسی دارد که به او داده‌اید. شعبه‌ها هر کدام مشتری‌های خودشان را می‌بینند و مدیر همه را. بازاریاب‌ها با کد معرف مشتری می‌آورند و کمیسیون چندسطحی می‌گیرند.</p>
+            <ul class="ticks"><li>نقش و دسترسی جدا برای هر همکار</li><li>چندشعبه‌ای با گزارش تجمیعی <span class="tag">افزونه</span></li><li>بازاریاب و زیرشبکه با کمیسیون <span class="tag">افزونه</span></li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk">
+              <div class="mk-title">همکاران</div>
+              <ul class="mk-rows">
+                <li><span>مدیر دفتر</span><em>همه شعبه‌ها</em><b class="st done">مدیر</b></li>
+                <li><span>نگار صادقی</span><em>شعبه مرکزی</em><b class="st wip">کارشناس</b></li>
+                <li><span>امید رستمی</span><em>شعبه کرج</em><b class="st wip">کارشناس</b></li>
+                <li><span>کد معرف M-204</span><em>۱۸ مشتری</em><b class="st new">بازاریاب</b></li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ───────── Full inventory ───────── #}
+<section class="inventory" aria-labelledby="inv-title">
+  <div class="wrap">
+    <header class="sec-head">
+      <h2 id="inv-title">فهرست کامل امکانات</h2>
+      <p>آنچه در پکیج پایه هست، از روز اول فعال است. موارد <span class="tag">افزونه</span> را هر وقت لازم داشتید از داخل پنل روشن کنید.</p>
+    </header>
+    <div class="inv-grid">
+      <div class="inv-col">
+        <h3>سایت و فروش آنلاین</h3>
+        <ul>
+          <li>پنج قالب حرفه‌ای، قابل تعویض بدون از دست رفتن محتوا</li>
+          <li>زیردامنه رایگان و اتصال دامنه ir خودتان</li>
+          <li>گواهی SSL خودکار</li>
+          <li>فرم استعلام با فیلدهای مخصوص هر رشته</li>
+          <li>کد پیگیری درخواست برای مشتری</li>
+          <li>نظرات مشتریان، سؤالات متداول و معرفی دفتر</li>
+          <li>نماد اعتماد، ساماندهی و کد دلخواه</li>
+          <li>درگاه پرداخت و پنل پیامک با حساب خود دفتر</li>
+          <li>قالب‌های ویژه <span class="tag">افزونه</span></li>
+        </ul>
+      </div>
+      <div class="inv-col">
+        <h3>مشتری و بیمه‌نامه</h3>
+        <ul>
+          <li>پرونده کامل بیمه‌گذار</li>
+          <li>بیمه‌نامه با فایل، تاریخ‌ها و شرکت بیمه</li>
+          <li>ورود مشتری‌های قبلی از اکسل</li>
+          <li>صندوق درخواست‌های سایت با وضعیت</li>
+          <li>پنل مشتری با ورود موبایلی</li>
+          <li>یادآور تمدید ۳۰ روز مانده</li>
+          <li>پیامک یادآور با نام دفتر</li>
+          <li>کمپین پیامکی گروهی و مناسبتی <span class="tag">افزونه</span></li>
+        </ul>
+      </div>
+      <div class="inv-col">
+        <h3>مالی و خسارت</h3>
+        <ul>
+          <li>اقساط و چک با سررسید <span class="tag">افزونه</span></li>
+          <li>کارمزد هر بیمه‌نامه <span class="tag">افزونه</span></li>
+          <li>دفتر درآمد و هزینه <span class="tag">افزونه</span></li>
+          <li>اعلام خسارت از پنل مشتری با مدارک <span class="tag">افزونه</span></li>
+          <li>پیگیری مرحله‌به‌مرحله خسارت <span class="tag">افزونه</span></li>
+          <li>گزارش تولید، نرخ تمدید و هدف فروش <span class="tag">افزونه</span></li>
+        </ul>
+      </div>
+      <div class="inv-col">
+        <h3>تیم و خیال راحت</h3>
+        <ul>
+          <li>همکاران با موبایل خودشان و دسترسی جدا</li>
+          <li>چند شعبه زیر یک حساب <span class="tag">افزونه</span></li>
+          <li>بازاریاب با کد معرف و کمیسیون چندسطحی <span class="tag">افزونه</span></li>
+          <li>اطلاعات هر دفتر جدا از دفترهای دیگر، در خود پایگاه داده</li>
+          <li>فضای ذخیره قابل افزایش</li>
+          <li>بدون نصب؛ روی موبایل و کامپیوتر</li>
+          <li>پشتیبانی با تیکت از داخل پنل</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ───────── Template gallery with the real rendered output ───────── #}
+<section class="gallery" id="templates" aria-labelledby="tpl-title">
+  <div class="wrap">
+    <header class="sec-head">
+      <h2 id="tpl-title">ببینید سایت دفترتان چه شکلی می‌شود</h2>
+      <p>این‌ها خود قالب‌ها هستند با محتوای نمونه. بعد از ثبت‌نام، اسم دفتر، رشته‌ها و شماره‌های شما جایشان می‌نشیند. قالب را هر وقت خواستید عوض کنید.</p>
+    </header>
+    <div class="tg" data-gallery>
+      <div class="tg-picker" role="tablist" aria-label="قالب‌ها">
+        {% for t in templates %}
+        <button role="tab" class="tg-pick" style="--tpl: {{ t.default_color }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                {% if not forloop.first %}tabindex="-1"{% endif %} data-src="{% url 'main:template_preview' t.key %}" aria-controls="tg-stage">
+          <span class="tg-dot" aria-hidden="true"></span>
+          <span class="tg-name">{{ t.name }}</span>
+          <span class="tg-desc">{{ t.tagline }}</span>
+          <span class="tg-for">مناسب {{ t.best_for }}</span>
+        </button>
+        {% endfor %}
+      </div>
+      <div class="tg-stage" id="tg-stage" role="tabpanel">
+        <div class="tg-bar"><i></i><i></i><i></i><span dir="ltr">yourname.{{ PLATFORM_DOMAIN }}</span>
+          <a class="tg-open" id="tg-open" href="{% url 'main:template_preview' templates.0.key %}" target="_blank" rel="noopener">باز کردن در صفحه کامل</a></div>
+        <div class="tg-screen">
+          <iframe id="tg-frame" title="پیش‌نمایش قالب" src="{% url 'main:template_preview' templates.0.key %}?embed=1" tabindex="-1"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ───────── Steps ───────── #}
+<section class="howto" aria-labelledby="how-title">
+  <div class="wrap">
+    <header class="sec-head">
+      <h2 id="how-title">در چند دقیقه، سایت و پنل خودتان</h2>
+    </header>
+    <ol class="how-steps">
+      <li><strong>آدرس را انتخاب کنید</strong><span>با موبایل و کد پیامکی وارد می‌شوید و آدرسی مثل <span class="ltr addr">alborz1234.{{ PLATFORM_DOMAIN }}</span> می‌گیرید.</span></li>
+      <li><strong>قالب را بزنید</strong><span>یکی از پنج قالب. بعداً هم بدون از دست رفتن محتوا عوض می‌شود.</span></li>
+      <li><strong>اطلاعات دفتر را وارد کنید</strong><span>نام، کد نمایندگی، رشته‌ها و شماره تماس. سایت و پنل همان لحظه آماده است.</span></li>
+      <li><strong>دامنه خودتان را وصل کنید</strong><span>هر وقت خواستید: NSها را در ایرنیک بگذارید، بقیه خودکار است.</span></li>
     </ol>
   </div>
 </section>
+
+{# ───────── Free trial ───────── #}
+<section class="trial" aria-labelledby="trial-title">
+  <div class="wrap trial-inner">
+    <div class="trial-seal" aria-hidden="true"><strong>{{ platform.trial_days|fa }}</strong><span>روز</span></div>
+    <div class="trial-copy">
+      <h2 id="trial-title">{{ platform.trial_days|fa }} روز با همه امکانات پایه کار کنید، رایگان</h2>
+      <p>روی آدرس واقعی خودتان، با مشتری‌های واقعی. کارت بانکی نمی‌خواهد و پرداخت خودکاری انجام نمی‌شود. اگر راضی بودید، پکیج را از داخل پنل پرداخت می‌کنید و همه چیز سر جایش می‌ماند.</p>
+    </div>
+    <a class="btn btn-light" href="#start">ساخت سایت و پنل رایگان</a>
+  </div>
+</section>
+
+{# ───────── Pricing (all values from the super admin) ───────── #}
+<section class="pricing" id="pricing" aria-labelledby="price-title">
+  <div class="wrap">
+    <header class="sec-head">
+      <h2 id="price-title">یک پکیج پایه؛ بعد فقط هرچه لازم دارید</h2>
+      <p>بدون قرارداد بلندمدت. فضا و افزونه‌ها را هر وقت خواستید از داخل پنل اضافه یا کم کنید.</p>
+    </header>
+    <div class="pricing-grid">
+      {% if package %}
+      <div class="plan">
+        <h3>{{ package.name }}</h3>
+        {% if package.description %}<p class="plan-desc">{{ package.description }}</p>{% endif %}
+        <p class="plan-price"><strong class="num">{{ package.monthly_price|toman }}</strong> تومان در ماه</p>
+        <p class="plan-year">یا {{ package.yearly_price|toman }} تومان سالانه{% if platform.yearly_discount_note %} ({{ platform.yearly_discount_note }}){% endif %}</p>
+        <ul class="ticks">{% for f in package.feature_lines %}<li>{{ f }}</li>{% endfor %}</ul>
+        <a class="btn btn-block" href="#start">شروع {{ platform.trial_days|fa }} روز رایگان</a>
+      </div>
+      {% endif %}
+      <div class="price-extras">
+        {% if addons %}
+        <h3>افزونه‌ها</h3>
+        <ul class="addon-list">
+          {% for a in addons %}<li><div><strong>{{ a.name }}</strong><span>{{ a.description }}</span></div><em><b class="num">{{ a.monthly_price|toman }}</b> تومان در ماه{% if a.per_unit %}، هر عدد{% endif %}</em></li>{% endfor %}
+        </ul>
+        {% endif %}
+        {% if tiers %}
+        <h3>فضای ذخیره</h3>
+        <ul class="tier-list">
+          {% for t in tiers %}<li><strong>{{ t.name }}</strong><em>{% if t.monthly_price %}{{ t.monthly_price|toman }} تومان در ماه{% else %}داخل پکیج{% endif %}</em></li>{% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ───────── FAQ ───────── #}
+<section class="faq" id="faq" aria-labelledby="faq-title">
+  <div class="wrap faq-grid">
+    <h2 id="faq-title">سؤال‌هایی که نماینده‌ها می‌پرسند</h2>
+    <div class="faq-list">
+      <details open><summary>نماینده کدام شرکت بیمه باشم؟</summary><p>فرقی نمی‌کند. سایت و پنل مال دفتر شماست و برای همه شرکت‌ها و همه رشته‌ها کار می‌کند. اگر نماینده چند شرکت هستید، بیمه‌نامه‌های همه‌شان در یک فهرست است.</p></details>
+      <details><summary>باید چیزی نصب کنم یا سایت‌سازی بلد باشم؟</summary><p>نه. قالب‌ها آماده‌اند؛ فقط اسم دفتر، رشته‌ها، شماره تماس و در صورت تمایل لوگو و متن معرفی را وارد می‌کنید. پنل روی مرورگر موبایل و کامپیوتر کار می‌کند.</p></details>
+      <details><summary>پول بیمه‌نامه‌ها به حساب چه کسی می‌رود؟</summary><p>به حساب خود دفتر. درگاه پرداخت و پنل پیامک را با قرارداد و حساب خودتان وصل می‌کنید. ما فقط فضا و ابزار را می‌فروشیم و در فروش و رابطه شما با مشتری دخالتی نداریم.</p></details>
+      <details><summary>اطلاعات مشتری‌هایم امن است؟</summary><p>اطلاعات هر دفتر در خود پایگاه داده از دفترهای دیگر جداست و هیچ دفتری داده دفتر دیگر را نمی‌بیند. هر همکار هم فقط بخش‌هایی را می‌بیند که به او دسترسی داده‌اید.</p></details>
+      <details><summary>دامنه ir خودم را چطور وصل کنم؟</summary><p>از روز اول سایت روی زیردامنه رایگان کار می‌کند. هر وقت دامنه ir گرفتید، NSهای ما را در پنل ایرنیک برایش بگذارید و دامنه را در پنل وارد کنید. بررسی، گواهی SSL و انتقال سایت خودکار است.</p></details>
+      <details><summary>بعد از دوره رایگان چه می‌شود؟</summary><p>برای ادامه، پکیج را ماهانه یا سالانه از داخل پنل پرداخت می‌کنید. پرداخت خودکار نداریم، پس بدون اجازه شما چیزی کسر نمی‌شود.</p></details>
+      <details><summary>همکارانم هم می‌توانند وارد شوند؟</summary><p>بله. هر همکار با موبایل خودش وارد می‌شود و نقش و دسترسی جدا دارد.{% if package %} پکیج پایه {{ package.included_users|fa }} کاربر دارد و{% endif %} کاربر اضافه را از داخل پنل می‌گیرید.</p></details>
+    </div>
+  </div>
+</section>
+
+{# ───────── Closing ───────── #}
+<section class="closing">
+  <div class="wrap closing-inner">
+    <h2>دفترتان را امروز آنلاین کنید</h2>
+    <p>آدرس را انتخاب کنید، قالب را بزنید و اولین استعلام را از سایت خودتان بگیرید.</p>
+    <a class="btn btn-lg" href="#start">شروع {{ platform.trial_days|fa }} روز رایگان</a>
+  </div>
+</section>
 {% endblock %}
+
 {% block scripts %}
 <script>
 (() => {
+  // Address claim: live availability + the mock browser shows the typed address.
   const input = document.getElementById("claim-slug");
   const status = document.getElementById("claim-status");
   const next = document.getElementById("claim-next");
   const form = document.getElementById("claim-form");
+  const mock = document.getElementById("mock-slug");
   let timer;
   input.addEventListener("input", () => {
     input.value = input.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    mock.textContent = input.value || "alborz1234";
     clearTimeout(timer);
     status.className = "claim-status";
     if (input.value.length < 3) { status.textContent = "حروف کوچک انگلیسی، عدد و خط تیره"; return; }
@@ -125,6 +424,46 @@
     }, 300);
   });
   form.addEventListener("submit", () => { next.value = "/signup/?slug=" + encodeURIComponent(input.value); input.disabled = true; });
+
+  // Accessible tabs (features and template gallery share the keyboard behaviour).
+  const wireTabs = (list, onSelect) => {
+    const tabs = [...list.querySelectorAll('[role="tab"]')];
+    const select = (tab, focus) => {
+      tabs.forEach(t => { const on = t === tab; t.setAttribute("aria-selected", on); t.tabIndex = on ? 0 : -1; });
+      onSelect(tab);
+      if (focus) tab.focus();
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => select(tab));
+      tab.addEventListener("keydown", e => {
+        const vertical = getComputedStyle(list).flexDirection === "column";
+        const prev = vertical ? "ArrowUp" : "ArrowRight", nextK = vertical ? "ArrowDown" : "ArrowLeft";
+        let j = null;
+        if (e.key === nextK) j = (i + 1) % tabs.length;
+        if (e.key === prev) j = (i - 1 + tabs.length) % tabs.length;
+        if (e.key === "Home") j = 0;
+        if (e.key === "End") j = tabs.length - 1;
+        if (j !== null) { e.preventDefault(); select(tabs[j], true); }
+      });
+    });
+  };
+  document.querySelectorAll("[data-tabs]").forEach(box => {
+    wireTabs(box.querySelector('[role="tablist"]'), tab => {
+      box.querySelectorAll('[role="tabpanel"]').forEach(p => { p.hidden = p.id !== tab.getAttribute("aria-controls"); });
+    });
+  });
+  const gal = document.querySelector("[data-gallery]");
+  if (gal) {
+    const frame = document.getElementById("tg-frame"), open = document.getElementById("tg-open");
+    wireTabs(gal.querySelector('[role="tablist"]'), tab => {
+      frame.src = tab.dataset.src + "?embed=1";
+      open.href = tab.dataset.src;
+    });
+    const screen = gal.querySelector(".tg-screen");
+    const fit = () => { const s = screen.clientWidth / 1280; frame.style.transform = "scale(" + s + ")"; screen.style.height = Math.round(820 * s) + "px"; };
+    if ("ResizeObserver" in window) new ResizeObserver(fit).observe(screen);
+    fit();
+  }
 })();
 </script>
 {% endblock %}
