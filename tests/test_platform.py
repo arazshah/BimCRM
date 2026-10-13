@@ -457,3 +457,25 @@ def test_ensure_superadmin_uses_configured_password(settings, db):
     call_command("ensure_superadmin")
     user = User.objects.get(mobile="09104151005")
     assert user.is_superuser and user.is_staff and user.check_password("first-Pass-123")
+
+
+def test_ensure_superadmin_reissues_password_until_first_login(settings, db, capsys):
+    from django.core.management import call_command
+    from django.utils import timezone
+
+    settings.SUPERADMIN_MOBILE = "09104151005"
+    settings.SUPERADMIN_PASSWORD = ""
+    call_command("ensure_superadmin")
+    first = capsys.readouterr().out.split("PASSWORD: ")[1].split()[0]
+    assert User.objects.get(mobile="09104151005").check_password(first)
+    # Never logged in: a redeploy issues a fresh one-time password.
+    call_command("ensure_superadmin")
+    second = capsys.readouterr().out.split("PASSWORD: ")[1].split()[0]
+    user = User.objects.get(mobile="09104151005")
+    assert second != first and user.check_password(second) and not user.check_password(first)
+    # After the first login the password belongs to the admin and is never touched again.
+    user.last_login = timezone.now()
+    user.set_password("my-own-password")
+    user.save()
+    call_command("ensure_superadmin")
+    assert User.objects.get(mobile="09104151005").check_password("my-own-password")
