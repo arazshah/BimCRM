@@ -11,11 +11,14 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from apps.accounts.models import User
-from apps.billing.models import StorageTier
+from apps.billing.models import Addon, StorageTier, SubscriptionItem
 from apps.billing.services import create_workspace
+from apps.claims.models import Claim, ClaimEvent
 from apps.core.models import InsuranceCompany, LineOfBusiness, Tenant
 from apps.core.tenancy import tenant_context
 from apps.crm.models import Customer, Policy, QuoteRequest
+from apps.finance.models import CommissionRule, Installment, LedgerEntry
+from apps.network.models import Marketer
 from apps.sites.models import FAQ, SiteSettings, Testimonial
 
 PEOPLE = [
@@ -86,4 +89,48 @@ class Command(BaseCommand):
                     line=lines[0], full_name="کاوه نیک‌نام", mobile="09121000099", details={"نوع و مدل خودرو": "کوییک"}
                 )
                 QuoteRequest.objects.create(line=lines[2], full_name="لیلا صادقی", mobile="09121000098")
+            self._addons(tenant, today)
         self.stdout.write(self.style.SUCCESS(f"Demo ready: {tenant.panel_url()} (login with 09120000000)"))
+
+    def _addons(self, tenant, today):
+        """Every add-on switched on, with a little data in each."""
+        for addon in Addon.objects.filter(
+            code__in=["finance", "claims", "marketers", "sms_campaigns", "advanced_reports"]
+        ):
+            SubscriptionItem.objects.get_or_create(subscription=tenant.subscription, addon=addon)
+        if Marketer.objects.exists():
+            return
+        CommissionRule.objects.create(rate=8)
+        lead = Marketer.objects.create(full_name="فرهاد سرگروه", mobile="09122000001", rate=2, override_rate=1)
+        rep = Marketer.objects.create(full_name="نیلوفر بازاریاب", mobile="09122000002", parent=lead, rate=3)
+        policies = list(Policy.objects.select_related("customer").order_by("pk"))
+        for i, p in enumerate(policies):
+            p.start_date = today - timedelta(days=20 * i)
+            p.marketer = rep if i % 2 else lead
+            p.commission_rate = 8
+            p.save()
+        first = policies[0]
+        for n in range(3):
+            Installment.objects.create(
+                policy=first,
+                due_date=today + timedelta(days=30 * n - 5),
+                amount=1_500_000,
+                method="cheque",
+                cheque_number=f"7731{n}",
+                cheque_bank="ملت",
+            )
+        LedgerEntry.objects.create(
+            kind="income", category="commission", amount=320_000, policy=first, description="کارمزد ثالث"
+        )
+        LedgerEntry.objects.create(kind="expense", category="rent", amount=1_800_000, description="اجاره مهر")
+        claim = Claim.objects.create(
+            policy=policies[1],
+            incident_date=today - timedelta(days=4),
+            description="تصادف از عقب در بزرگراه همت؛ کروکی کشیده شده.",
+            amount_claimed=18_000_000,
+            reported_by_customer=True,
+        )
+        ClaimEvent.objects.create(claim=claim, status="reported", note="اعلام از پنل مشتری")
+        claim.status = "docs_needed"
+        claim.save()
+        ClaimEvent.objects.create(claim=claim, status="docs_needed", note="عکس کارت ماشین و کروکی را بفرستید")

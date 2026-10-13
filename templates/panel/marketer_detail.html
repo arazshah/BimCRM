@@ -1,0 +1,38 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}{{ m.full_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ m.full_name }}{% if not m.is_active %} <span class="tag">غیرفعال</span>{% endif %}</h1>
+  <div class="head-actions">{% if request.membership.role != "staff" %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:marketer_edit' m.pk %}">ویرایش</a>{% endif %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:marketers' %}">بازگشت</a></div>
+</div>
+<dl class="facts">
+  <div><dt>موبایل</dt><dd class="ltr num">{{ m.mobile|fa }}</dd></div>
+  <div><dt>لینک معرف</dt><dd><code class="ltr">{{ url }}</code></dd></div>
+  <div><dt>کمیسیون</dt><dd>{{ m.rate|floatformat:"-2"|fa }}٪ · سرگروهی {{ m.override_rate|floatformat:"-2"|fa }}٪</dd></div>
+  {% if m.parent %}<div><dt>سرگروه</dt><dd><a href="{% url 'panel:marketer' m.parent_id %}">{{ m.parent }}</a></dd></div>{% endif %}
+  {% if children %}<div><dt>زیرمجموعه</dt><dd>{% for c in children %}<a href="{% url 'panel:marketer' c.pk %}">{{ c }}</a>{% if not forloop.last %}، {% endif %}{% endfor %}</dd></div>{% endif %}
+</dl>
+<dl class="stats three">
+  <div><dt>کمیسیون کل</dt><dd class="num">{{ earned|toman }} <small>تومان</small></dd></div>
+  <div><dt>تسویه‌شده</dt><dd class="num">{{ paid|toman }} <small>تومان</small></dd></div>
+  <div><dt>مانده</dt><dd class="num">{{ balance|toman }} <small>تومان</small></dd></div>
+</dl>
+<div class="two-col">
+  <section class="panel-box">
+    <h2 class="h2">بیمه‌نامه‌ها</h2>
+    {% if policies %}
+    <div class="table-wrap"><table class="data">
+      <thead><tr><th>بیمه‌گذار</th><th>رشته</th><th>شروع</th><th>حق بیمه</th><th>از طریق</th></tr></thead>
+      <tbody>{% for p in policies %}<tr class="{% if p.status == 'cancelled' %}dim{% endif %}"><td>{{ p.customer.full_name }}</td><td>{{ p.line }}</td><td>{{ p.start_date|jdate }}</td><td class="num">{{ p.premium|toman }}</td><td>{% if p.marketer_id == m.pk %}مستقیم{% else %}{{ p.marketer }}{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="empty">هنوز بیمه‌نامه‌ای از طریق این بازاریاب صادر نشده است.</p>{% endif %}
+  </section>
+  <section class="panel-box">
+    <h2 class="h2">تسویه</h2>
+    {% if payouts %}<ul class="plain-list">{% for p in payouts %}<li><span>{{ p.date|jdate }} {% if p.note %}<span class="muted small">{{ p.note }}</span>{% endif %}</span><span class="num">{{ p.amount|toman }}</span></li>{% endfor %}</ul>{% endif %}
+    <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">ثبت تسویه</button></form>
+    <p class="muted small">تسویه در «درآمد و هزینه» به‌عنوان هزینه پورسانت بازاریاب ثبت می‌شود.</p>
+  </section>
+</div>
+{% endblock %}

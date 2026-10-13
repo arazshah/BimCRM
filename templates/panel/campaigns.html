@@ -1,0 +1,20 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}کمپین پیامکی{% endblock %}
+{% block content %}
+<div class="page-head"><h1>کمپین پیامکی</h1></div>
+{% if not can_sms %}<p class="note warn-note">ارسال از پنل پیامک خود دفتر انجام می‌شود. اول از <a href="{% url 'panel:integrations' %}">اتصالات</a> وصلش کنید.</p>{% endif %}
+<div class="two-col">
+  <section class="panel-box">
+    <h2 class="h2">کمپین‌ها</h2>
+    {% if campaigns %}
+    <ul class="plain-list">{% for c in campaigns %}<li><a href="{% url 'panel:campaign' c.pk %}">{{ c.title }}</a><span><span class="tag {% if c.status == 'done' %}ok{% endif %}">{{ c.get_status_display }}</span>{% if c.status == "done" %} <span class="small muted num">{{ c.sent|fa }} از {{ c.recipients|fa }}</span>{% endif %}</span></li>{% endfor %}</ul>
+    {% else %}<p class="empty">هنوز کمپینی نساخته‌اید.</p>{% endif %}
+  </section>
+  <section class="panel-box">
+    <h2 class="h2">کمپین جدید</h2>
+    <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">ساخت و پیش‌نمایش</button></form>
+    <p class="muted small">مشتریانی که «پیامک تبلیغاتی نمی‌خواهد» دارند حذف می‌شوند و «لغو۱۱» به انتهای متن اضافه می‌شود.</p>
+  </section>
+</div>
+{% endblock %}

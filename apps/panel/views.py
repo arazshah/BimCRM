@@ -14,9 +14,12 @@ from django.views.decorators.http import require_POST
 
 from apps.accounts.models import Membership, normalize_mobile
 from apps.billing.models import Addon, Invoice, Period, StorageTier, SubscriptionItem
+from apps.claims.models import Claim
+from apps.core import jalali
 from apps.core.dns import check_domain
 from apps.core.models import Domain, PlatformSettings
 from apps.crm.models import Customer, Policy, QuoteRequest
+from apps.finance.models import Installment
 from apps.integrations.models import KIND_LABELS, PROVIDERS, Integration
 from apps.integrations.senders import test_connection
 from apps.sites import registry
@@ -71,7 +74,18 @@ def dashboard(request):
         ),
         ("سایت را منتشر کنید", site.is_published, "panel:site"),
     ]
-    month_start = today.replace(day=1)
+    month_start, month_end, _ = jalali.month_bounds(today)
+    alerts = []
+    if "finance" in request.features:
+        overdue = Installment.objects.filter(status=Installment.Status.PENDING, due_date__lt=today)
+        n = overdue.count()
+        if n:
+            total = overdue.aggregate(s=Sum("amount"))["s"] or 0
+            alerts.append((f"{n} قسط معوق به مبلغ {total:,} تومان", "panel:installments", "?f=overdue"))
+    if "claims" in request.features:
+        n = Claim.objects.filter(status=Claim.Status.REPORTED, reported_by_customer=True).count()
+        if n:
+            alerts.append((f"{n} خسارت تازه از پنل مشتری", "panel:claims", "?s=reported"))
     return render(
         request,
         "panel/dashboard.html",
@@ -81,11 +95,14 @@ def dashboard(request):
             "stats": {
                 "customers": Customer.objects.count(),
                 "active_policies": Policy.objects.filter(status=Policy.Status.ACTIVE, end_date__gte=today).count(),
-                "month_premium": Policy.objects.filter(start_date__gte=month_start).aggregate(s=Sum("premium"))["s"]
+                "month_premium": Policy.objects.filter(start_date__gte=month_start, start_date__lt=month_end)
+                .exclude(status=Policy.Status.CANCELLED)
+                .aggregate(s=Sum("premium"))["s"]
                 or 0,
                 "open_quotes": QuoteRequest.objects.filter(status__in=["new", "contacted", "waiting_docs"]).count(),
             },
             "checklist": checklist,
+            "alerts": alerts,
             "checklist_done": sum(1 for c in checklist if c[1]),
             "welcome": request.GET.get("welcome"),
             "site": site,
@@ -112,7 +129,7 @@ def customers(request):
 @panel_view()
 def customer_edit(request, pk=None):
     obj = get_object_or_404(Customer, pk=pk) if pk else None
-    form = CustomerForm(request.POST or None, instance=obj)
+    form = CustomerForm(request.POST or None, instance=obj, features=request.features)
     if request.method == "POST" and form.is_valid():
         customer = form.save()
         messages.success(request, "مشتری ذخیره شد.")
@@ -134,6 +151,12 @@ def customer_detail(request, pk):
             "customer": customer,
             "policies": customer.policies.select_related("line", "company").order_by("-end_date"),
             "quotes": QuoteRequest.objects.filter(mobile=customer.mobile).select_related("line"),
+            "installments": Installment.objects.filter(policy__customer=customer).select_related("policy__line")
+            if "finance" in request.features
+            else None,
+            "claims": Claim.objects.filter(policy__customer=customer).select_related("policy__line")
+            if "claims" in request.features
+            else None,
         },
     )
 
@@ -219,7 +242,12 @@ def policy_edit(request, pk=None):
     elif not obj and request.GET.get("customer"):
         initial = {"customer": request.GET["customer"]}
     form = PolicyForm(
-        request.POST or None, request.FILES or None, instance=obj, initial=initial, storage_left=_storage_left(request)
+        request.POST or None,
+        request.FILES or None,
+        instance=obj,
+        initial=initial,
+        storage_left=_storage_left(request),
+        features=request.features,
     )
     if request.method == "POST" and form.is_valid():
         policy = form.save(commit=False)
@@ -260,7 +288,8 @@ def quote_detail(request, pk):
     if request.method == "POST":
         if "make_customer" in request.POST:
             customer, created = Customer.objects.get_or_create(
-                mobile=quote.mobile, defaults={"full_name": quote.full_name, "source": Customer.Source.WEBSITE}
+                mobile=quote.mobile,
+                defaults={"full_name": quote.full_name, "source": Customer.Source.WEBSITE, "marketer": quote.marketer},
             )
             quote.customer = customer
             quote.save(update_fields=["customer"])

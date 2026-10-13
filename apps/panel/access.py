@@ -9,7 +9,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, render
 
 from apps.accounts.models import Membership
-from apps.billing.models import has_feature
+from apps.billing.models import Addon
 from apps.core.models import Tenant
 
 MANAGERS = (Membership.Role.OWNER, Membership.Role.MANAGER)
@@ -35,10 +35,12 @@ def panel_view(*, write_ok_when_expired=False, managers_only=False, feature=None
                 return render(request, "panel/suspended.html", status=403)
             request.membership = membership
             request.subscription = getattr(tenant, "subscription", None)
+            request.features = request.subscription.active_addon_codes() if request.subscription else set()
             if managers_only and membership.role not in MANAGERS:
                 return HttpResponseForbidden("این بخش فقط برای مالک و مدیر دفتر است.")
-            if feature and not has_feature(tenant, feature):
-                return render(request, "panel/feature_locked.html", {"feature": feature}, status=402)
+            if feature and feature not in request.features:
+                addon = Addon.objects.filter(code=feature).first()
+                return render(request, "panel/feature_locked.html", {"addon": addon}, status=402)
             sub = request.subscription
             if request.method == "POST" and sub and not sub.is_writable and not write_ok_when_expired:
                 messages.error(request, "اشتراک منقضی شده و محیط فقط‌خواندنی است. از بخش اشتراک تمدید کنید.")
@@ -53,6 +55,9 @@ def panel_view(*, write_ok_when_expired=False, managers_only=False, feature=None
 def storage_used_bytes(tenant) -> int:
     from django.db.models import Sum
 
+    from apps.claims.models import ClaimDocument
     from apps.crm.models import Policy
 
-    return Policy.all_objects.filter(tenant=tenant).aggregate(s=Sum("file_size"))["s"] or 0
+    policies = Policy.all_objects.filter(tenant=tenant).aggregate(s=Sum("file_size"))["s"] or 0
+    claims = ClaimDocument.objects.filter(claim__tenant=tenant).aggregate(s=Sum("size"))["s"] or 0
+    return policies + claims

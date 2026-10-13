@@ -1,0 +1,28 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}یادآورهای پیامکی{% endblock %}
+{% block content %}
+<div class="page-head"><h1>یادآورهای پیامکی</h1></div>
+{% if not can_sms %}
+<p class="note warn-note">پیامک‌ها از پنل پیامک خود دفتر فرستاده می‌شوند و هنوز وصل نشده است. از <a href="{% url 'panel:integrations' %}">اتصالات</a> وصلش کنید؛ تا آن موقع چیزی ارسال نمی‌شود.</p>
+{% endif %}
+{% if failed_count %}<p class="note warn-note">{{ failed_count|fa }} پیامک در ۷ روز گذشته ارسال نشد (معمولاً به‌خاطر اعتبار پنل پیامک). فردا خودکار دوباره تلاش می‌شود.</p>{% endif %}
+<div class="two-col">
+  <form method="post" class="panel-box" novalidate>
+    {% csrf_token %}
+    <p class="muted small">هر روز ساعت ۱۰ صبح بررسی و ارسال می‌شود. هر پیامک فقط یک بار برای هر بیمه‌نامه و هر فاصله زمانی می‌رود.</p>
+    {% include "includes/form_fields.html" %}
+    <p class="muted small">در متن‌ها می‌توانید این‌ها را بگذارید: <code>{name}</code> نام مشتری، <code>{line}</code> رشته، <code>{subject}</code> موضوع بیمه، <code>{days}</code> روز مانده، <code>{date}</code> تاریخ، <code>{amount}</code> مبلغ قسط، <code>{office}</code> نام دفتر، <code>{phone}</code> تلفن دفتر.</p>
+    <button class="btn" type="submit">ذخیره</button>
+  </form>
+  <section class="panel-box">
+    <h2 class="h2">آخرین پیامک‌ها</h2>
+    {% if logs %}
+    <ul class="plain-list msg-log">
+      {% for l in logs %}<li><span><strong>{{ l.get_kind_display }}</strong> <span class="ltr num muted">{{ l.mobile|fa }}</span><br><span class="small">{{ l.text|truncatechars:90 }}</span></span>
+        <span class="small">{% if l.ok %}<span class="tag ok">ارسال شد</span>{% else %}<span class="tag hot" title="{{ l.error }}">ناموفق</span>{% endif %}<br><span class="muted">{{ l.created_at|jdate:"time" }}</span></span></li>{% endfor %}
+    </ul>
+    {% else %}<p class="empty">هنوز پیامکی فرستاده نشده است.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

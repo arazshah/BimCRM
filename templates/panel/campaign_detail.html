@@ -1,0 +1,26 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}{{ campaign.title }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ campaign.title }}</h1><a class="btn btn-ghost btn-sm" href="{% url 'panel:campaigns' %}">بازگشت</a></div>
+<div class="two-col">
+  <section class="panel-box">
+    <h2 class="h2">متن</h2>
+    <p class="sms-preview">{{ campaign.text|linebreaksbr }}<br>لغو۱۱</p>
+    <p class="muted small">{% if campaign.line %}فقط دارندگان {{ campaign.line }}{% endif %}{% if campaign.city %} · فقط شهر {{ campaign.city }}{% endif %}</p>
+  </section>
+  <section class="panel-box">
+    {% if campaign.status == "draft" %}
+      <h2 class="h2">{{ count|fa }} گیرنده</h2>
+      {% if sample %}<p class="muted small">{% for c in sample %}{{ c.full_name }}{% if not forloop.last %}، {% endif %}{% endfor %}{% if count > sample|length %} و …{% endif %}</p>{% endif %}
+      {% if count and can_sms %}
+      <form method="post">{% csrf_token %}<button class="btn" type="submit" onclick="return confirm('{{ count }} پیامک ارسال شود؟ این کار برگشت ندارد.')">ارسال به {{ count|fa }} نفر</button></form>
+      <p class="muted small">هزینه پیامک‌ها از اعتبار پنل پیامک خود دفتر کم می‌شود.</p>
+      {% elif not can_sms %}<p class="note warn-note">پنل پیامک دفتر وصل نیست.</p>
+      {% else %}<p class="empty">با این فیلترها گیرنده‌ای پیدا نشد.</p>{% endif %}
+    {% else %}
+      <dl class="facts"><div><dt>وضعیت</dt><dd>{{ campaign.get_status_display }}</dd></div><div><dt>گیرندگان</dt><dd class="num">{{ campaign.recipients|fa }}</dd></div><div><dt>ارسال‌شده</dt><dd class="num">{{ campaign.sent|fa }}</dd></div><div><dt>ناموفق</dt><dd class="num">{{ campaign.failed|fa }}</dd></div></dl>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

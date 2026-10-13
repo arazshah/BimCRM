@@ -22,6 +22,15 @@ class Customer(TenantOwned):
     city = models.CharField("شهر", max_length=60, blank=True)
     source = models.CharField("منبع آشنایی", max_length=20, choices=Source.choices, default=Source.OTHER)
     notes = models.TextField("یادداشت", blank=True)
+    marketer = models.ForeignKey(
+        "network.Marketer",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="customers",
+        verbose_name="بازاریاب معرف",
+    )
+    sms_opt_out = models.BooleanField("پیامک تبلیغاتی نمی‌خواهد", default=False)
     created_at = models.DateTimeField("ثبت", auto_now_add=True)
 
     class Meta:
@@ -53,6 +62,23 @@ class Policy(TenantOwned):
     renewed_from = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="renewals", verbose_name="تمدید از"
     )
+    commission_rate = models.DecimalField(
+        "نرخ کارمزد (درصد)",
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="خالی = از جدول نرخ کارمزد خوانده می‌شود",
+    )
+    commission_received = models.PositiveBigIntegerField("کارمزد دریافت‌شده (تومان)", default=0)
+    marketer = models.ForeignKey(
+        "network.Marketer",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="policies",
+        verbose_name="بازاریاب",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -63,7 +89,22 @@ class Policy(TenantOwned):
     def __str__(self):
         return f"{self.line} {self.number}"
 
+    @property
+    def commission_expected(self) -> int:
+        if self.commission_rate is None:
+            return 0
+        return int(self.premium * self.commission_rate / 100)
+
     def save(self, *args, **kwargs):
+        self.ensure_tenant()
+        if self.commission_rate is None and self.company_id and self.line_id:
+            from apps.finance.models import CommissionRule
+
+            self.commission_rate = CommissionRule.rate_for(self.tenant_id, self.company_id, self.line_id)
+        if self.marketer_id is None and self.customer_id:
+            self.marketer_id = (
+                Customer.all_objects.filter(pk=self.customer_id).values_list("marketer_id", flat=True).first()
+            )
         if self.file and hasattr(self.file, "size"):
             try:
                 self.file_size = self.file.size
@@ -96,6 +137,14 @@ class QuoteRequest(TenantOwned):
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="مسئول"
     )
     staff_note = models.TextField("یادداشت داخلی", blank=True)
+    marketer = models.ForeignKey(
+        "network.Marketer",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="quotes",
+        verbose_name="بازاریاب معرف",
+    )
     created_at = models.DateTimeField("ثبت", auto_now_add=True)
 
     class Meta:

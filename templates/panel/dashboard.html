@@ -23,6 +23,8 @@
 </section>
 {% endif %}
 
+{% if alerts %}<ul class="alerts">{% for text, url, q in alerts %}<li><a href="{% url url %}{{ q }}">{{ text|fa }}</a></li>{% endfor %}</ul>{% endif %}
+
 <dl class="stats">
   <div><dt>مشتری</dt><dd class="num">{{ stats.customers|fa }}</dd></div>
   <div><dt>بیمه‌نامه فعال</dt><dd class="num">{{ stats.active_policies|fa }}</dd></div>
