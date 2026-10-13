@@ -79,3 +79,25 @@ class TenantHostMiddleware:
             return self.get_response(request)
         finally:
             reset_current_tenant(token)
+
+
+class HostCookieDomainMiddleware:
+    """Share the session and CSRF cookies across bimcrm.ir and its subdomains, but not on agents' own domains.
+
+    SESSION_COOKIE_DOMAIN/CSRF_COOKIE_DOMAIN are ".bimcrm.ir". A browser on alborz1234.ir rejects a cookie for
+    that domain, which would break every form (quote request, customer login) on a connected custom domain.
+    There the cookies are re-issued as host-only.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        host = request.get_host().split(":")[0].lower()
+        platform = settings.PLATFORM_DOMAIN.lower()
+        if host != platform and not host.endswith("." + platform):
+            for name in (settings.SESSION_COOKIE_NAME, settings.CSRF_COOKIE_NAME):
+                if name in response.cookies:
+                    response.cookies[name]["domain"] = ""
+        return response
