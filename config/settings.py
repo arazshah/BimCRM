@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,6 +41,10 @@ INSTALLED_APPS = [
     "apps.crm",
     "apps.integrations",
     "apps.tickets",
+    "apps.network",
+    "apps.finance",
+    "apps.claims",
+    "apps.messaging",
     "apps.panel",
     "apps.main",
 ]
@@ -129,6 +134,8 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULE = {
     "check-pending-domains": {"task": "apps.core.tasks.check_pending_domains", "schedule": 300.0},
     "subscription-lifecycle": {"task": "apps.billing.tasks.run_subscription_lifecycle", "schedule": 3600.0},
+    # Customers' renewal, installment and birthday SMS go out at 10:00 Tehran time.
+    "daily-reminders": {"task": "apps.messaging.tasks.daily_reminders", "schedule": crontab(hour=10, minute=0)},
 }
 
 # Platform SMS (sms.ir) — only for platform messages: OTP, subscription reminders, ticket replies
@@ -155,3 +162,4 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler"}},
     "root": {"handlers": ["console"], "level": "INFO"},
 }
+SILENCED_SYSTEM_CHECKS = ["models.W047"]  # SQLite (dev only) lacks NULLS NOT DISTINCT; PostgreSQL enforces it

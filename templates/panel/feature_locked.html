@@ -1,5 +1,15 @@
 {% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}{{ addon.name|default:"افزونه" }}{% endblock %}
 {% block content %}
-<div class="page-head"><h1>این بخش افزونه است</h1></div>
-<p>برای استفاده، افزونه مربوط را از <a href="{% url 'panel:billing' %}">اشتراک</a> اضافه کنید.</p>
+<div class="page-head"><h1>{{ addon.name|default:"این بخش" }}</h1></div>
+<section class="panel-box locked">
+  <p>این بخش افزونه است و روی اشتراک شما فعال نیست.</p>
+  {% if addon %}
+  <p>{{ addon.description }}</p>
+  <p class="num"><strong>{{ addon.monthly_price|toman }}</strong> تومان در ماه{% if addon.yearly_price %} یا {{ addon.yearly_price|toman }} تومان سالانه{% endif %}</p>
+  {% endif %}
+  {% if request.membership.role != "staff" %}<a class="btn" href="{% url 'panel:billing' %}">فعال‌کردن از بخش اشتراک</a>
+  {% else %}<p class="muted">برای فعال‌کردن، به مالک یا مدیر دفتر بگویید.</p>{% endif %}
+</section>
 {% endblock %}

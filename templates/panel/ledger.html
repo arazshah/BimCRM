@@ -1,0 +1,26 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}درآمد و هزینه{% endblock %}
+{% block content %}
+<div class="page-head"><h1>درآمد و هزینه</h1>{% include "panel/_month_nav.html" %}</div>
+{% include "panel/_finance_tabs.html" %}
+<div class="two-col">
+  <section class="panel-box">
+    <h2 class="h2">{{ label }} <span class="muted small num">درآمد {{ income|toman }} · هزینه {{ expense|toman }}</span></h2>
+    {% if entries %}
+    <div class="table-wrap"><table class="data">
+      <thead><tr><th>تاریخ</th><th>شرح</th><th>دسته</th><th>مبلغ (تومان)</th><th></th></tr></thead>
+      <tbody>{% for e in entries %}
+        <tr><td>{{ e.date|jdate }}</td><td>{{ e.description|default:"—" }}</td><td>{{ e.get_category_display }}</td>
+          <td class="num {% if e.kind == 'expense' %}neg{% else %}pos{% endif %}"><span dir="ltr">{% if e.kind == "expense" %}−{% else %}+{% endif %}{{ e.amount|toman }}</span></td>
+          <td><form method="post" action="{% url 'panel:ledger_delete' e.pk %}">{% csrf_token %}<button class="linkish danger" onclick="return confirm('این ردیف حذف شود؟')">حذف</button></form></td></tr>
+      {% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="empty">در این ماه ردیفی ثبت نشده است.</p>{% endif %}
+  </section>
+  <section class="panel-box">
+    <h2 class="h2">ردیف جدید</h2>
+    <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">ثبت</button></form>
+  </section>
+</div>
+{% endblock %}

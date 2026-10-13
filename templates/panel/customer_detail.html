@@ -12,6 +12,8 @@
   {% if customer.birth_date %}<div><dt>تولد</dt><dd>{{ customer.birth_date|jdate:"long" }}</dd></div>{% endif %}
   {% if customer.city %}<div><dt>شهر</dt><dd>{{ customer.city }}</dd></div>{% endif %}
   <div><dt>منبع</dt><dd>{{ customer.get_source_display }}</dd></div>
+  {% if customer.marketer %}<div><dt>بازاریاب معرف</dt><dd>{{ customer.marketer }}</dd></div>{% endif %}
+  {% if customer.sms_opt_out %}<div><dt>پیامک تبلیغاتی</dt><dd>نمی‌خواهد</dd></div>{% endif %}
 </dl>
 {% if customer.notes %}<p class="note">{{ customer.notes|linebreaksbr }}</p>{% endif %}
 
@@ -29,6 +31,27 @@
   </table></div>
   {% else %}<p class="empty">بیمه‌نامه‌ای ثبت نشده است.</p>{% endif %}
 </section>
+
+{% if installments is not None %}
+<section class="panel-box">
+  <div class="box-head"><h2 class="h2">اقساط و چک‌ها</h2>{% with p=policies|first %}{% if p %}<a href="{% url 'panel:installment_plan' %}?policy={{ p.pk }}">تقسیط</a>{% endif %}{% endwith %}</div>
+  {% if installments %}
+  <ul class="plain-list">{% for i in installments %}
+    <li><span>{{ i.policy.line }} · سررسید {{ i.due_date|jdate }} {% if i.is_overdue %}<span class="tag hot">معوق</span>{% endif %}<span class="muted small"> {{ i.get_method_display }}{% if i.cheque_number %} {{ i.cheque_number }}{% endif %}</span></span>
+      <span class="row-actions"><span class="num">{{ i.amount|toman }}</span><span class="tag {% if i.status == 'paid' %}ok{% elif i.status == 'bounced' %}hot{% endif %}">{{ i.get_status_display }}</span><a href="{% url 'panel:installment_edit' i.pk %}">ویرایش</a></span></li>
+  {% endfor %}</ul>
+  {% else %}<p class="empty">قسطی ثبت نشده است.</p>{% endif %}
+</section>
+{% endif %}
+
+{% if claims is not None %}
+<section class="panel-box">
+  <div class="box-head"><h2 class="h2">خسارت‌ها</h2>{% with p=policies|first %}{% if p %}<a href="{% url 'panel:claim_new' %}?policy={{ p.pk }}">ثبت خسارت</a>{% endif %}{% endwith %}</div>
+  {% if claims %}
+  <ul class="plain-list">{% for c in claims %}<li><a href="{% url 'panel:claim' c.pk %}">{{ c.policy.line }} — پرونده <span class="ltr num">{{ c.code|fa }}</span></a><span class="tag">{{ c.get_status_display }}</span></li>{% endfor %}</ul>
+  {% else %}<p class="empty">خسارتی ثبت نشده است.</p>{% endif %}
+</section>
+{% endif %}
 
 {% if quotes %}
 <section class="panel-box">

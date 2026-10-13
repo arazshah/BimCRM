@@ -1,0 +1,5 @@
+<nav class="month-nav" aria-label="ماه">
+  <a class="btn btn-ghost btn-sm" href="?m={{ offset|add:-1 }}" aria-label="ماه قبل">ماه قبل</a>
+  <strong>{{ label }}</strong>
+  {% if offset < 0 %}<a class="btn btn-ghost btn-sm" href="?m={{ offset|add:1 }}" aria-label="ماه بعد">ماه بعد</a>{% endif %}
+</nav>

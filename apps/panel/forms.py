@@ -18,16 +18,43 @@ class JalaliDateInput(forms.DateInput):
         super().__init__(format="%Y-%m-%d", **kwargs)
 
 
+def _limit_addon_fields(form, features):
+    """Fields that belong to add-ons only appear when the office has that add-on."""
+    from apps.network.models import Marketer
+
+    if "marketer" in form.fields:
+        if "marketers" in features:
+            form.fields["marketer"].queryset = Marketer.objects.filter(is_active=True)
+        else:
+            del form.fields["marketer"]
+    if "commission_rate" in form.fields and "finance" not in features:
+        del form.fields["commission_rate"]
+
+
 class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
-        fields = ["full_name", "mobile", "national_code", "birth_date", "city", "source", "notes"]
+        fields = [
+            "full_name",
+            "mobile",
+            "national_code",
+            "birth_date",
+            "city",
+            "source",
+            "marketer",
+            "notes",
+            "sms_opt_out",
+        ]
         widgets = {
             "birth_date": JalaliDateInput(),
             "notes": forms.Textarea(attrs={"rows": 3}),
             "mobile": forms.TextInput(attrs={"dir": "ltr", "inputmode": "numeric"}),
             "national_code": forms.TextInput(attrs={"dir": "ltr", "inputmode": "numeric"}),
         }
+
+    def __init__(self, *args, features=frozenset(), **kwargs):
+        super().__init__(*args, **kwargs)
+        _limit_addon_fields(self, features)
 
     def clean_mobile(self):
         mobile = normalize_mobile(self.cleaned_data["mobile"])
@@ -54,6 +81,8 @@ class PolicyForm(forms.ModelForm):
             "premium",
             "file",
             "status",
+            "commission_rate",
+            "marketer",
         ]
         widgets = {
             "start_date": JalaliDateInput(),
@@ -61,8 +90,9 @@ class PolicyForm(forms.ModelForm):
             "number": forms.TextInput(attrs={"dir": "ltr"}),
         }
 
-    def __init__(self, *args, storage_left: int | None = None, **kwargs):
+    def __init__(self, *args, storage_left: int | None = None, features=frozenset(), **kwargs):
         super().__init__(*args, **kwargs)
+        _limit_addon_fields(self, features)
         self.storage_left = storage_left
         self.fields["customer"].queryset = Customer.objects.all()
         self.fields["line"].queryset = self.fields["line"].queryset.filter(is_active=True)

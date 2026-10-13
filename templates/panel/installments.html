@@ -1,0 +1,29 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}اقساط و چک‌ها{% endblock %}
+{% block content %}
+<div class="page-head"><h1>اقساط و چک‌ها</h1><a class="btn btn-sm" href="{% url 'panel:installment_plan' %}">تقسیط بیمه‌نامه</a></div>
+{% include "panel/_finance_tabs.html" %}
+<nav class="tabs toolbar" aria-label="فیلتر">
+  <a href="?f=pending" {% if f == "pending" %}aria-current="true"{% endif %}>در انتظار</a>
+  <a href="?f=overdue" {% if f == "overdue" %}aria-current="true"{% endif %}>معوق</a>
+  <a href="?f=cheques" {% if f == "cheques" %}aria-current="true"{% endif %}>چک‌ها</a>
+  <a href="?f=bounced" {% if f == "bounced" %}aria-current="true"{% endif %}>برگشتی</a>
+  <a href="?f=all" {% if f == "all" %}aria-current="true"{% endif %}>همه</a>
+</nav>
+{% if page.object_list %}
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>بیمه‌گذار</th><th>بیمه‌نامه</th><th>سررسید</th><th>مبلغ (تومان)</th><th>روش</th><th>وضعیت</th><th></th></tr></thead>
+  <tbody>{% for i in page %}
+    <tr><td><a href="{% url 'panel:customer' i.policy.customer_id %}">{{ i.policy.customer.full_name }}</a></td>
+      <td>{{ i.policy.line }} <span class="ltr muted small">{{ i.policy.number }}</span></td>
+      <td>{{ i.due_date|jdate }} {% if i.is_overdue %}<span class="tag hot">معوق</span>{% endif %}</td>
+      <td class="num">{{ i.amount|toman }}</td>
+      <td>{{ i.get_method_display }}{% if i.cheque_number %}<br><span class="small muted ltr">{{ i.cheque_number }} {{ i.cheque_bank }}</span>{% endif %}</td>
+      <td><span class="tag {% if i.status == 'paid' %}ok{% elif i.status == 'bounced' %}hot{% endif %}">{{ i.get_status_display }}</span>{% if i.paid_at %}<br><span class="small muted">{{ i.paid_at|jdate }}</span>{% endif %}</td>
+      <td class="row-actions">{% if i.status == "pending" %}<form method="post" action="{% url 'panel:installment_paid' i.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="linkish">وصول شد</button></form>{% endif %}<a href="{% url 'panel:installment_edit' i.pk %}">ویرایش</a></td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% include "panel/_pager.html" %}
+{% else %}<p class="empty">قسطی با این فیلتر نیست. برای تقسیط حق بیمه یک بیمه‌نامه از «تقسیط بیمه‌نامه» استفاده کنید.</p>{% endif %}
+{% endblock %}

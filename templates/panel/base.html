@@ -23,6 +23,15 @@
       <a href="{% url 'panel:quotes' %}" {% if u == "quotes" or u == "quote" %}aria-current="page"{% endif %}>درخواست‌های سایت</a>
       <a href="{% url 'panel:customers' %}" {% if "customer" in u %}aria-current="page"{% endif %}>مشتریان</a>
       <a href="{% url 'panel:policies' %}" {% if "polic" in u %}aria-current="page"{% endif %}>بیمه‌نامه‌ها و تمدید</a>
+      <a href="{% url 'panel:reminders' %}" {% if u == "reminders" %}aria-current="page"{% endif %}>یادآورهای پیامکی</a>
+      <span class="nav-group">افزونه‌ها</span>
+      {% with f=request.features %}
+      <a href="{% url 'panel:finance' %}" {% if u in "finance installments installment_plan installment_edit commissions ledger" %}aria-current="page"{% endif %}>مالی و حسابداری{% if "finance" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      <a href="{% url 'panel:claims' %}" {% if "claim" in u %}aria-current="page"{% endif %}>خسارت{% if "claims" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      <a href="{% url 'panel:marketers' %}" {% if "marketer" in u %}aria-current="page"{% endif %}>بازاریابان{% if "marketers" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      <a href="{% url 'panel:campaigns' %}" {% if "campaign" in u %}aria-current="page"{% endif %}>کمپین پیامکی{% if "sms_campaigns" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      <a href="{% url 'panel:reports' %}" {% if "report" in u %}aria-current="page"{% endif %}>گزارش‌ها{% if "advanced_reports" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      {% endwith %}
       <span class="nav-group">سایت</span>
       <a href="{% url 'panel:site' %}" {% if u == "site" %}aria-current="page"{% endif %}>محتوای سایت</a>
       <a href="{% url 'panel:site_template' %}" {% if u == "site_template" %}aria-current="page"{% endif %}>قالب</a>

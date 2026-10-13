@@ -1,0 +1,19 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}بازاریابان{% endblock %}
+{% block content %}
+<div class="page-head"><h1>بازاریابان</h1>{% if request.membership.role != "staff" %}<a class="btn btn-sm" href="{% url 'panel:marketer_new' %}">بازاریاب جدید</a>{% endif %}</div>
+<p class="note">هر بازاریاب یک لینک معرف دارد. هر کس از آن لینک فرم استعلام را پر کند، درخواست و مشتری و بیمه‌نامه‌هایش به نام آن بازاریاب ثبت می‌شود. سرگروه از بیمه‌نامه‌های زیرمجموعه‌های مستقیمش هم کمیسیون سرگروهی می‌گیرد.</p>
+{% if rows %}
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>نام</th><th>سرگروه</th><th>لینک معرف</th><th>مشتری</th><th>کمیسیون (تومان)</th><th>تسویه‌شده</th><th>مانده</th></tr></thead>
+  <tbody>{% for r in rows %}
+    <tr class="{% if not r.m.is_active %}dim{% endif %}"><td><a href="{% url 'panel:marketer' r.m.pk %}">{{ r.m.full_name }}</a></td><td>{{ r.m.parent|default:"—" }}</td>
+      <td><code class="ltr small">{{ r.url }}</code> <button type="button" class="linkish copy" data-copy="{{ r.url }}">کپی</button></td>
+      <td class="num">{{ r.m.n_customers|fa }}</td><td class="num">{{ r.earned|toman }}</td><td class="num">{{ r.paid|toman }}</td>
+      <td class="num {% if r.balance > 0 %}warm-text{% endif %}"><span dir="ltr">{{ r.balance|toman }}</span></td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% else %}<p class="empty">هنوز بازاریابی تعریف نکرده‌اید.</p>{% endif %}
+{% endblock %}
+{% block scripts %}<script>document.querySelectorAll(".copy").forEach(b=>b.addEventListener("click",()=>{navigator.clipboard.writeText(b.dataset.copy);b.textContent="کپی شد"}))</script>{% endblock %}

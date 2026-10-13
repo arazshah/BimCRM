@@ -1,0 +1,45 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}مالی{% endblock %}
+{% block content %}
+<div class="page-head"><h1>مالی و حسابداری</h1>{% include "panel/_month_nav.html" %}</div>
+{% include "panel/_finance_tabs.html" %}
+
+<dl class="stats">
+  <div><dt>درآمد {{ label }}</dt><dd class="num">{{ income|toman }} <small>تومان</small></dd></div>
+  <div><dt>هزینه</dt><dd class="num">{{ expense|toman }} <small>تومان</small></dd></div>
+  <div><dt>مانده</dt><dd class="num {% if net < 0 %}neg{% endif %}"><span dir="ltr">{% if net < 0 %}−{% endif %}{{ net|stringformat:"d"|cut:"-"|toman }}</span> <small>تومان</small></dd></div>
+  <div><dt>کارمزد دریافت‌شده از انتظار</dt><dd class="num">{{ received|toman }} <small>از {{ expected|toman }}</small></dd></div>
+</dl>
+
+<div class="two-col">
+  <section class="panel-box">
+    <div class="box-head"><h2 class="h2">اقساط معوق{% if overdue_total %} <span class="tag hot num">{{ overdue_total|toman }} تومان</span>{% endif %}</h2><a href="{% url 'panel:installments' %}?f=overdue">همه</a></div>
+    {% if overdue %}
+    <ul class="plain-list">{% for i in overdue %}
+      <li><span><a href="{% url 'panel:customer' i.policy.customer_id %}">{{ i.policy.customer.full_name }}</a> <span class="muted small">{{ i.get_method_display }} · سررسید {{ i.due_date|jdate }}</span></span>
+        <span class="row-actions"><span class="num">{{ i.amount|toman }}</span><form method="post" action="{% url 'panel:installment_paid' i.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="linkish">وصول شد</button></form></span></li>
+    {% endfor %}</ul>
+    {% else %}<p class="empty">قسط معوقی ندارید.</p>{% endif %}
+  </section>
+  <section class="panel-box">
+    <div class="box-head"><h2 class="h2">سررسید ۱۴ روز آینده</h2><a href="{% url 'panel:installment_plan' %}">تقسیط جدید</a></div>
+    {% if upcoming %}
+    <ul class="plain-list">{% for i in upcoming %}
+      <li><span>{{ i.policy.customer.full_name }} <span class="muted small">{{ i.get_method_display }}{% if i.cheque_number %} {{ i.cheque_number }}{% endif %} · {{ i.due_date|jdate }}</span></span><span class="num">{{ i.amount|toman }}</span></li>
+    {% endfor %}</ul>
+    {% else %}<p class="empty">سررسیدی در دو هفته آینده نیست.</p>{% endif %}
+  </section>
+</div>
+
+<section class="panel-box">
+  <h2 class="h2">درآمد و هزینه {{ label }} به تفکیک</h2>
+  {% if by_category %}
+  <table class="data">
+    <thead><tr><th>نوع</th><th>دسته</th><th>جمع (تومان)</th></tr></thead>
+    <tbody>{% for r in by_category %}<tr><td>{% if r.kind == "income" %}درآمد{% else %}هزینه{% endif %}</td><td>{{ categories|get_item:r.category }}</td><td class="num">{{ r.total|toman }}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% else %}<p class="empty">در این ماه ردیفی ثبت نشده. کارمزدهای دریافتی خودکار اینجا می‌آیند؛ هزینه‌ها را از <a href="{% url 'panel:ledger' %}">درآمد و هزینه</a> ثبت کنید.</p>{% endif %}
+</section>
+<p class="muted small">حق بیمه‌ای که از مشتری برای شرکت بیمه می‌گیرید درآمد دفتر نیست و فقط در اقساط پیگیری می‌شود؛ درآمد دفتر کارمزد است.</p>
+{% endblock %}

@@ -15,6 +15,10 @@
 | `apps/crm` | مشتری، بیمه‌نامه، درخواست استعلام |
 | `apps/integrations` | سرویس‌های خود نماینده (درگاه، پیامک، اینماد، کد دلخواه) با رمزنگاری |
 | `apps/tickets` | تیکت پشتیبانی بین نماینده و سوپرادمین |
+| `apps/messaging` | یادآور تمدید، قسط و تولد با پنل پیامک خود نماینده (هر روز ساعت ۱۰)، کمپین پیامکی |
+| `apps/finance` | افزونه مالی: اقساط و چک، نرخ و دریافت کارمزد، دفتر درآمد و هزینه |
+| `apps/claims` | افزونه خسارت: پرونده، روند وضعیت، مدارک؛ اعلام خسارت از پنل مشتری |
+| `apps/network` | افزونه بازاریابان: لینک معرف، کمیسیون دو سطحی، تسویه |
 
 | Host | چه چیزی |
 | --- | --- |
@@ -30,7 +34,7 @@ python -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt
 export DEBUG=True
 python manage.py migrate
-python manage.py seed_demo          # محیط نمونه demo-alborz با موبایل 09120000000
+python manage.py seed_demo          # محیط نمونه demo-alborz با همه افزونه‌ها، موبایل 09120000000
 python manage.py createsuperuser    # برای admin
 python manage.py runserver
 ```

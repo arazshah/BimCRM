@@ -276,10 +276,13 @@ class TenantOwned(models.Model):
     class Meta:
         abstract = True
 
-    def save(self, *args, **kwargs):
+    def ensure_tenant(self):
         if not self.tenant_id:
             tenant = get_current_tenant()
             if tenant is None:
                 raise ValueError(f"{type(self).__name__} needs a tenant")
             self.tenant = tenant
+
+    def save(self, *args, **kwargs):
+        self.ensure_tenant()
         super().save(*args, **kwargs)

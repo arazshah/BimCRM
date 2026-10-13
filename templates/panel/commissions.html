@@ -1,0 +1,32 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}کارمزد{% endblock %}
+{% block content %}
+<div class="page-head"><h1>کارمزد</h1>{% include "panel/_month_nav.html" %}</div>
+{% include "panel/_finance_tabs.html" %}
+<div class="two-col">
+  <section class="panel-box">
+    <h2 class="h2">بیمه‌نامه‌های صادره {{ label }}</h2>
+    {% if policies %}
+    <div class="table-wrap"><table class="data">
+      <thead><tr><th>بیمه‌گذار</th><th>شرکت / رشته</th><th>حق بیمه</th><th>کارمزد انتظار</th><th>دریافت‌شده</th><th></th></tr></thead>
+      <tbody>{% for p in policies %}
+        <tr><td>{{ p.customer.full_name }}</td><td>{{ p.company }}<br><span class="small muted">{{ p.line }}{% if p.commission_rate is not None %} · {{ p.commission_rate|floatformat:"-2"|fa }}٪{% endif %}</span></td>
+          <td class="num">{{ p.premium|toman }}</td>
+          <td class="num">{% if p.commission_rate is None %}<span class="muted small">نرخ ندارد</span>{% else %}{{ p.commission_expected|toman }}{% endif %}</td>
+          <td class="num">{{ p.commission_received|toman }}</td>
+          <td><form method="post" action="{% url 'panel:commission_receive' p.pk %}" class="mini-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="number" name="amount" min="1" value="{% if p.commission_expected > p.commission_received %}{{ p.commission_expected|add:0|stringformat:'d' }}{% endif %}" aria-label="مبلغ کارمزد دریافتی"><button class="btn btn-ghost btn-sm">ثبت</button></form></td></tr>
+      {% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="empty">در این ماه بیمه‌نامه‌ای صادر نشده است.</p>{% endif %}
+  </section>
+  <section class="panel-box">
+    <h2 class="h2">نرخ‌های کارمزد</h2>
+    <p class="muted small">نرخ هر بیمه‌نامه جدید خودکار از اینجا خوانده می‌شود: اول شرکت و رشته، بعد فقط شرکت، بعد فقط رشته، بعد نرخ عمومی.</p>
+    {% if rules %}
+    <ul class="plain-list">{% for r in rules %}<li><span>{{ r.company|default:"همه شرکت‌ها" }} / {{ r.line|default:"همه رشته‌ها" }}</span><span class="row-actions"><strong class="num">{{ r.rate|floatformat:"-2"|fa }}٪</strong><form method="post" action="{% url 'panel:commission_rule_delete' r.pk %}">{% csrf_token %}<button class="linkish danger">حذف</button></form></span></li>{% endfor %}</ul>
+    {% endif %}
+    <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">افزودن نرخ</button></form>
+  </section>
+</div>
+{% endblock %}

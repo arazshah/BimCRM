@@ -13,6 +13,8 @@ from apps.integrations.senders import send_tenant_otp, tenant_can_sms
 
 from .models import FAQ, SiteSettings, Testimonial
 
+REF_COOKIE = "bc_ref"
+REF_MAX_AGE = 60 * 60 * 24 * 30
 CUSTOMER_COOKIE = "bc_customer"
 CUSTOMER_MAX_AGE = 60 * 60 * 24 * 30
 
@@ -60,7 +62,22 @@ def home(request):
     site = _site(request)
     if not site.is_published and not _is_team_member(request):
         return render(request, "sites/coming_soon.html", {"tenant": request.tenant}, status=200)
-    return render(request, f"sites/{site.template}/home.html", _site_context(request, site))
+    resp = render(request, f"sites/{site.template}/home.html", _site_context(request, site))
+    ref = request.GET.get("ref", "").strip().lower()[:12]
+    if ref and ref.isalnum():
+        # Marketer referral: remembered for 30 days, attached to the visitor's quote request.
+        resp.set_cookie(REF_COOKIE, ref, max_age=REF_MAX_AGE, httponly=True, samesite="Lax", secure=request.is_secure())
+    return resp
+
+
+def _referring_marketer(request):
+    from apps.billing.models import has_feature
+    from apps.network.models import Marketer
+
+    code = request.COOKIES.get(REF_COOKIE)
+    if not code or not has_feature(request.tenant, "marketers"):
+        return None
+    return Marketer.objects.filter(code=code, is_active=True).first()
 
 
 class QuoteForm(forms.Form):
@@ -90,7 +107,12 @@ def submit_quote(request):
         if value:
             details[field.get("label", name)] = value
     customer = Customer.objects.filter(mobile=form.cleaned_data["mobile"]).first()
+    marketer = _referring_marketer(request)
+    if customer and customer.marketer_id is None and marketer:
+        customer.marketer = marketer
+        customer.save(update_fields=["marketer"])
     quote = QuoteRequest.objects.create(
+        marketer=marketer,
         line=line,
         full_name=form.cleaned_data["full_name"],
         mobile=form.cleaned_data["mobile"],
@@ -134,14 +156,7 @@ def account(request):
     ctx = _site_context(request, site)
     mobile = _customer_mobile(request)
     if mobile:
-        customer = Customer.objects.filter(mobile=mobile).first()
-        policies = Policy.objects.filter(customer=customer).select_related("line", "company") if customer else []
-        quotes = QuoteRequest.objects.filter(mobile=mobile)[:10]
-        return render(
-            request,
-            "sites/account.html",
-            {**ctx, "customer": customer, "policies": policies, "quotes": quotes, "mobile": mobile},
-        )
+        return render(request, "sites/account.html", {**ctx, **_portal_data(request, mobile)})
     if not ctx["can_portal"]:
         return render(request, "sites/account_unavailable.html", ctx)
     step = "code" if request.session.get("portal_mobile") else "mobile"
@@ -188,3 +203,97 @@ def account_logout(request):
     resp = redirect("sites:home")
     resp.delete_cookie(CUSTOMER_COOKIE)
     return resp
+
+
+# ---------- Customer portal: installments and claims (when the office has those add-ons) ----------
+
+CUSTOMER_UPLOAD_MAX = 10 * 1024 * 1024
+CUSTOMER_UPLOAD_EXT = (".jpg", ".jpeg", ".png", ".webp", ".heic", ".pdf")
+
+
+def _features(request) -> set:
+    sub = getattr(request.tenant, "subscription", None)
+    return sub.active_addon_codes() if sub and sub.is_writable else set()
+
+
+def _portal_data(request, mobile: str) -> dict:
+    from apps.claims.models import Claim
+    from apps.finance.models import Installment
+
+    features = _features(request)
+    customer = Customer.objects.filter(mobile=mobile).first()
+    policies = (
+        list(Policy.objects.filter(customer=customer).select_related("line", "company").order_by("-end_date"))
+        if customer
+        else []
+    )
+    data = {
+        "customer": customer,
+        "policies": policies,
+        "mobile": mobile,
+        "quotes": QuoteRequest.objects.filter(mobile=mobile).select_related("line")[:10],
+        "installments": None,
+        "claims": None,
+    }
+    if customer and "finance" in features:
+        data["installments"] = (
+            Installment.objects.filter(policy__customer=customer)
+            .exclude(status=Installment.Status.PAID)
+            .select_related("policy__line")
+        )
+    if customer and "claims" in features:
+        data["claims"] = Claim.objects.filter(policy__customer=customer).prefetch_related("events", "documents")
+        data["claimable"] = [p for p in policies if p.status == Policy.Status.ACTIVE]
+    return data
+
+
+def _portal_customer(request):
+    mobile = _customer_mobile(request)
+    return Customer.objects.filter(mobile=mobile).first() if mobile else None
+
+
+@require_POST
+def account_claim_report(request):
+    from django.utils.dateparse import parse_date
+
+    from apps.claims.models import Claim, ClaimEvent
+
+    customer = _portal_customer(request)
+    if customer is None or "claims" not in _features(request):
+        return redirect("sites:account")
+    policy = Policy.objects.filter(customer=customer, pk=request.POST.get("policy")).first()
+    incident = parse_date(request.POST.get("incident_date", ""))
+    description = request.POST.get("description", "").strip()[:2000]
+    if policy is None or incident is None or len(description) < 10:
+        messages.error(request, "بیمه‌نامه، تاریخ حادثه و شرح حادثه (دست‌کم چند کلمه) را وارد کنید.")
+        return redirect("sites:account")
+    claim = Claim.objects.create(
+        policy=policy, incident_date=incident, description=description, reported_by_customer=True
+    )
+    ClaimEvent.objects.create(claim=claim, status=claim.status, note="اعلام از پنل مشتری")
+    messages.success(request, f"خسارت با شماره پرونده {claim.code} اعلام شد. مدارک را همین‌جا بارگذاری کنید.")
+    return redirect("sites:account")
+
+
+@require_POST
+def account_claim_upload(request, claim_id):
+    from apps.claims.models import Claim, ClaimDocument
+    from apps.panel.access import storage_used_bytes
+
+    customer = _portal_customer(request)
+    if customer is None or "claims" not in _features(request):
+        return redirect("sites:account")
+    claim = Claim.objects.filter(pk=claim_id, policy__customer=customer).first()
+    f = request.FILES.get("file")
+    title = request.POST.get("title", "").strip()[:120] or "مدرک"
+    if claim is None or f is None:
+        return redirect("sites:account")
+    sub = request.tenant.subscription
+    if not f.name.lower().endswith(CUSTOMER_UPLOAD_EXT) or f.size > CUSTOMER_UPLOAD_MAX:
+        messages.error(request, "فقط عکس یا PDF تا ۱۰ مگابایت.")
+    elif f.size > sub.storage_limit_bytes() - storage_used_bytes(request.tenant):
+        messages.error(request, "امکان بارگذاری نیست؛ با دفتر تماس بگیرید.")
+    else:
+        ClaimDocument.objects.create(claim=claim, title=title, file=f, uploaded_by_customer=True)
+        messages.success(request, "مدرک رسید.")
+    return redirect("sites:account")

@@ -1,9 +1,11 @@
 {% extends base_template %}
 {% load fa %}
 {% block main %}
-<section class="subpage">
+<section class="subpage wide-sub">
   <h1>{% if customer %}{{ customer.full_name }}{% else %}حساب شما{% endif %}</h1>
   <p class="muted">وارد شده با <span class="ltr">{{ mobile|fa }}</span> · <a href="/account/logout/">خروج</a></p>
+  {% if messages %}<ul class="flash">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
+
   <h2>بیمه‌نامه‌ها</h2>
   {% if policies %}
   <table class="acc-table">
@@ -11,6 +13,47 @@
     <tbody>{% for p in policies %}<tr><td>{{ p.line }}</td><td>{{ p.company }}</td><td>{{ p.subject }}</td><td>{{ p.end_date|jdate }}</td></tr>{% endfor %}</tbody>
   </table>
   {% else %}<p>بیمه‌نامه‌ای با این موبایل در دفتر ثبت نشده است.</p>{% endif %}
+
+  {% if installments %}
+  <h2>اقساط پیش رو</h2>
+  <table class="acc-table">
+    <thead><tr><th>بیمه‌نامه</th><th>سررسید</th><th>مبلغ (تومان)</th><th>وضعیت</th></tr></thead>
+    <tbody>{% for i in installments %}<tr><td>{{ i.policy.line }}</td><td>{{ i.due_date|jdate }}</td><td class="num">{{ i.amount|toman }}</td><td>{% if i.is_overdue %}معوق{% else %}{{ i.get_status_display }}{% endif %}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% endif %}
+
+  {% if claims is not None %}
+  <h2>خسارت</h2>
+  {% for c in claims %}
+  <article class="claim-card">
+    <h3>{{ c.policy.line }} — پرونده <span class="ltr">{{ c.code|fa }}</span></h3>
+    <ol class="status-steps">{% for e in c.events.all %}<li class="{% if forloop.last %}on{% endif %}">{{ e.get_status_display }}{% if e.note %}: {{ e.note }}{% endif %}</li>{% endfor %}</ol>
+    {% if c.documents.all %}<p class="muted small">مدارک فرستاده‌شده: {% for d in c.documents.all %}{{ d.title }}{% if not forloop.last %}، {% endif %}{% endfor %}</p>{% endif %}
+    {% if c.is_open %}
+    <form class="upload-row" method="post" action="/account/claims/{{ c.pk }}/upload/" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input name="title" placeholder="عنوان مدرک، مثلاً کروکی" aria-label="عنوان مدرک">
+      <input type="file" name="file" accept="image/*,.pdf" required aria-label="فایل">
+      <button class="site-btn" type="submit">فرستادن مدرک</button>
+    </form>
+    {% endif %}
+  </article>
+  {% empty %}<p>پرونده خسارتی ندارید.</p>{% endfor %}
+
+  {% if claimable %}
+  <details class="claim-new">
+    <summary>اعلام خسارت جدید</summary>
+    <form class="quote-form" method="post" action="/account/claims/report/">
+      {% csrf_token %}
+      <div class="qf-field"><label for="c-policy">بیمه‌نامه</label><select id="c-policy" name="policy" required>{% for p in claimable %}<option value="{{ p.pk }}">{{ p.line }} — {{ p.company }}{% if p.subject %} ({{ p.subject }}){% endif %}</option>{% endfor %}</select></div>
+      <div class="qf-field"><label for="c-date">تاریخ حادثه</label><input id="c-date" type="date" name="incident_date" required></div>
+      <div class="qf-field"><label for="c-desc">شرح حادثه</label><textarea id="c-desc" name="description" rows="4" required minlength="10"></textarea></div>
+      <button class="qf-submit" type="submit">ثبت خسارت</button>
+    </form>
+  </details>
+  {% endif %}
+  {% endif %}
+
   <h2>درخواست‌ها</h2>
   {% if quotes %}
   <table class="acc-table">

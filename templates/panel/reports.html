@@ -1,0 +1,34 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}گزارش‌ها{% endblock %}
+{% block content %}
+<div class="page-head"><h1>گزارش‌ها</h1><a class="btn btn-ghost btn-sm" href="{% url 'panel:reports_export' %}">خروجی اکسل بیمه‌نامه‌ها</a></div>
+<dl class="stats">
+  <div><dt>حق بیمه صادره ۱۲ ماه اخیر</dt><dd class="num">{{ year_total|toman }} <small>تومان</small></dd></div>
+  <div><dt>نرخ تمدید</dt><dd class="num">{% if renewal_rate is not None %}{{ renewal_rate|fa }}٪{% else %}—{% endif %}</dd></div>
+  <div><dt>بیمه‌نامه تمام‌شده / تمدیدشده</dt><dd class="num">{{ ended_n|fa }} / {{ renewed_n|fa }}</dd></div>
+  <div><dt>درخواست سایت / صادرشده</dt><dd class="num">{{ quotes_n|fa }} / {{ quotes_issued|fa }}</dd></div>
+</dl>
+
+<section class="panel-box">
+  <h2 class="h2">حق بیمه صادره به تفکیک ماه</h2>
+  <ol class="bars" aria-label="حق بیمه صادره ماهانه، ۱۲ ماه اخیر">
+    {% for m in months %}
+    <li><span class="bar-label">{{ m.label }}</span><span class="bar-track"><span class="bar" style="width: {{ m.premium|percent_of:peak }}%"></span></span><span class="bar-value num">{{ m.premium|toman }} <span class="muted small">({{ m.n|fa }})</span></span></li>
+    {% endfor %}
+  </ol>
+</section>
+
+<div class="two-col">
+  <section class="panel-box">
+    <h2 class="h2">به تفکیک شرکت</h2>
+    {% if by_company %}<table class="data"><thead><tr><th>شرکت</th><th>تعداد</th><th>حق بیمه (تومان)</th></tr></thead><tbody>{% for r in by_company %}<tr><td>{{ r.company__name }}</td><td class="num">{{ r.n|fa }}</td><td class="num">{{ r.premium|toman }}</td></tr>{% endfor %}</tbody></table>
+    {% else %}<p class="empty">داده‌ای نیست.</p>{% endif %}
+  </section>
+  <section class="panel-box">
+    <h2 class="h2">به تفکیک رشته</h2>
+    {% if by_line %}<table class="data"><thead><tr><th>رشته</th><th>تعداد</th><th>حق بیمه (تومان)</th></tr></thead><tbody>{% for r in by_line %}<tr><td>{{ r.line__name }}</td><td class="num">{{ r.n|fa }}</td><td class="num">{{ r.premium|toman }}</td></tr>{% endfor %}</tbody></table>
+    {% else %}<p class="empty">داده‌ای نیست.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

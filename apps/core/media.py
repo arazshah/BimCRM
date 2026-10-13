@@ -32,6 +32,10 @@ def _may_read_private(request, path: str) -> bool:
 
     if path.startswith("policies/"):
         return Policy.all_objects.filter(tenant=tenant, file=path).exists()
+    if path.startswith("claims/"):
+        from apps.claims.models import ClaimDocument
+
+        return ClaimDocument.objects.filter(claim__tenant=tenant, file=path).exists()
     if path.startswith("tickets/"):
         return TicketMessage.objects.filter(ticket__tenant=tenant, attachment=path).exists()
     return False

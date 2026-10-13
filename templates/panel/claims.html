@@ -1,0 +1,23 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}خسارت{% endblock %}
+{% block content %}
+<div class="page-head"><h1>خسارت</h1><a class="btn btn-sm" href="{% url 'panel:claim_new' %}">ثبت خسارت</a></div>
+<nav class="tabs toolbar" aria-label="وضعیت">
+  <a href="?s=open" {% if s == "open" %}aria-current="true"{% endif %}>باز</a>
+  {% for value, label in statuses %}<a href="?s={{ value }}" {% if s == value %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+  <a href="?s=all" {% if s == "all" %}aria-current="true"{% endif %}>همه</a>
+</nav>
+{% if page.object_list %}
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>پرونده</th><th>بیمه‌گذار</th><th>بیمه‌نامه</th><th>تاریخ حادثه</th><th>وضعیت</th><th>مبلغ (تومان)</th></tr></thead>
+  <tbody>{% for c in page %}
+    <tr><td><a class="ltr num" href="{% url 'panel:claim' c.pk %}">{{ c.code|fa }}</a>{% if c.reported_by_customer %} <span class="tag">از سایت</span>{% endif %}</td>
+      <td>{{ c.policy.customer.full_name }}</td><td>{{ c.policy.line }} · {{ c.policy.company }}</td><td>{{ c.incident_date|jdate }}</td>
+      <td><span class="tag {% if c.status == 'paid' %}ok{% elif c.status == 'rejected' %}hot{% elif c.status == 'docs_needed' %}warm{% endif %}">{{ c.get_status_display }}</span></td>
+      <td class="num">{% if c.amount_paid %}{{ c.amount_paid|toman }}{% else %}<span class="muted">{{ c.amount_claimed|toman }}</span>{% endif %}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% include "panel/_pager.html" %}
+{% else %}<p class="empty">پرونده خسارتی با این وضعیت نیست.</p>{% endif %}
+{% endblock %}
