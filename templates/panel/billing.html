@@ -4,30 +4,36 @@
 {% block content %}
 <div class="page-head"><h1>اشتراک</h1></div>
 {% if sub %}
-<section class="panel-box sub-summary">
-  <dl class="facts">
-    <div><dt>وضعیت</dt><dd><span class="tag {% if sub.status == 'active' %}ok{% elif sub.status == 'trial' %}warm{% else %}hot{% endif %}">{{ sub.get_status_display }}</span></dd></div>
-    <div><dt>تا</dt><dd>{{ sub.current_period_end|jdate:"long" }} <span class="muted">({{ sub.days_left|fa }} روز)</span></dd></div>
-    <div><dt>پکیج</dt><dd>{{ sub.package.name }}</dd></div>
-    <div><dt>فضا</dt><dd>{{ used|filesize_fa }} از {{ sub.storage_tier.storage_label|fa }}</dd></div>
-  </dl>
-  <div class="meter" role="progressbar" aria-valuenow="{{ used|percent_of:sub.storage_limit_bytes }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ used|percent_of:sub.storage_limit_bytes }}%"></span></div>
-  {% if can_manage %}
-  <div class="pay-row">
-    <form method="post" action="{{ pay_url }}">{% csrf_token %}<input type="hidden" name="period" value="monthly"><button class="btn">پرداخت ماهانه: {{ monthly|toman }} تومان</button></form>
-    <form method="post" action="{{ pay_url }}">{% csrf_token %}<input type="hidden" name="period" value="yearly"><button class="btn btn-ghost">پرداخت سالانه: {{ yearly|toman }} تومان</button></form>
+<section class="plan-hero">
+  <div class="plan-hero-main">
+    <span class="tag {% if sub.status == 'active' %}ok{% elif sub.status == 'trial' %}warm{% else %}hot{% endif %}">{{ sub.get_status_display }}</span>
+    <h2>{{ sub.package.name }}</h2>
+    <p>اعتبار تا <strong>{{ sub.current_period_end|jdate:"long" }}</strong> <span class="plan-days">({{ sub.days_left|fa }} روز مانده)</span></p>
+    {% if can_manage %}
+    <div class="pay-row">
+      <form method="post" action="{{ pay_url }}">{% csrf_token %}<input type="hidden" name="period" value="monthly"><button class="btn btn-light">پرداخت ماهانه: {{ monthly|toman }} تومان</button></form>
+      <form method="post" action="{{ pay_url }}">{% csrf_token %}<input type="hidden" name="period" value="yearly"><button class="btn btn-outline-light">پرداخت سالانه: {{ yearly|toman }} تومان</button></form>
+    </div>
+    <p class="plan-note">پرداخت با زرین‌پال؛ دوره جدید از پایان دوره فعلی شروع می‌شود.</p>
+    {% endif %}
   </div>
-  <p class="muted small">پرداخت با زرین‌پال؛ دوره جدید از پایان دوره فعلی شروع می‌شود.</p>
-  {% endif %}
+  <div class="plan-hero-side">
+    <span class="plan-side-label">فضای استفاده‌شده</span>
+    <strong>{{ used|filesize_fa }}</strong>
+    <span class="plan-side-of">از {{ sub.storage_tier.storage_label|fa }}</span>
+    <div class="meter" role="progressbar" aria-valuenow="{{ used|percent_of:sub.storage_limit_bytes }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ used|percent_of:sub.storage_limit_bytes }}%"></span></div>
+  </div>
 </section>
 
 {% if can_manage %}
 <form method="post" class="panel-box">
   {% csrf_token %}
   <h2 class="h2">فضا و افزونه‌ها</h2>
+  <h3 class="h3 sub-h">فضای ذخیره</h3>
   <div class="option-rows">
     {% for t in tiers %}<label class="option-row"><input type="radio" name="storage_tier" value="{{ t.pk }}" {% if t.pk == sub.storage_tier_id %}checked{% endif %}><span>{{ t.name }}</span><span class="muted">{% if t.monthly_price %}{{ t.monthly_price|toman }} تومان در ماه{% else %}داخل پکیج{% endif %}</span></label>{% endfor %}
   </div>
+  <h3 class="h3 sub-h">افزونه‌ها</h3>
   <div class="option-rows">
     {% for a in addons %}{% with q=items|get_item:a.code %}
     <label class="option-row">

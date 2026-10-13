@@ -2,38 +2,45 @@
 {% load fa %}
 {% block title %}گزارش‌ها{% endblock %}
 {% block content %}
-<div class="page-head"><h1>گزارش‌ها</h1><div class="head-actions">{% include "panel/_branch_select.html" %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:reports_export' %}{% if b %}?b={{ b }}{% endif %}">خروجی اکسل بیمه‌نامه‌ها</a></div></div>
+<div class="page-head"><div><h1>گزارش‌ها</h1><p class="page-sub">۱۲ ماه اخیر، بر اساس تاریخ شروع بیمه‌نامه‌ها</p></div><div class="head-actions">{% include "panel/_branch_select.html" %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:reports_export' %}{% if b %}?b={{ b }}{% endif %}">خروجی اکسل بیمه‌نامه‌ها</a></div></div>
 <dl class="stats">
   <div><dt>حق بیمه صادره ۱۲ ماه اخیر</dt><dd class="num">{{ year_total|toman }} <small>تومان</small></dd></div>
-  <div><dt>نرخ تمدید</dt><dd class="num">{% if renewal_rate is not None %}{{ renewal_rate|fa }}٪{% else %}—{% endif %}</dd></div>
+  <div><dt>نرخ تمدید</dt><dd class="num">{% if renewal_rate is not None %}{{ renewal_rate|fa }}٪{% else %}—{% endif %}</dd>{% if renewal_rate is not None %}<span class="meter"><span style="width: {{ renewal_rate }}%"></span></span>{% endif %}</div>
   <div><dt>بیمه‌نامه تمام‌شده / تمدیدشده</dt><dd class="num">{{ ended_n|fa }} / {{ renewed_n|fa }}</dd></div>
   <div><dt>درخواست سایت / صادرشده</dt><dd class="num">{{ quotes_n|fa }} / {{ quotes_issued|fa }}</dd></div>
 </dl>
 
 <section class="panel-box">
-  <h2 class="h2">حق بیمه صادره به تفکیک ماه</h2>
-  <ol class="bars" aria-label="حق بیمه صادره ماهانه، ۱۲ ماه اخیر">
+  <div class="box-head"><h2 class="h2">حق بیمه صادره به تفکیک ماه</h2></div>
+  <div class="trend trend-12" role="img" aria-label="حق بیمه صادره ماهانه، ۱۲ ماه اخیر؛ جزئیات در جدول زیر">
     {% for m in months %}
-    <li><span class="bar-label">{{ m.label }}</span><span class="bar-track"><span class="bar" style="width: {{ m.premium|percent_of:peak }}%"></span></span><span class="bar-value num">{{ m.premium|toman }} <span class="muted small">({{ m.n|fa }})</span></span></li>
+    <div class="trend-col{% if forloop.last %} now{% endif %}" tabindex="0" style="--h: {{ m.premium|percent_of:peak }}%">
+      <span class="trend-tip"><b>{{ m.label }}</b>{{ m.premium|toman }} تومان · {{ m.n|fa }} بیمه‌نامه</span>
+      <span class="trend-val">{% if forloop.last %}{{ m.premium|toman }}{% endif %}</span>
+      <span class="trend-bar"></span>
+      <span class="trend-x">{{ m.label|slice:":-5" }}</span>
+    </div>
     {% endfor %}
-  </ol>
+  </div>
+  <table class="visually-hidden"><caption>حق بیمه صادره ماهانه</caption><tbody>{% for m in months %}<tr><th scope="row">{{ m.label }}</th><td>{{ m.premium|toman }} تومان</td><td>{{ m.n|fa }} بیمه‌نامه</td></tr>{% endfor %}</tbody></table>
 </section>
 
-<div class="two-col">
+<div class="two-col even">
   <section class="panel-box">
     <h2 class="h2">به تفکیک شرکت</h2>
-    {% if by_company %}<table class="data"><thead><tr><th>شرکت</th><th>تعداد</th><th>حق بیمه (تومان)</th></tr></thead><tbody>{% for r in by_company %}<tr><td>{{ r.company__name }}</td><td class="num">{{ r.n|fa }}</td><td class="num">{{ r.premium|toman }}</td></tr>{% endfor %}</tbody></table>
+    {% if by_company %}<ul class="rank">{% for r in by_company %}<li><span class="rank-name">{{ r.company__name }}</span><span class="rank-val num">{{ r.premium|toman }} <small>({{ r.n|fa }})</small></span><span class="rank-bar"><span style="width: {{ r.premium|percent_of:by_company.0.premium }}%"></span></span></li>{% endfor %}</ul>
     {% else %}<p class="empty">داده‌ای نیست.</p>{% endif %}
   </section>
   <section class="panel-box">
     <h2 class="h2">به تفکیک رشته</h2>
-    {% if by_line %}<table class="data"><thead><tr><th>رشته</th><th>تعداد</th><th>حق بیمه (تومان)</th></tr></thead><tbody>{% for r in by_line %}<tr><td>{{ r.line__name }}</td><td class="num">{{ r.n|fa }}</td><td class="num">{{ r.premium|toman }}</td></tr>{% endfor %}</tbody></table>
+    {% if by_line %}<ul class="rank">{% for r in by_line %}<li><span class="rank-name">{{ r.line__name }}</span><span class="rank-val num">{{ r.premium|toman }} <small>({{ r.n|fa }})</small></span><span class="rank-bar"><span style="width: {{ r.premium|percent_of:by_line.0.premium }}%"></span></span></li>{% endfor %}</ul>
     {% else %}<p class="empty">داده‌ای نیست.</p>{% endif %}
   </section>
   {% if by_branch is not None %}<section class="panel-box">
     <h2 class="h2">به تفکیک شعبه</h2>
-    {% if by_branch %}<table class="data"><thead><tr><th>شعبه</th><th>تعداد</th><th>حق بیمه (تومان)</th></tr></thead><tbody>{% for r in by_branch %}<tr><td>{{ r.branch__name|default:"بدون شعبه" }}</td><td class="num">{{ r.n|fa }}</td><td class="num">{{ r.premium|toman }}</td></tr>{% endfor %}</tbody></table>
+    {% if by_branch %}<ul class="rank">{% for r in by_branch %}<li><span class="rank-name">{{ r.branch__name|default:"بدون شعبه" }}</span><span class="rank-val num">{{ r.premium|toman }} <small>({{ r.n|fa }})</small></span><span class="rank-bar"><span style="width: {{ r.premium|percent_of:by_branch.0.premium }}%"></span></span></li>{% endfor %}</ul>
     {% else %}<p class="empty">داده‌ای نیست.</p>{% endif %}
   </section>{% endif %}
 </div>
+<p class="muted small">عدد داخل پرانتز تعداد بیمه‌نامه است.</p>
 {% endblock %}

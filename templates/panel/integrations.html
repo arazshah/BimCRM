@@ -6,11 +6,12 @@
 {% for g in groups %}
 <section class="panel-box">
   <h2 class="h2">{{ g.label }}</h2>
-  <ul class="integration-list">
+  <ul class="provider-grid">
     {% for p in g.providers %}
-    <li>
-      <span><strong>{{ p.label }}</strong>
-        {% if p.obj %}{% if p.obj.enabled %}<span class="tag ok">فعال</span>{% else %}<span class="tag">غیرفعال</span>{% endif %}{% endif %}</span>
+    <li class="{% if p.obj and p.obj.enabled %}on{% endif %}">
+      <span class="provider-mark" aria-hidden="true">{{ p.label|slice:":1" }}</span>
+      <span class="provider-text"><strong>{{ p.label }}</strong>
+        {% if p.obj %}{% if p.obj.enabled %}<span class="tag ok">فعال</span>{% else %}<span class="tag">غیرفعال</span>{% endif %}{% else %}<span class="muted small">وصل نشده</span>{% endif %}</span>
       <a class="btn btn-ghost btn-sm" href="{% url 'panel:integration_edit' g.kind p.key %}">{% if p.obj %}ویرایش{% else %}اتصال{% endif %}</a>
     </li>
     {% endfor %}
