@@ -107,6 +107,25 @@ class PlatformSettings(models.Model):
     zarinpal_merchant_id = models.CharField("مرچنت کد زرین‌پال", max_length=64, blank=True)
     zarinpal_mode = models.CharField("حالت زرین‌پال", max_length=10, choices=ZarinpalMode.choices, blank=True)
 
+    # --- How agents pay for their subscription ---
+    class PaymentMode(models.TextChoices):
+        ORDER = "order", "ثبت سفارش و هماهنگی تلفنی (بدون درگاه)"
+        ONLINE = "online", "پرداخت آنلاین با زرین‌پال"
+
+    payment_mode = models.CharField(
+        "روش پرداخت اشتراک", max_length=10, choices=PaymentMode.choices, default=PaymentMode.ORDER
+    )
+    order_grace_days = models.PositiveIntegerField(
+        "روزهای فعال ماندن تا تأیید سفارش",
+        default=3,
+        help_text="اگر اشتراک دفتر در این فاصله تمام شود، تا تأیید پرداخت فعال می‌ماند (هر ۳۰ روز یک بار).",
+    )
+    order_payment_info = models.TextField(
+        "اطلاعات پرداخت روی پیش‌فاکتور",
+        blank=True,
+        help_text="اختیاری؛ مثلاً شماره کارت یا شبا و نام صاحب حساب. خالی بماند تا فقط تلفنی هماهنگ شود.",
+    )
+
     # --- Trust seals of the platform site itself (bimcrm.ir) ---
     enamad_code = models.CharField(
         "کد تأیید اینماد",

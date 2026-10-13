@@ -10,11 +10,22 @@
     <h2>{{ sub.package.name }}</h2>
     <p>اعتبار تا <strong>{{ sub.current_period_end|jdate:"long" }}</strong> <span class="plan-days">({{ sub.days_left|fa }} روز مانده)</span></p>
     {% if can_manage %}
-    <div class="pay-row">
-      <form method="post" action="{{ pay_url }}">{% csrf_token %}<input type="hidden" name="period" value="monthly"><button class="btn btn-light">پرداخت ماهانه: {{ monthly|toman }} تومان</button></form>
-      <form method="post" action="{{ pay_url }}">{% csrf_token %}<input type="hidden" name="period" value="yearly"><button class="btn btn-outline-light">پرداخت سالانه: {{ yearly|toman }} تومان</button></form>
-    </div>
-    <p class="plan-note">پرداخت با زرین‌پال؛ دوره جدید از پایان دوره فعلی شروع می‌شود.</p>
+      {% if online %}
+      <div class="pay-row">
+        <form method="post" action="{{ pay_url }}">{% csrf_token %}<input type="hidden" name="period" value="monthly"><button class="btn btn-light">پرداخت ماهانه: {{ monthly|toman }} تومان</button></form>
+        <form method="post" action="{{ pay_url }}">{% csrf_token %}<input type="hidden" name="period" value="yearly"><button class="btn btn-outline-light">پرداخت سالانه: {{ yearly|toman }} تومان</button></form>
+      </div>
+      <p class="plan-note">پرداخت با زرین‌پال؛ دوره جدید از پایان دوره فعلی شروع می‌شود.</p>
+      {% elif open_order %}
+      <div class="order-live">
+        <span class="order-pulse" aria-hidden="true"></span>
+        <div><strong>سفارش {{ open_order.number }} در جریان است</strong><span>{% if open_order.contacted_at %}کارشناس با شما تماس گرفته؛ بعد از واریز، اشتراک تمدید می‌شود.{% else %}کارشناس حساب به‌زودی با <span class="ltr">{{ open_order.contact_mobile|fa }}</span> تماس می‌گیرد.{% endif %}</span></div>
+        <a class="btn btn-light btn-sm" href="{% url 'panel:billing_order_detail' open_order.pk %}">پیش‌فاکتور و پیگیری</a>
+      </div>
+      {% else %}
+      <div class="pay-row"><a class="btn btn-light" href="#renew">ثبت سفارش تمدید</a></div>
+      <p class="plan-note">پیش‌فاکتور رسمی می‌گیرید و کارشناس حساب برای پرداخت با شما هماهنگ می‌کند.</p>
+      {% endif %}
     {% endif %}
   </div>
   <div class="plan-hero-side">
@@ -24,6 +35,45 @@
     <div class="meter" role="progressbar" aria-valuenow="{{ used|percent_of:sub.storage_limit_bytes }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ used|percent_of:sub.storage_limit_bytes }}%"></span></div>
   </div>
 </section>
+
+{% if can_manage and not online and not open_order %}
+<section class="renew card" id="renew" aria-labelledby="renew-title">
+  <div class="renew-main">
+    <h2 class="h2" id="renew-title">ثبت سفارش تمدید</h2>
+    <form method="post" action="{% url 'panel:billing_order' %}" class="renew-form">
+      {% csrf_token %}
+      <fieldset class="period-pick">
+        <legend class="visually-hidden">دوره</legend>
+        <label class="period-card"><input type="radio" name="period" value="yearly" checked>
+          <span class="pc-top"><strong>سالانه</strong>{% if platform.yearly_discount_note %}<em>{{ platform.yearly_discount_note }}</em>{% endif %}</span>
+          <span class="pc-price"><b class="num">{{ yearly|toman }}</b> تومان</span>
+          <span class="pc-sub">۱۲ ماه، از پایان دوره فعلی</span>
+        </label>
+        <label class="period-card"><input type="radio" name="period" value="monthly">
+          <span class="pc-top"><strong>ماهانه</strong></span>
+          <span class="pc-price"><b class="num">{{ monthly|toman }}</b> تومان</span>
+          <span class="pc-sub">۳۰ روز، از پایان دوره فعلی</span>
+        </label>
+      </fieldset>
+      <div class="renew-fields">
+        <div class="field"><label for="ro-mobile">{{ order_form.contact_mobile.label }}</label><input id="ro-mobile" name="contact_mobile" value="{{ order_form.contact_mobile.initial }}" dir="ltr" inputmode="numeric" required></div>
+        <div class="field"><label for="ro-time">{{ order_form.contact_time.label }}</label><select id="ro-time" name="contact_time">{% for v, l in order_form.contact_time.field.choices %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+        <div class="field full"><label for="ro-note">توضیح <span class="optional">(اختیاری)</span></label><textarea id="ro-note" name="note" rows="2" placeholder="مثلاً روش پرداخت دلخواه یا نام شخص پاسخ‌گو"></textarea></div>
+      </div>
+      <button class="btn" type="submit">ثبت سفارش و دریافت پیش‌فاکتور</button>
+    </form>
+  </div>
+  <aside class="renew-side">
+    <h3>چطور کار می‌کند</h3>
+    <ol class="renew-steps">
+      <li><strong>پیش‌فاکتور رسمی</strong><span>با شماره سفارش و ریز مبالغ، همین حالا.</span></li>
+      <li><strong>تماس کارشناس حساب</strong><span>در زمانی که انتخاب می‌کنید، برای هماهنگی پرداخت.</span></li>
+      <li><strong>فعال‌سازی</strong><span>بلافاصله بعد از تأیید واریز، با پیامک.</span></li>
+    </ol>
+    {% if platform.order_grace_days %}<p class="renew-promise"><svg aria-hidden="true"><use href="#p-shield"/></svg>تا تأیید پرداخت، دفترتان حداقل {{ platform.order_grace_days|fa }} روز بدون وقفه فعال می‌ماند.</p>{% endif %}
+  </aside>
+</section>
+{% endif %}
 
 {% if can_manage %}
 <form method="post" class="panel-box">
@@ -53,8 +103,8 @@
   <h2 class="h2">فاکتورها</h2>
   {% if invoices %}
   <div class="table-wrap"><table class="data">
-    <thead><tr><th>شماره</th><th>شرح</th><th>مبلغ (تومان)</th><th>وضعیت</th><th>کد پیگیری</th><th>تاریخ</th></tr></thead>
-    <tbody>{% for i in invoices %}<tr><td class="num">{{ i.pk|fa }}</td><td>{{ i.description }}</td><td class="num">{{ i.amount|toman }}</td><td>{{ i.get_status_display }}</td><td class="ltr num">{{ i.ref_id|fa|default:"—" }}</td><td>{{ i.created_at|jdate }}</td></tr>{% endfor %}</tbody>
+    <thead><tr><th>شماره</th><th>شرح</th><th>مبلغ (تومان)</th><th>وضعیت</th><th>کد پیگیری</th><th>تاریخ</th><th></th></tr></thead>
+    <tbody>{% for i in invoices %}<tr><td class="ltr num">{{ i.number }}</td><td>{{ i.description }}</td><td class="num">{{ i.amount|toman }}</td><td><span class="tag {% if i.status == 'paid' %}ok{% elif i.status == 'pending' %}warm{% endif %}">{% if i.is_open_order %}{% if i.contacted_at %}در انتظار واریز{% else %}در انتظار تماس{% endif %}{% else %}{{ i.get_status_display }}{% endif %}</span></td><td class="ltr num">{{ i.ref_id|fa|default:"—" }}</td><td>{{ i.created_at|jdate }}</td><td class="row-actions">{% if i.method == 'order' %}<a href="{% url 'panel:billing_order_detail' i.pk %}">پیش‌فاکتور</a>{% endif %}</td></tr>{% endfor %}</tbody>
   </table></div>
   {% else %}<p class="empty">هنوز فاکتوری ندارید.</p>{% endif %}
 </section>

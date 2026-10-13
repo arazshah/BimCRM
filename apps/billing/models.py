@@ -161,16 +161,41 @@ class Invoice(models.Model):
         PENDING = "pending", "در انتظار پرداخت"
         PAID = "paid", "پرداخت‌شده"
         FAILED = "failed", "ناموفق"
+        CANCELLED = "cancelled", "لغوشده"
+
+    class Method(models.TextChoices):
+        ONLINE = "online", "درگاه آنلاین"
+        ORDER = "order", "سفارش و هماهنگی با کارشناس"
+
+    class ContactTime(models.TextChoices):
+        ANY = "any", "هر ساعتی از روز"
+        MORNING = "morning", "صبح (۹ تا ۱۲)"
+        AFTERNOON = "afternoon", "بعدازظهر (۱۲ تا ۱۷)"
+        EVENING = "evening", "عصر (۱۷ تا ۲۰)"
 
     tenant = models.ForeignKey("core.Tenant", on_delete=models.CASCADE, related_name="invoices")
     period = models.CharField("دوره", max_length=10, choices=Period.choices)
     amount = models.PositiveBigIntegerField("مبلغ (تومان)")
     description = models.CharField("شرح", max_length=255)
     status = models.CharField("وضعیت", max_length=10, choices=Status.choices, default=Status.PENDING)
+    method = models.CharField("روش", max_length=10, choices=Method.choices, default=Method.ONLINE)
     authority = models.CharField(max_length=64, blank=True, db_index=True)
     ref_id = models.CharField("کد پیگیری", max_length=64, blank=True)
     created_at = models.DateTimeField("تاریخ", auto_now_add=True)
     paid_at = models.DateTimeField("پرداخت", null=True, blank=True)
+
+    # Order-based renewal (no online gateway): who to call, when, and the itemised pre-invoice.
+    lines = models.JSONField("ردیف‌ها", default=list, blank=True)
+    contact_mobile = models.CharField("موبایل تماس", max_length=11, blank=True)
+    contact_time = models.CharField(
+        "زمان مناسب تماس", max_length=10, choices=ContactTime.choices, default=ContactTime.ANY
+    )
+    note = models.TextField("توضیح سفارش‌دهنده", blank=True)
+    ticket = models.ForeignKey(
+        "tickets.Ticket", null=True, blank=True, on_delete=models.SET_NULL, related_name="+", verbose_name="تیکت"
+    )
+    contacted_at = models.DateTimeField("تماس کارشناس", null=True, blank=True)
+    grace_from = models.DateTimeField("پایان دوره پیش از مهلت سفارش", null=True, blank=True)
 
     class Meta:
         verbose_name = "فاکتور"
@@ -178,7 +203,15 @@ class Invoice(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"#{self.pk} {self.tenant.slug} {self.amount:,}"
+        return f"{self.number} {self.tenant.slug} {self.amount:,}"
+
+    @property
+    def number(self) -> str:
+        return f"BC-{self.pk:05d}" if self.pk else "BC-?"
+
+    @property
+    def is_open_order(self) -> bool:
+        return self.method == self.Method.ORDER and self.status == self.Status.PENDING
 
 
 def has_feature(tenant, code: str) -> bool:

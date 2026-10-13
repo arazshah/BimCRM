@@ -33,6 +33,9 @@ class PlatformSettingsForm(forms.ModelForm):
             "zarinpal_merchant_id",
             "enamad_code",
             "footer_badges_html",
+            "payment_mode",
+            "order_grace_days",
+            "order_payment_info",
         ]
 
     def clean(self):
@@ -83,6 +86,14 @@ class PlatformSettingsAdmin(admin.ModelAdmin):
                     "smsir_otp_template_id",
                     "smsir_line_number",
                 ),
+            },
+        ),
+        (
+            "روش پرداخت اشتراک",
+            {
+                "description": "در حالت «ثبت سفارش»، نماینده پیش‌فاکتور می‌گیرد و یک تیکت مالی برای شما باز می‌شود؛ "
+                "بعد از واریز، از «فاکتورها» با عمل «تأیید پرداخت و تمدید اشتراک» آن را فعال کنید.",
+                "fields": ("payment_mode", "order_grace_days", "order_payment_info"),
             },
         ),
         (
