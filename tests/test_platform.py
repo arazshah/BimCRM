@@ -699,3 +699,32 @@ def test_dashboard_kpis_trend_and_pipeline(client, tenant, owner):
     assert stats["new_quotes"] == 1 and stats["open_quotes"] == 1
     page = resp.content.decode()
     assert "حق بیمه صادره" in page and "لید تازه" in page
+
+
+def test_pay_from_panel_subdomain_passes_csrf(tenant, owner, monkeypatch):
+    """The billing page lives on the subdomain but posts to the main domain (cross-origin, HTTPS)."""
+    from django.test import Client
+
+    monkeypatch.setattr("apps.billing.zarinpal.request_payment", lambda *a, **k: ("A1", "https://pay/StartPay/A1"))
+    c = Client(enforce_csrf_checks=True)
+    c.force_login(owner)
+    sub_host = host(tenant)
+    c.get("/panel/billing/", HTTP_HOST=sub_host, secure=True)
+    token = c.cookies["csrftoken"].value
+    assert c.cookies["csrftoken"]["domain"] == f".{MAIN}"
+    resp = c.post(
+        f"/pay/{tenant.slug}/",
+        {"period": "monthly", "csrfmiddlewaretoken": token},
+        HTTP_HOST=MAIN,
+        HTTP_ORIGIN=f"https://{sub_host}",
+        HTTP_REFERER=f"https://{sub_host}/panel/billing/",
+        secure=True,
+    )
+    assert resp.status_code == 302 and resp["Location"].startswith("https://pay/")
+
+
+def test_custom_domain_gets_host_only_cookies(client, tenant):
+    Domain.objects.create(tenant=tenant, hostname="alborz1234.ir", status=Domain.Status.ACTIVE)
+    SiteSettings.all_objects.filter(tenant=tenant).update(is_published=True)
+    resp = client.get("/", HTTP_HOST="alborz1234.ir")  # the quote form sets the CSRF cookie
+    assert resp.status_code == 200 and resp.cookies["csrftoken"]["domain"] == ""

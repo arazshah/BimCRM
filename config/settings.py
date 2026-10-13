@@ -53,6 +53,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "apps.core.middleware.TenantHostMiddleware",
+    "apps.core.middleware.HostCookieDomainMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -114,7 +115,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Sessions: one login across bimcrm.ir and *.bimcrm.ir
 SESSION_COOKIE_DOMAIN = env("SESSION_COOKIE_DOMAIN", default=f".{PLATFORM_DOMAIN}")
 CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
+# The panel (on a subdomain) posts to the main domain, e.g. subscription payment. These origins are always
+# trusted, whatever the environment says, so an empty CSRF_TRUSTED_ORIGINS in the host UI cannot break it.
+CSRF_TRUSTED_ORIGINS = list(
+    dict.fromkeys(
+        [o for o in env.list("CSRF_TRUSTED_ORIGINS", default=[]) if o.strip()]
+        + [f"{scheme}://{host}" for scheme in ("https", "http") for host in (PLATFORM_DOMAIN, f"*.{PLATFORM_DOMAIN}")]
+    )
+)
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
 
 if env("SECURE_SSL"):
