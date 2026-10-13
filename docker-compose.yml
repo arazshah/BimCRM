@@ -30,6 +30,7 @@ services:
       ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID}     # set in Coolify
       ZARINPAL_SANDBOX: ${ZARINPAL_SANDBOX:-False}
       SUPERADMIN_MOBILE: ${SUPERADMIN_MOBILE}           # set in Coolify
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-}      # optional first password; change it after login
       MEDIA_ROOT: /data/media
     volumes:
       - media:/data/media

@@ -447,3 +447,13 @@ def test_tls_ask_only_allows_known_hosts(client, tenant):
     assert ask(MAIN) == 200 and ask(f"admin.{MAIN}") == 200 and ask(host(tenant)) == 200
     assert ask("good.ir") == 200 and ask("www.good.ir") == 200
     assert ask("pending.ir") == 404 and ask(f"ghost.{MAIN}") == 404 and ask("evil.com") == 404
+
+
+def test_ensure_superadmin_uses_configured_password(settings, db):
+    from django.core.management import call_command
+
+    settings.SUPERADMIN_MOBILE = "09104151005"
+    settings.SUPERADMIN_PASSWORD = "first-Pass-123"
+    call_command("ensure_superadmin")
+    user = User.objects.get(mobile="09104151005")
+    assert user.is_superuser and user.is_staff and user.check_password("first-Pass-123")
