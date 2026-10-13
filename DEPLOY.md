@@ -36,7 +36,8 @@ Pull Request → CI (lint + تست روی PostgreSQL + ساخت ایمیج) → 
 | --- | --- |
 | `SECRET_KEY` | یک رشته تصادفی بلند. ساخت: `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
 | `FIELD_ENCRYPTION_KEY` | کلید رمزنگاری اطلاعات اتصالات نماینده‌ها. ساخت: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"` — **هرگز عوضش نکن و جایی امن نگهش دار**؛ عوض شدنش یعنی کلیدهای درگاه و پیامک همه نماینده‌ها غیرقابل‌خواندن می‌شود. |
-| `POSTGRES_PASSWORD` | رمز پایگاه داده |
+| `POSTGRES_PASSWORD` | رمز مالک پایگاه داده (فقط برای migrate) |
+| `APP_DB_PASSWORD` | رمز نقش محدود `bimcrm_app` که برنامه با آن وصل می‌شود؛ یک رمز جدا و بلند |
 | `SUPERADMIN_MOBILE` | موبایل خودت. در اولین دیپلوی ساخته می‌شود و رمز یک‌بارمصرفش در لاگ سرویس `web` چاپ می‌شود. |
 | `SMSIR_API_KEY`، `SMSIR_OTP_TEMPLATE_ID`، `SMSIR_LINE_NUMBER` | پنل sms.ir خودت. قالب کد تأیید باید پارامتری به نام `CODE` داشته باشد. |
 | `ZARINPAL_MERCHANT_ID` | مرچنت زرین‌پال خودت. برای آزمایش `ZARINPAL_SANDBOX=True`. |
@@ -74,6 +75,16 @@ Docker Hub درخواست‌های IP ایران را رد می‌کند، پس 
 4. در «زیردامنه‌های رزرو» هر نامی که نباید ثبت شود اضافه کن.
 5. از `https://bimcrm.ir` با یک موبایل دیگر ثبت‌نام آزمایشی کن.
 
-## ۶. پشتیبان‌گیری
+## ۶. جداسازی داده دفاتر در پایگاه داده
+
+جدا از فیلتر برنامه، PostgreSQL با Row-Level Security نمی‌گذارد هیچ درخواستی ردیف دفتر دیگری را ببیند یا تغییر دهد. این لایه فقط وقتی کار می‌کند که برنامه با نقش غیرسوپریوزر وصل شود؛ برای همین:
+
+- migrate با مالک (`MIGRATE_DATABASE_URL`) اجرا می‌شود؛
+- `ensure_app_role` نقش `bimcrm_app` را می‌سازد (بدون SUPERUSER و BYPASSRLS) و دسترسی خواندن/نوشتن می‌دهد؛
+- web، worker و beat با `bimcrm_app` وصل می‌شوند.
+
+اگر به هر دلیل برنامه با نقش سوپریوزر وصل شود، `check --deploy` در لاگ هشدار `bimcrm.W001` می‌دهد.
+
+## ۷. پشتیبان‌گیری
 
 حجم‌های `pgdata` و `media` را در Coolify (بخش Backups) روزانه به مقصدی بیرون از همین سرور بفرست.

@@ -3,15 +3,15 @@
 {% block title %}درخواست‌های سایت{% endblock %}
 {% block content %}
 <div class="page-head"><h1>درخواست‌های سایت</h1></div>
-<nav class="tabs toolbar" aria-label="وضعیت">
-  <a href="?" {% if not s %}aria-current="true"{% endif %}>همه</a>
-  {% for value, label in statuses %}<a href="?s={{ value }}" {% if s == value %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
-</nav>
+<div class="toolbar"><nav class="tabs" aria-label="وضعیت">
+  <a href="?{% if b %}b={{ b }}{% endif %}" {% if not s %}aria-current="true"{% endif %}>همه</a>
+  {% for value, label in statuses %}<a href="?s={{ value }}{% if b %}&b={{ b }}{% endif %}" {% if s == value %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+</nav>{% include "panel/_branch_select.html" %}</div>
 {% if page.object_list %}
 <div class="table-wrap"><table class="data">
   <thead><tr><th>نام</th><th>موبایل</th><th>رشته</th><th>وضعیت</th><th>مسئول</th><th>ثبت</th></tr></thead>
   <tbody>{% for q in page %}
-    <tr><td><a href="{% url 'panel:quote' q.pk %}">{{ q.full_name }}</a></td><td class="ltr num">{{ q.mobile|fa }}</td><td>{{ q.line }}</td>
+    <tr><td><a href="{% url 'panel:quote' q.pk %}">{{ q.full_name }}</a></td><td class="ltr num">{{ q.mobile|fa }}</td><td>{{ q.line }}{% if q.branch and "branches" in request.features %} <span class="badge-branch">{{ q.branch.name }}</span>{% endif %}</td>
       <td><span class="tag st-{{ q.status }}">{{ q.get_status_display }}</span></td><td>{{ q.assigned_to|default:"—" }}</td><td class="muted">{{ q.created_at|jdate:"time" }}</td></tr>
   {% endfor %}</tbody>
 </table></div>

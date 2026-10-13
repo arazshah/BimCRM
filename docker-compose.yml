@@ -16,7 +16,12 @@ services:
       SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-.bimcrm.ir}
       CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://bimcrm.ir,https://*.bimcrm.ir}
       SECURE_SSL: "True"
-      DATABASE_URL: postgres://bimcrm:${POSTGRES_PASSWORD}@db:5432/bimcrm
+      # The app connects as a limited role so PostgreSQL row-level security applies;
+      # migrations use the owner (MIGRATE_DATABASE_URL). See DEPLOY.md.
+      DATABASE_URL: postgres://bimcrm_app:${APP_DB_PASSWORD}@db:5432/bimcrm
+      MIGRATE_DATABASE_URL: postgres://bimcrm:${POSTGRES_PASSWORD}@db:5432/bimcrm
+      APP_DB_USER: bimcrm_app
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}               # set in Coolify
       REDIS_URL: redis://redis:6379/0
       SMS_BACKEND: ${SMS_BACKEND:-smsir}
       SMSIR_API_KEY: ${SMSIR_API_KEY}                   # set in Coolify
@@ -50,7 +55,8 @@ services:
     volumes:
       - media:/data/media
     depends_on:
-      - web
+      web:
+        condition: service_healthy
 
   beat:
     build: .
@@ -58,7 +64,8 @@ services:
     restart: unless-stopped
     environment: *app-env
     depends_on:
-      - web
+      web:
+        condition: service_healthy
 
   db:
     image: postgres:16-alpine

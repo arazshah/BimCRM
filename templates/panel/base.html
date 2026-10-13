@@ -14,6 +14,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="side-head">
       <span class="office">{{ request.tenant.name }}</span>
+      {% if request.branch_scope %}<span class="badge-branch">{{ request.branch_scope.name }}</span>{% endif %}
       <a class="ltr side-url" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener">{{ request.tenant.primary_host }}</a>
     </div>
     {% with u=request.resolver_match.url_name %}
@@ -26,11 +27,14 @@
       <a href="{% url 'panel:reminders' %}" {% if u == "reminders" %}aria-current="page"{% endif %}>یادآورهای پیامکی</a>
       <span class="nav-group">افزونه‌ها</span>
       {% with f=request.features %}
-      <a href="{% url 'panel:finance' %}" {% if u in "finance installments installment_plan installment_edit commissions ledger" %}aria-current="page"{% endif %}>مالی و حسابداری{% if "finance" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      <a href="{% if request.branch_scope %}{% url 'panel:installments' %}{% else %}{% url 'panel:finance' %}{% endif %}" {% if u in "finance installments installment_plan installment_edit commissions ledger" %}aria-current="page"{% endif %}>مالی و حسابداری{% if "finance" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
       <a href="{% url 'panel:claims' %}" {% if "claim" in u %}aria-current="page"{% endif %}>خسارت{% if "claims" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      {% if not request.branch_scope %}
       <a href="{% url 'panel:marketers' %}" {% if "marketer" in u %}aria-current="page"{% endif %}>بازاریابان{% if "marketers" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
       <a href="{% url 'panel:campaigns' %}" {% if "campaign" in u %}aria-current="page"{% endif %}>کمپین پیامکی{% if "sms_campaigns" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
       <a href="{% url 'panel:reports' %}" {% if "report" in u %}aria-current="page"{% endif %}>گزارش‌ها{% if "advanced_reports" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      {% endif %}
+      {% if request.membership.role != "staff" %}<a href="{% url 'panel:branches' %}" {% if "branch" in u %}aria-current="page"{% endif %}>شعبه‌ها{% if "branches" not in f %}<span class="lock">افزونه</span>{% endif %}</a>{% endif %}
       {% endwith %}
       <span class="nav-group">سایت</span>
       <a href="{% url 'panel:site' %}" {% if u == "site" %}aria-current="page"{% endif %}>محتوای سایت</a>

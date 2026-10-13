@@ -23,7 +23,7 @@ from apps.messaging.models import Campaign, MessageLog
 from apps.messaging.services import campaign_recipients, notify_claim, reminder_settings
 from apps.network.models import Marketer
 
-from .access import panel_view, storage_used_bytes
+from .access import branch_filter, panel_view, scoped, storage_used_bytes
 from .forms_addons import (
     CampaignForm,
     ClaimDocumentForm,
@@ -93,7 +93,7 @@ def reminders(request):
 # ======================= Finance =======================
 
 
-@panel_view(feature="finance")
+@panel_view(feature="finance", office_wide=True)
 def finance(request):
     today = timezone.localdate()
     offset, start, end, label = _month(request)
@@ -126,7 +126,7 @@ def finance(request):
 
 @panel_view(feature="finance")
 def installments(request):
-    qs = Installment.objects.select_related("policy__customer", "policy__line")
+    qs = scoped(request, Installment.objects.select_related("policy__customer", "policy__line"), "policy__branch")
     today = timezone.localdate()
     flt = request.GET.get("f", "pending")
     if flt == "pending":
@@ -145,10 +145,10 @@ def installments(request):
 def installment_plan(request):
     initial = {"first_due": timezone.localdate() + timedelta(days=30)}
     if request.GET.get("policy"):
-        policy = Policy.objects.filter(pk=request.GET["policy"]).first()
+        policy = scoped(request, Policy.objects.all()).filter(pk=request.GET["policy"]).first()
         if policy:
             initial.update(policy=policy.pk, total=policy.premium)
-    form = InstallmentPlanForm(request.POST or None, initial=initial)
+    form = InstallmentPlanForm(request.POST or None, initial=initial, policies=scoped(request, Policy.objects.all()))
     if request.method == "POST" and form.is_valid():
         d = form.cleaned_data
         base, rest = divmod(d["total"], d["count"])
@@ -167,7 +167,7 @@ def installment_plan(request):
 
 @panel_view(feature="finance")
 def installment_edit(request, pk):
-    obj = get_object_or_404(Installment, pk=pk)
+    obj = get_object_or_404(scoped(request, Installment.objects.all(), "policy__branch"), pk=pk)
     form = InstallmentForm(request.POST or None, instance=obj)
     if request.method == "POST" and form.is_valid():
         inst = form.save(commit=False)
@@ -186,7 +186,7 @@ def installment_edit(request, pk):
 @panel_view(feature="finance")
 @require_POST
 def installment_paid(request, pk):
-    inst = get_object_or_404(Installment, pk=pk)
+    inst = get_object_or_404(scoped(request, Installment.objects.all(), "policy__branch"), pk=pk)
     inst.status = Installment.Status.PAID
     inst.paid_at = timezone.localdate()
     inst.save(update_fields=["status", "paid_at"])
@@ -194,7 +194,7 @@ def installment_paid(request, pk):
     return _next(request, "panel:installments")
 
 
-@panel_view(feature="finance")
+@panel_view(feature="finance", office_wide=True)
 def commissions(request):
     rules = CommissionRule.objects.select_related("company", "line")
     form = CommissionRuleForm(request.POST or None, tenant=request.tenant)
@@ -215,7 +215,7 @@ def commissions(request):
     )
 
 
-@panel_view(feature="finance")
+@panel_view(feature="finance", office_wide=True)
 @require_POST
 def commission_rule_delete(request, pk):
     get_object_or_404(CommissionRule, pk=pk).delete()
@@ -223,7 +223,7 @@ def commission_rule_delete(request, pk):
     return redirect("panel:commissions")
 
 
-@panel_view(feature="finance")
+@panel_view(feature="finance", office_wide=True)
 @require_POST
 def commission_receive(request, pk):
     policy = get_object_or_404(Policy, pk=pk)
@@ -245,7 +245,7 @@ def commission_receive(request, pk):
     return _next(request, "panel:commissions")
 
 
-@panel_view(feature="finance")
+@panel_view(feature="finance", office_wide=True)
 def ledger(request):
     offset, start, end, label = _month(request)
     form = LedgerForm(request.POST or None, initial={"date": timezone.localdate()})
@@ -269,7 +269,7 @@ def ledger(request):
     )
 
 
-@panel_view(feature="finance")
+@panel_view(feature="finance", office_wide=True)
 @require_POST
 def ledger_delete(request, pk):
     get_object_or_404(LedgerEntry, pk=pk).delete()
@@ -282,7 +282,9 @@ def ledger_delete(request, pk):
 
 @panel_view(feature="claims")
 def claims(request):
-    qs = Claim.objects.select_related("policy__customer", "policy__line", "policy__company")
+    qs = scoped(
+        request, Claim.objects.select_related("policy__customer", "policy__line", "policy__company"), "policy__branch"
+    )
     status = request.GET.get("s", "open")
     if status == "open":
         qs = qs.exclude(status__in=[Claim.Status.PAID, Claim.Status.REJECTED])
@@ -297,7 +299,9 @@ def claim_new(request):
     initial = {"incident_date": timezone.localdate()}
     if request.GET.get("policy"):
         initial["policy"] = request.GET["policy"]
-    form = ClaimForm(request.POST or None, initial=initial, tenant=request.tenant)
+    form = ClaimForm(
+        request.POST or None, initial=initial, tenant=request.tenant, policies=scoped(request, Policy.objects.all())
+    )
     if request.method == "POST" and form.is_valid():
         claim = form.save()
         ClaimEvent.objects.create(claim=claim, status=claim.status, created_by=request.user)
@@ -308,7 +312,9 @@ def claim_new(request):
 
 @panel_view(feature="claims")
 def claim_detail(request, pk):
-    claim = get_object_or_404(Claim.objects.select_related("policy__customer", "policy__line"), pk=pk)
+    claim = get_object_or_404(
+        scoped(request, Claim.objects.select_related("policy__customer", "policy__line"), "policy__branch"), pk=pk
+    )
     status_form = ClaimStatusForm(initial={"status": claim.status, "amount_paid": claim.amount_paid or None})
     doc_form = ClaimDocumentForm()
     if request.method == "POST":
@@ -352,8 +358,10 @@ def claim_detail(request, pk):
 
 @panel_view(feature="claims")
 def claim_edit(request, pk):
-    claim = get_object_or_404(Claim, pk=pk)
-    form = ClaimForm(request.POST or None, instance=claim, tenant=request.tenant)
+    claim = get_object_or_404(scoped(request, Claim.objects.all(), "policy__branch"), pk=pk)
+    form = ClaimForm(
+        request.POST or None, instance=claim, tenant=request.tenant, policies=scoped(request, Policy.objects.all())
+    )
     if request.method == "POST" and form.is_valid():
         form.save()
         return redirect("panel:claim", pk=claim.pk)
@@ -369,7 +377,7 @@ def _ref_url(request, marketer):
     return f"{request.tenant.site_url()}?ref={marketer.code}"
 
 
-@panel_view(feature="marketers")
+@panel_view(feature="marketers", office_wide=True)
 def marketers(request):
     rows = []
     for m in Marketer.objects.select_related("parent").annotate(n_customers=Count("customers", distinct=True)):
@@ -379,7 +387,7 @@ def marketers(request):
     return render(request, "panel/marketers.html", {"rows": rows})
 
 
-@panel_view(feature="marketers", managers_only=True)
+@panel_view(feature="marketers", managers_only=True, office_wide=True)
 def marketer_edit(request, pk=None):
     obj = get_object_or_404(Marketer, pk=pk) if pk else None
     form = MarketerForm(request.POST or None, instance=obj)
@@ -394,7 +402,7 @@ def marketer_edit(request, pk=None):
     )
 
 
-@panel_view(feature="marketers")
+@panel_view(feature="marketers", office_wide=True)
 def marketer_detail(request, pk):
     m = get_object_or_404(Marketer, pk=pk)
     form = PayoutForm(
@@ -478,28 +486,30 @@ def campaign_detail(request, pk):
 # ======================= Advanced reports =======================
 
 
-@panel_view(feature="advanced_reports")
+@panel_view(feature="advanced_reports", office_wide=True)
 def reports(request):
     today = timezone.localdate()
+    policies = scoped(request, Policy.objects.all())
     months = []
     for off in range(-11, 1):
         start, end, label = jalali.month_bounds(today, off)
-        qs = Policy.objects.filter(start_date__gte=start, start_date__lt=end).exclude(status="cancelled")
+        qs = policies.filter(start_date__gte=start, start_date__lt=end).exclude(status="cancelled")
         agg = qs.aggregate(premium=Sum("premium"), n=Count("id"))
         months.append({"label": label, "premium": agg["premium"] or 0, "n": agg["n"]})
     peak = max((m["premium"] for m in months), default=0) or 1
     year_start = jalali.month_bounds(today, -11)[0]
-    year_qs = Policy.objects.filter(start_date__gte=year_start).exclude(status="cancelled")
+    year_qs = policies.filter(start_date__gte=year_start).exclude(status="cancelled")
     by_company = year_qs.values("company__name").annotate(premium=Sum("premium"), n=Count("id")).order_by("-premium")
     by_line = year_qs.values("line__name").annotate(premium=Sum("premium"), n=Count("id")).order_by("-premium")
-    ended = Policy.objects.filter(end_date__gte=today - timedelta(days=365), end_date__lt=today).exclude(
-        status="cancelled"
-    )
+    ended = policies.filter(end_date__gte=today - timedelta(days=365), end_date__lt=today).exclude(status="cancelled")
     ended_n = ended.count()
     renewed_n = ended.filter(renewals__isnull=False).distinct().count()
     from apps.crm.models import QuoteRequest
 
-    quotes = QuoteRequest.objects.filter(created_at__date__gte=year_start)
+    quotes = scoped(request, QuoteRequest.objects.filter(created_at__date__gte=year_start))
+    by_branch = None
+    if "branches" in request.features:
+        by_branch = year_qs.values("branch__name").annotate(premium=Sum("premium"), n=Count("id")).order_by("-premium")
     return render(
         request,
         "panel/reports.html",
@@ -514,11 +524,13 @@ def reports(request):
             "quotes_n": quotes.count(),
             "quotes_issued": quotes.filter(status="issued").count(),
             "year_total": sum(m["premium"] for m in months),
+            "by_branch": by_branch,
+            **branch_filter(request),
         },
     )
 
 
-@panel_view(feature="advanced_reports")
+@panel_view(feature="advanced_reports", office_wide=True)
 def reports_export(request):
     resp = HttpResponse(content_type="text/csv; charset=utf-8")
     resp["Content-Disposition"] = f'attachment; filename="policies-{request.tenant.slug}.csv"'
@@ -537,10 +549,13 @@ def reports_export(request):
             "کارمزد انتظار",
             "کارمزد دریافتی",
             "بازاریاب",
+            "شعبه",
             "وضعیت",
         ]
     )
-    qs = Policy.objects.select_related("customer", "line", "company", "marketer").order_by("start_date")
+    qs = scoped(request, Policy.objects.select_related("customer", "line", "company", "marketer", "branch")).order_by(
+        "start_date"
+    )
     for p in qs.iterator():
         w.writerow(
             [
@@ -557,6 +572,7 @@ def reports_export(request):
                     p.commission_expected,
                     p.commission_received,
                     p.marketer.full_name if p.marketer else "",
+                    p.branch.name if p.branch else "",
                     p.get_status_display(),
                 )
             ]

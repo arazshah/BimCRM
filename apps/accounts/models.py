@@ -77,6 +77,14 @@ class Membership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="memberships")
     tenant = models.ForeignKey("core.Tenant", on_delete=models.CASCADE, related_name="memberships")
     role = models.CharField("نقش", max_length=20, choices=Role.choices, default=Role.STAFF)
+    branch = models.ForeignKey(
+        "crm.Branch",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name="شعبه",
+        help_text="کارمند شعبه فقط مشتریان و پرونده‌های همان شعبه را می‌بیند",
+    )
     is_active = models.BooleanField("فعال", default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

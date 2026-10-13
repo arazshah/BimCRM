@@ -18,7 +18,7 @@ from apps.claims.models import Claim
 from apps.core import jalali
 from apps.core.dns import check_domain
 from apps.core.models import Domain, PlatformSettings
-from apps.crm.models import Customer, Policy, QuoteRequest
+from apps.crm.models import Branch, Customer, Policy, QuoteRequest
 from apps.finance.models import Installment
 from apps.integrations.models import KIND_LABELS, PROVIDERS, Integration
 from apps.integrations.senders import test_connection
@@ -26,12 +26,14 @@ from apps.sites import registry
 from apps.sites.models import FAQ, SiteSettings, Testimonial
 from apps.tickets.models import Ticket, TicketMessage
 
-from .access import MANAGERS, panel_view, storage_used_bytes
+from .access import MANAGERS, branch_filter, panel_view, scoped, storage_used_bytes
 from .forms import (
+    BranchForm,
     CustomerForm,
     DomainForm,
     FAQFormSet,
     ImportForm,
+    MemberBranchForm,
     MemberForm,
     PolicyForm,
     QuoteUpdateForm,
@@ -55,10 +57,11 @@ def _site(request) -> SiteSettings:
 @panel_view()
 def dashboard(request):
     today = timezone.localdate()
+    policies = scoped(request, Policy.objects.all())
+    customers_qs = scoped(request, Customer.objects.all())
+    quotes_qs = scoped(request, QuoteRequest.objects.all(), include_unassigned=True)
     renewals = (
-        Policy.objects.filter(
-            status=Policy.Status.ACTIVE, end_date__gte=today, end_date__lte=today + timedelta(days=30)
-        )
+        policies.filter(status=Policy.Status.ACTIVE, end_date__gte=today, end_date__lte=today + timedelta(days=30))
         .select_related("customer", "line", "company")
         .order_by("end_date")[:12]
     )
@@ -77,13 +80,19 @@ def dashboard(request):
     month_start, month_end, _ = jalali.month_bounds(today)
     alerts = []
     if "finance" in request.features:
-        overdue = Installment.objects.filter(status=Installment.Status.PENDING, due_date__lt=today)
+        overdue = scoped(request, Installment.objects.all(), "policy__branch").filter(
+            status=Installment.Status.PENDING, due_date__lt=today
+        )
         n = overdue.count()
         if n:
             total = overdue.aggregate(s=Sum("amount"))["s"] or 0
             alerts.append((f"{n} قسط معوق به مبلغ {total:,} تومان", "panel:installments", "?f=overdue"))
     if "claims" in request.features:
-        n = Claim.objects.filter(status=Claim.Status.REPORTED, reported_by_customer=True).count()
+        n = (
+            scoped(request, Claim.objects.all(), "policy__branch")
+            .filter(status=Claim.Status.REPORTED, reported_by_customer=True)
+            .count()
+        )
         if n:
             alerts.append((f"{n} خسارت تازه از پنل مشتری", "panel:claims", "?s=reported"))
     return render(
@@ -91,15 +100,15 @@ def dashboard(request):
         "panel/dashboard.html",
         {
             "renewals": renewals,
-            "new_quotes": QuoteRequest.objects.filter(status=QuoteRequest.Status.NEW).select_related("line")[:6],
+            "new_quotes": quotes_qs.filter(status=QuoteRequest.Status.NEW).select_related("line")[:6],
             "stats": {
-                "customers": Customer.objects.count(),
-                "active_policies": Policy.objects.filter(status=Policy.Status.ACTIVE, end_date__gte=today).count(),
-                "month_premium": Policy.objects.filter(start_date__gte=month_start, start_date__lt=month_end)
+                "customers": customers_qs.count(),
+                "active_policies": policies.filter(status=Policy.Status.ACTIVE, end_date__gte=today).count(),
+                "month_premium": policies.filter(start_date__gte=month_start, start_date__lt=month_end)
                 .exclude(status=Policy.Status.CANCELLED)
                 .aggregate(s=Sum("premium"))["s"]
                 or 0,
-                "open_quotes": QuoteRequest.objects.filter(status__in=["new", "contacted", "waiting_docs"]).count(),
+                "open_quotes": quotes_qs.filter(status__in=["new", "contacted", "waiting_docs"]).count(),
             },
             "checklist": checklist,
             "alerts": alerts,
@@ -116,22 +125,27 @@ def dashboard(request):
 
 @panel_view()
 def customers(request):
-    qs = Customer.objects.annotate(n_policies=Count("policies")).order_by("-created_at")
+    qs = scoped(request, Customer.objects.annotate(n_policies=Count("policies"))).order_by("-created_at")
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(
             Q(full_name__icontains=q) | Q(mobile__contains=normalize_mobile(q) or q) | Q(national_code__contains=q)
         )
     page = Paginator(qs, 25).get_page(request.GET.get("page"))
-    return render(request, "panel/customers.html", {"page": page, "q": q})
+    return render(request, "panel/customers.html", {"page": page, "q": q, **branch_filter(request)})
 
 
 @panel_view()
 def customer_edit(request, pk=None):
-    obj = get_object_or_404(Customer, pk=pk) if pk else None
-    form = CustomerForm(request.POST or None, instance=obj, features=request.features)
+    obj = get_object_or_404(scoped(request, Customer.objects.all()), pk=pk) if pk else None
+    form = CustomerForm(
+        request.POST or None, instance=obj, features=request.features, branch_scope=request.branch_scope
+    )
     if request.method == "POST" and form.is_valid():
-        customer = form.save()
+        customer = form.save(commit=False)
+        if request.branch_scope is not None:
+            customer.branch = request.branch_scope
+        customer.save()
         messages.success(request, "مشتری ذخیره شد.")
         return redirect("panel:customer", pk=customer.pk)
     return render(
@@ -143,7 +157,7 @@ def customer_edit(request, pk=None):
 
 @panel_view()
 def customer_detail(request, pk):
-    customer = get_object_or_404(Customer, pk=pk)
+    customer = get_object_or_404(scoped(request, Customer.objects.all()), pk=pk)
     return render(
         request,
         "panel/customer_detail.html",
@@ -203,7 +217,7 @@ def customer_import(request):
 
 @panel_view()
 def policies(request):
-    qs = Policy.objects.select_related("customer", "line", "company")
+    qs = scoped(request, Policy.objects.select_related("customer", "line", "company"))
     today = timezone.localdate()
     flt = request.GET.get("f", "")
     if flt == "expiring":
@@ -214,7 +228,11 @@ def policies(request):
     if q:
         qs = qs.filter(Q(number__icontains=q) | Q(customer__full_name__icontains=q) | Q(subject__icontains=q))
     page = Paginator(qs.order_by("end_date"), 25).get_page(request.GET.get("page"))
-    return render(request, "panel/policies.html", {"page": page, "f": flt, "q": q, "today": today})
+    return render(
+        request,
+        "panel/policies.html",
+        {"page": page, "f": flt, "q": q, "today": today, **branch_filter(request)},
+    )
 
 
 def _storage_left(request) -> int | None:
@@ -226,11 +244,11 @@ def _storage_left(request) -> int | None:
 
 @panel_view()
 def policy_edit(request, pk=None):
-    obj = get_object_or_404(Policy, pk=pk) if pk else None
+    obj = get_object_or_404(scoped(request, Policy.objects.all()), pk=pk) if pk else None
     initial = {}
     renew_from = None
     if not obj and request.GET.get("renew"):
-        renew_from = get_object_or_404(Policy, pk=request.GET["renew"])
+        renew_from = get_object_or_404(scoped(request, Policy.objects.all()), pk=request.GET["renew"])
         initial = {
             "customer": renew_from.customer_id,
             "line": renew_from.line_id,
@@ -238,6 +256,7 @@ def policy_edit(request, pk=None):
             "subject": renew_from.subject,
             "start_date": renew_from.end_date,
             "end_date": renew_from.end_date + timedelta(days=365),
+            "branch": renew_from.branch_id,
         }
     elif not obj and request.GET.get("customer"):
         initial = {"customer": request.GET["customer"]}
@@ -248,9 +267,12 @@ def policy_edit(request, pk=None):
         initial=initial,
         storage_left=_storage_left(request),
         features=request.features,
+        branch_scope=request.branch_scope,
     )
     if request.method == "POST" and form.is_valid():
         policy = form.save(commit=False)
+        if request.branch_scope is not None:
+            policy.branch = request.branch_scope
         if renew_from:
             policy.renewed_from = renew_from
         policy.save()
@@ -273,30 +295,50 @@ def policy_edit(request, pk=None):
 
 @panel_view()
 def quotes(request):
-    qs = QuoteRequest.objects.select_related("line", "assigned_to")
+    qs = scoped(request, QuoteRequest.objects.select_related("line", "assigned_to", "branch"), include_unassigned=True)
     status = request.GET.get("s", "")
     if status in QuoteRequest.Status.values:
         qs = qs.filter(status=status)
     page = Paginator(qs, 25).get_page(request.GET.get("page"))
-    return render(request, "panel/quotes.html", {"page": page, "s": status, "statuses": QuoteRequest.Status.choices})
+    return render(
+        request,
+        "panel/quotes.html",
+        {"page": page, "s": status, "statuses": QuoteRequest.Status.choices, **branch_filter(request)},
+    )
 
 
 @panel_view()
 def quote_detail(request, pk):
-    quote = get_object_or_404(QuoteRequest.objects.select_related("line"), pk=pk)
-    form = QuoteUpdateForm(request.POST or None, instance=quote, tenant=request.tenant)
+    quote = get_object_or_404(
+        scoped(request, QuoteRequest.objects.select_related("line", "branch"), include_unassigned=True), pk=pk
+    )
+    form = QuoteUpdateForm(
+        request.POST or None,
+        instance=quote,
+        tenant=request.tenant,
+        features=request.features,
+        branch_scope=request.branch_scope,
+    )
     if request.method == "POST":
         if "make_customer" in request.POST:
             customer, created = Customer.objects.get_or_create(
                 mobile=quote.mobile,
-                defaults={"full_name": quote.full_name, "source": Customer.Source.WEBSITE, "marketer": quote.marketer},
+                defaults={
+                    "full_name": quote.full_name,
+                    "source": Customer.Source.WEBSITE,
+                    "marketer": quote.marketer,
+                    "branch": quote.branch or request.branch_scope,
+                },
             )
             quote.customer = customer
             quote.save(update_fields=["customer"])
             messages.success(request, "مشتری ساخته شد." if created else "به مشتری موجود وصل شد.")
             return redirect("panel:quote", pk=quote.pk)
         if form.is_valid():
-            form.save()
+            quote = form.save(commit=False)
+            if request.branch_scope is not None and quote.branch_id is None:
+                quote.branch = request.branch_scope  # staff who pick up an unrouted lead take it into their branch
+            quote.save()
             messages.success(request, "درخواست به‌روز شد.")
             return redirect("panel:quotes")
     return render(request, "panel/quote_detail.html", {"quote": quote, "form": form})
@@ -476,10 +518,18 @@ def integration_edit(request, kind, provider):
 
 @panel_view(managers_only=True)
 def team(request):
-    members = Membership.objects.filter(tenant=request.tenant).select_related("user")
+    members = Membership.objects.filter(tenant=request.tenant).select_related("user", "branch")
     sub = request.subscription
     limit = sub.user_limit() if sub else 1
-    form = MemberForm(request.POST or None)
+    if request.method == "POST" and "set_branch" in request.POST:
+        m = get_object_or_404(members, pk=request.POST["set_branch"])
+        bf = MemberBranchForm(request.POST)
+        if "branches" in request.features and bf.is_valid():
+            m.branch = bf.cleaned_data["branch"]
+            m.save(update_fields=["branch"])
+            messages.success(request, f"شعبه {m.user} به‌روز شد.")
+        return redirect("panel:team")
+    form = MemberForm(request.POST or None, features=request.features)
     if request.method == "POST" and form.is_valid():
         if members.filter(is_active=True).count() >= limit:
             messages.error(request, "سقف کاربران پر است. از بخش اشتراک «کاربر اضافه» بخرید.")
@@ -487,16 +537,46 @@ def team(request):
             user, _ = User.objects.get_or_create(
                 mobile=form.cleaned_data["mobile"], defaults={"full_name": form.cleaned_data["full_name"]}
             )
+            branch = form.cleaned_data.get("branch")
             m, created = Membership.objects.get_or_create(
-                user=user, tenant=request.tenant, defaults={"role": form.cleaned_data["role"]}
+                user=user, tenant=request.tenant, defaults={"role": form.cleaned_data["role"], "branch": branch}
             )
             if not created:
                 m.is_active = True
                 m.role = form.cleaned_data["role"]
+                m.branch = branch
                 m.save()
             messages.success(request, f"{user} اضافه شد؛ با همین موبایل از bimcrm.ir وارد می‌شود.")
         return redirect("panel:team")
-    return render(request, "panel/team.html", {"members": members, "form": form, "limit": limit})
+    branches = Branch.objects.filter(is_active=True) if "branches" in request.features else None
+    return render(request, "panel/team.html", {"members": members, "form": form, "limit": limit, "branches": branches})
+
+
+# ---------------- Branches (add-on) ----------------
+
+
+@panel_view(feature="branches", managers_only=True)
+def branches(request):
+    rows = Branch.objects.annotate(
+        n_customers=Count("customers", distinct=True),
+        n_staff=Count("membership", filter=Q(membership__is_active=True), distinct=True),
+    ).order_by("order", "name")
+    return render(request, "panel/branches.html", {"rows": rows})
+
+
+@panel_view(feature="branches", managers_only=True)
+def branch_edit(request, pk=None):
+    obj = get_object_or_404(Branch, pk=pk) if pk else None
+    form = BranchForm(request.POST or None, instance=obj)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "شعبه ذخیره شد.")
+        return redirect("panel:branches")
+    return render(
+        request,
+        "panel/form.html",
+        {"form": form, "title": f"ویرایش {obj.name}" if obj else "شعبه جدید", "back": "panel:branches"},
+    )
 
 
 @panel_view(managers_only=True)

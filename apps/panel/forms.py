@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from apps.accounts.models import Membership, normalize_mobile, validate_mobile
 from apps.core.dns import HOSTNAME_RE, normalize_hostname
 from apps.core.models import Domain
-from apps.crm.models import Customer, Policy, QuoteRequest
+from apps.crm.models import Branch, Customer, Policy, QuoteRequest
 from apps.sites.models import FAQ, SiteSettings, Testimonial
 from apps.tickets.models import Ticket
 
@@ -18,7 +18,7 @@ class JalaliDateInput(forms.DateInput):
         super().__init__(format="%Y-%m-%d", **kwargs)
 
 
-def _limit_addon_fields(form, features):
+def _limit_addon_fields(form, features, branch_scope=None):
     """Fields that belong to add-ons only appear when the office has that add-on."""
     from apps.network.models import Marketer
 
@@ -29,6 +29,13 @@ def _limit_addon_fields(form, features):
             del form.fields["marketer"]
     if "commission_rate" in form.fields and "finance" not in features:
         del form.fields["commission_rate"]
+    if "branch" in form.fields:
+        if "branches" in features and branch_scope is None:
+            from apps.crm.models import Branch
+
+            form.fields["branch"].queryset = Branch.objects.filter(is_active=True)
+        else:
+            del form.fields["branch"]  # branch-limited staff: saved into their own branch by the view
 
 
 class CustomerForm(forms.ModelForm):
@@ -52,9 +59,9 @@ class CustomerForm(forms.ModelForm):
             "national_code": forms.TextInput(attrs={"dir": "ltr", "inputmode": "numeric"}),
         }
 
-    def __init__(self, *args, features=frozenset(), **kwargs):
+    def __init__(self, *args, features=frozenset(), branch_scope=None, **kwargs):
         super().__init__(*args, **kwargs)
-        _limit_addon_fields(self, features)
+        _limit_addon_fields(self, features, branch_scope)
 
     def clean_mobile(self):
         mobile = normalize_mobile(self.cleaned_data["mobile"])
@@ -83,6 +90,7 @@ class PolicyForm(forms.ModelForm):
             "status",
             "commission_rate",
             "marketer",
+            "branch",
         ]
         widgets = {
             "start_date": JalaliDateInput(),
@@ -90,11 +98,14 @@ class PolicyForm(forms.ModelForm):
             "number": forms.TextInput(attrs={"dir": "ltr"}),
         }
 
-    def __init__(self, *args, storage_left: int | None = None, features=frozenset(), **kwargs):
+    def __init__(self, *args, storage_left: int | None = None, features=frozenset(), branch_scope=None, **kwargs):
         super().__init__(*args, **kwargs)
-        _limit_addon_fields(self, features)
+        _limit_addon_fields(self, features, branch_scope)
         self.storage_left = storage_left
-        self.fields["customer"].queryset = Customer.objects.all()
+        customers = Customer.objects.all()
+        if branch_scope is not None:
+            customers = customers.filter(branch=branch_scope)
+        self.fields["customer"].queryset = customers
         self.fields["line"].queryset = self.fields["line"].queryset.filter(is_active=True)
         self.fields["company"].queryset = self.fields["company"].queryset.filter(is_active=True)
 
@@ -112,13 +123,14 @@ class PolicyForm(forms.ModelForm):
 class QuoteUpdateForm(forms.ModelForm):
     class Meta:
         model = QuoteRequest
-        fields = ["status", "assigned_to", "staff_note"]
+        fields = ["status", "branch", "assigned_to", "staff_note"]
         widgets = {"staff_note": forms.Textarea(attrs={"rows": 3})}
 
-    def __init__(self, *args, tenant=None, **kwargs):
+    def __init__(self, *args, tenant=None, features=(), branch_scope=None, **kwargs):
         super().__init__(*args, **kwargs)
         from apps.accounts.models import User
 
+        _limit_addon_fields(self, features, branch_scope)
         self.fields["assigned_to"].queryset = User.objects.filter(
             memberships__tenant=tenant, memberships__is_active=True
         )
@@ -199,10 +211,43 @@ class MemberForm(forms.Form):
         label="نقش", choices=[(Membership.Role.MANAGER, "مدیر"), (Membership.Role.STAFF, "کارمند")]
     )
 
+    branch = forms.ModelChoiceField(
+        label="شعبه",
+        queryset=Branch.objects.none(),
+        required=False,
+        empty_label="همه شعبه‌ها",
+        help_text="کارمند شعبه فقط مشتریان و پرونده‌های همان شعبه را می‌بیند. مدیر همه را می‌بیند.",
+    )
+
+    def __init__(self, *args, features=(), **kwargs):
+        super().__init__(*args, **kwargs)
+        if "branches" in features:
+            self.fields["branch"].queryset = Branch.objects.filter(is_active=True)
+        else:
+            del self.fields["branch"]
+
     def clean_mobile(self):
         mobile = normalize_mobile(self.cleaned_data["mobile"])
         validate_mobile(mobile)
         return mobile
+
+
+class MemberBranchForm(forms.Form):
+    branch = forms.ModelChoiceField(label="شعبه", queryset=Branch.objects.none(), required=False, empty_label="همه")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["branch"].queryset = Branch.objects.filter(is_active=True)
+
+
+class BranchForm(forms.ModelForm):
+    class Meta:
+        model = Branch
+        fields = ["name", "city", "address", "phone", "show_on_site", "is_active", "order"]
+        widgets = {
+            "address": forms.Textarea(attrs={"rows": 2}),
+            "phone": forms.TextInput(attrs={"dir": "ltr", "inputmode": "tel"}),
+        }
 
 
 class TicketForm(forms.ModelForm):

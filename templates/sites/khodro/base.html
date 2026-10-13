@@ -15,6 +15,7 @@
     </div>
   </header>
   <main>{% block main %}{% endblock %}</main>
+  {% include "sites/_branches.html" %}
   <footer class="d-footer">
     <div class="site-wrap d-footer-inner">
       <span>{{ tenant.name }}{% if tenant.agency_code %} · کد {{ tenant.agency_code }}{% endif %}</span>

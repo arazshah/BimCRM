@@ -1,0 +1,14 @@
+{% load fa %}{% if site_branches %}
+<section class="site-branches" id="branches" aria-labelledby="branches-title">
+  <div class="site-wrap">
+    <h2 id="branches-title">شعبه‌های {{ tenant.name }}</h2>
+    <ul class="sb-list">
+      {% for br in site_branches %}<li class="sb-item">
+        <strong>{{ br.name }}</strong>{% if br.city %} <span class="sb-city">{{ br.city }}</span>{% endif %}
+        {% if br.address %}<p>{{ br.address }}</p>{% endif %}
+        {% if br.phone %}<a class="ltr" href="tel:{{ br.phone }}">{{ br.phone|fa }}</a>{% endif %}
+      </li>{% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}

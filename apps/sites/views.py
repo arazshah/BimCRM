@@ -7,7 +7,7 @@ from django.views.decorators.http import require_POST
 
 from apps.accounts.models import normalize_mobile, validate_mobile
 from apps.accounts.otp import OTPError, issue_code, verify_code
-from apps.crm.models import Customer, Policy, QuoteRequest
+from apps.crm.models import Branch, Customer, Policy, QuoteRequest
 from apps.integrations.models import Integration
 from apps.integrations.senders import send_tenant_otp, tenant_can_sms
 
@@ -40,7 +40,11 @@ def _site_context(request, site: SiteSettings) -> dict:
     head = codes.get(("custom", "head"), {}).get("code", "")
     meta = codes.get(("trust", "enamad"), {}).get("meta_code", "")
     lines = site.lines.filter(is_active=True)
+    site_branches = []
+    if "branches" in _features(request):
+        site_branches = list(Branch.objects.filter(is_active=True, show_on_site=True).order_by("order", "name"))
     return {
+        "site_branches": site_branches,
         "site": site,
         "tenant": request.tenant,
         "tpl": site.template_info,
@@ -111,7 +115,14 @@ def submit_quote(request):
     if customer and customer.marketer_id is None and marketer:
         customer.marketer = marketer
         customer.save(update_fields=["marketer"])
+    branch = None
+    b = request.POST.get("branch", "")
+    if b.isdigit() and "branches" in _features(request):
+        branch = Branch.objects.filter(pk=int(b), is_active=True, show_on_site=True).first()
+    if branch is None and customer:
+        branch = customer.branch
     quote = QuoteRequest.objects.create(
+        branch=branch,
         marketer=marketer,
         line=line,
         full_name=form.cleaned_data["full_name"],

@@ -2,7 +2,7 @@
 {% load fa %}
 {% block title %}گزارش‌ها{% endblock %}
 {% block content %}
-<div class="page-head"><h1>گزارش‌ها</h1><a class="btn btn-ghost btn-sm" href="{% url 'panel:reports_export' %}">خروجی اکسل بیمه‌نامه‌ها</a></div>
+<div class="page-head"><h1>گزارش‌ها</h1><div class="head-actions">{% include "panel/_branch_select.html" %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:reports_export' %}{% if b %}?b={{ b }}{% endif %}">خروجی اکسل بیمه‌نامه‌ها</a></div></div>
 <dl class="stats">
   <div><dt>حق بیمه صادره ۱۲ ماه اخیر</dt><dd class="num">{{ year_total|toman }} <small>تومان</small></dd></div>
   <div><dt>نرخ تمدید</dt><dd class="num">{% if renewal_rate is not None %}{{ renewal_rate|fa }}٪{% else %}—{% endif %}</dd></div>
@@ -30,5 +30,10 @@
     {% if by_line %}<table class="data"><thead><tr><th>رشته</th><th>تعداد</th><th>حق بیمه (تومان)</th></tr></thead><tbody>{% for r in by_line %}<tr><td>{{ r.line__name }}</td><td class="num">{{ r.n|fa }}</td><td class="num">{{ r.premium|toman }}</td></tr>{% endfor %}</tbody></table>
     {% else %}<p class="empty">داده‌ای نیست.</p>{% endif %}
   </section>
+  {% if by_branch is not None %}<section class="panel-box">
+    <h2 class="h2">به تفکیک شعبه</h2>
+    {% if by_branch %}<table class="data"><thead><tr><th>شعبه</th><th>تعداد</th><th>حق بیمه (تومان)</th></tr></thead><tbody>{% for r in by_branch %}<tr><td>{{ r.branch__name|default:"بدون شعبه" }}</td><td class="num">{{ r.n|fa }}</td><td class="num">{{ r.premium|toman }}</td></tr>{% endfor %}</tbody></table>
+    {% else %}<p class="empty">داده‌ای نیست.</p>{% endif %}
+  </section>{% endif %}
 </div>
 {% endblock %}

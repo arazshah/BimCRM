@@ -12,6 +12,7 @@
   {% if customer.birth_date %}<div><dt>تولد</dt><dd>{{ customer.birth_date|jdate:"long" }}</dd></div>{% endif %}
   {% if customer.city %}<div><dt>شهر</dt><dd>{{ customer.city }}</dd></div>{% endif %}
   <div><dt>منبع</dt><dd>{{ customer.get_source_display }}</dd></div>
+  {% if customer.branch %}<div><dt>شعبه</dt><dd>{{ customer.branch }}</dd></div>{% endif %}
   {% if customer.marketer %}<div><dt>بازاریاب معرف</dt><dd>{{ customer.marketer }}</dd></div>{% endif %}
   {% if customer.sms_opt_out %}<div><dt>پیامک تبلیغاتی</dt><dd>نمی‌خواهد</dd></div>{% endif %}
 </dl>

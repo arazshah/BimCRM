@@ -5,11 +5,12 @@
 <div class="page-head"><h1>بیمه‌نامه‌ها و تمدید</h1><a class="btn btn-sm" href="{% url 'panel:policy_new' %}">بیمه‌نامه جدید</a></div>
 <div class="toolbar">
   <nav class="tabs" aria-label="فیلتر">
-    <a href="?" {% if not f %}aria-current="true"{% endif %}>همه</a>
-    <a href="?f=expiring" {% if f == "expiring" %}aria-current="true"{% endif %}>تمدید ۳۰ روز آینده</a>
-    <a href="?f=expired" {% if f == "expired" %}aria-current="true"{% endif %}>تمام‌شده و تمدیدنشده</a>
+    <a href="?{% if b %}b={{ b }}{% endif %}" {% if not f %}aria-current="true"{% endif %}>همه</a>
+    <a href="?f=expiring{% if b %}&b={{ b }}{% endif %}" {% if f == "expiring" %}aria-current="true"{% endif %}>تمدید ۳۰ روز آینده</a>
+    <a href="?f=expired{% if b %}&b={{ b }}{% endif %}" {% if f == "expired" %}aria-current="true"{% endif %}>تمام‌شده و تمدیدنشده</a>
   </nav>
-  <form method="get"><input type="hidden" name="f" value="{{ f }}"><input type="search" name="q" value="{{ q }}" placeholder="شماره، نام بیمه‌گذار یا موضوع" aria-label="جستجو"></form>
+  <form method="get"><input type="hidden" name="f" value="{{ f }}">{% if b %}<input type="hidden" name="b" value="{{ b }}">{% endif %}<input type="search" name="q" value="{{ q }}" placeholder="شماره، نام بیمه‌گذار یا موضوع" aria-label="جستجو"></form>
+  {% include "panel/_branch_select.html" %}
 </div>
 {% if page.object_list %}
 <div class="table-wrap"><table class="data">

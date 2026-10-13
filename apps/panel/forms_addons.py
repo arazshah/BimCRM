@@ -20,9 +20,10 @@ class InstallmentPlanForm(forms.Form):
     first_due = forms.DateField(label="سررسید قسط اول", widget=JalaliDateInput())
     method = forms.ChoiceField(label="روش", choices=Installment.Method.choices, initial=Installment.Method.CHEQUE)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, policies=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["policy"].queryset = Policy.objects.select_related("customer", "line").order_by("-start_date")
+        qs = policies if policies is not None else Policy.objects.all()
+        self.fields["policy"].queryset = qs.select_related("customer", "line").order_by("-start_date")
         self.fields["policy"].label_from_instance = lambda p: f"{p.customer.full_name} — {p.line} {p.number}"
 
 
@@ -77,11 +78,12 @@ class ClaimForm(forms.ModelForm):
             "insurer_file_number": forms.TextInput(attrs={"dir": "ltr"}),
         }
 
-    def __init__(self, *args, tenant=None, **kwargs):
+    def __init__(self, *args, tenant=None, policies=None, **kwargs):
         super().__init__(*args, **kwargs)
         from apps.accounts.models import User
 
-        self.fields["policy"].queryset = Policy.objects.select_related("customer", "line").order_by("-start_date")
+        qs = policies if policies is not None else Policy.objects.all()
+        self.fields["policy"].queryset = qs.select_related("customer", "line").order_by("-start_date")
         self.fields["policy"].label_from_instance = lambda p: f"{p.customer.full_name} — {p.line} {p.number}"
         self.fields["assigned_to"].queryset = User.objects.filter(
             memberships__tenant=tenant, memberships__is_active=True
