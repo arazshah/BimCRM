@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-head"><h1>یادآورهای پیامکی</h1></div>
 {% if not can_sms %}
-<p class="note warn-note">پیامک‌ها از پنل پیامک خود دفتر فرستاده می‌شوند و هنوز وصل نشده است. از <a href="{% url 'panel:integrations' %}">اتصالات</a> وصلش کنید؛ تا آن موقع چیزی ارسال نمی‌شود.</p>
+<p class="note warn-note">پیامک‌ها از پنل پیامک خود دفتر فرستاده می‌شوند و هنوز وصل نشده است. از <a href="{% url 'panel:integrations' %}">اتصالات</a> وصلش کنید؛ تا آن موقع چیزی ارسال نمی‌شود.{% if PLATFORM_SETTINGS.smsir_signup_url %} پنل پیامک ندارید؟ <a href="{{ PLATFORM_SETTINGS.smsir_signup_url }}" target="_blank" rel="noopener">ساخت حساب sms.ir</a>{% endif %}</p>
 {% endif %}
 {% if failed_count %}<p class="note warn-note">{{ failed_count|fa }} پیامک در ۷ روز گذشته ارسال نشد (معمولاً به‌خاطر اعتبار پنل پیامک). فردا خودکار دوباره تلاش می‌شود.</p>{% endif %}
 <div class="two-col">

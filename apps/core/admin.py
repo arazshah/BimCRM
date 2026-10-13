@@ -34,6 +34,8 @@ class PlatformSettingsForm(forms.ModelForm):
             "enamad_code",
             "footer_badges_html",
             "google_site_verification",
+            "smsir_signup_url",
+            "domain_service_enabled",
             "payment_mode",
             "order_grace_days",
             "order_payment_info",
@@ -88,6 +90,10 @@ class PlatformSettingsAdmin(admin.ModelAdmin):
                     "smsir_line_number",
                 ),
             },
+        ),
+        (
+            "خدمات همکار",
+            {"fields": ("smsir_signup_url", "domain_service_enabled")},
         ),
         (
             "روش پرداخت اشتراک",

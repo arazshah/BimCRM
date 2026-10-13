@@ -31,6 +31,7 @@ from .forms import (
     BranchForm,
     CustomerForm,
     DomainForm,
+    DomainServiceForm,
     FAQFormSet,
     ImportForm,
     MemberBranchForm,
@@ -441,6 +442,7 @@ def domains(request):
             )
             messages.success(request, f"{domain.hostname} اضافه شد. حالا NSهای آن را تنظیم کنید.")
         return redirect("panel:domains")
+    platform = PlatformSettings.load()
     return render(
         request,
         "panel/domains.html",
@@ -448,9 +450,52 @@ def domains(request):
             "form": form,
             "domains": domains_qs,
             "limit": limit,
-            "nameservers": PlatformSettings.load().get_nameservers(),
+            "nameservers": platform.get_nameservers(),
+            "platform": platform,
+            "service_form": DomainServiceForm(initial={"contact_mobile": request.user.mobile}),
+            "service_ticket": Ticket.objects.filter(
+                category=Ticket.Category.DOMAIN, subject__startswith="درخواست خرید دامنه"
+            )
+            .exclude(status=Ticket.Status.CLOSED)
+            .first(),
         },
     )
+
+
+@panel_view(managers_only=True)
+@require_POST
+def domain_service(request):
+    """ "Buy and set up my domain for me": opens a domain ticket and tells the platform owner by SMS."""
+    from django.conf import settings as dj_settings
+
+    from apps.accounts.sms import send_platform_text
+
+    form = DomainServiceForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "شماره موبایل درست را وارد کنید.")
+        return redirect("panel:domains")
+    wanted = form.cleaned_data["wanted"].strip()
+    ticket = Ticket.objects.create(
+        subject=f"درخواست خرید دامنه{': ' + wanted if wanted else ''}"[:160],
+        category=Ticket.Category.DOMAIN,
+        created_by=request.user,
+    )
+    body = (
+        "لطفاً دامنه اختصاصی را برای دفتر ما ثبت و به سایت وصل کنید.\n"
+        f"دامنه‌های پیشنهادی: {wanted or 'هنوز انتخاب نشده'}\n"
+        f"موبایل تماس: {form.cleaned_data['contact_mobile']}"
+    )
+    if form.cleaned_data["note"]:
+        body += f"\nتوضیح: {form.cleaned_data['note']}"
+    TicketMessage.objects.create(ticket=ticket, author=request.user, body=body)
+    if dj_settings.SUPERADMIN_MOBILE:
+        send_platform_text(
+            dj_settings.SUPERADMIN_MOBILE,
+            f"درخواست خرید دامنه: {request.tenant.name}، {wanted or 'بدون نام پیشنهادی'}، "
+            f"تماس {form.cleaned_data['contact_mobile']}",
+        )
+    messages.success(request, "درخواست ثبت شد. برای انتخاب و ثبت دامنه با شما تماس می‌گیریم.")
+    return redirect("panel:ticket", pk=ticket.pk)
 
 
 @panel_view(managers_only=True)
@@ -508,7 +553,8 @@ def integrations(request):
         }
         for kind in PROVIDERS
     ]
-    return render(request, "panel/integrations.html", {"groups": groups})
+    sms_connected = any(i.enabled for (k, _), i in existing.items() if k == "sms")
+    return render(request, "panel/integrations.html", {"groups": groups, "sms_connected": sms_connected})
 
 
 @panel_view(managers_only=True)
@@ -542,6 +588,7 @@ def integration_edit(request, kind, provider):
             "danger_delete": bool(obj),
             "title": f"{KIND_LABELS[kind]}: {PROVIDERS[kind][provider]['label']}",
             "note": "این اطلاعات رمزنگاری‌شده ذخیره می‌شود. قرارداد و هزینه این سرویس با خود شماست.",
+            "signup_url": PlatformSettings.load().smsir_signup_url if provider == "smsir" else "",
         },
     )
 

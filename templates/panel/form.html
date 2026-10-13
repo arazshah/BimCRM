@@ -3,6 +3,7 @@
 {% block content %}
 <div class="page-head"><h1>{{ title }}</h1>{% if back %}<a class="btn btn-ghost btn-sm" href="{% url back %}">بازگشت</a>{% endif %}</div>
 {% if note %}<p class="note">{{ note }}</p>{% endif %}
+{% if signup_url %}<p class="note">حساب sms.ir ندارید؟ <a href="{{ signup_url }}" target="_blank" rel="noopener">از اینجا بسازید</a>. بعد از ورود، در پنل sms.ir از بخش «برنامه‌نویسان» کلید API بسازید و شماره خط را از «خطوط من» بردارید. شناسه قالب کد تأیید را از «ارسال سریع» بگیرید (برای ورود مشتری به پنل مشتری لازم است). راهنمای کامل: <a href="{{ PLATFORM_URL }}/help/sms/" target="_blank" rel="noopener">اتصال پنل پیامک</a></p>{% endif %}
 <form method="post" class="panel-form" {% if multipart %}enctype="multipart/form-data"{% endif %} novalidate>
   {% csrf_token %}
   {% include "includes/form_fields.html" %}

@@ -1,0 +1,9 @@
+<p class="lede">هر سؤال یا درخواستی دارید، از پنل › <strong>پشتیبانی</strong> تیکت بزنید. تیکت همه سوابق را یک‌جا نگه می‌دارد و پاسخ را در همان صفحه می‌بینید.</p>
+{% include "help/_fig.html" with img="tickets" cap="تیکت‌های پشتیبانی" %}
+<ol class="hsteps">
+  <li>«تیکت جدید» را بزنید و دسته را انتخاب کنید: <strong>فنی</strong>، <strong>مالی و اشتراک</strong>، <strong>دامنه و سایت</strong> یا <strong>سایر</strong>.</li>
+  <li>موضوع و شرح را بنویسید. اگر خطایی می‌بینید، عکس صفحه را پیوست کنید؛ خیلی زودتر حل می‌شود.</li>
+  <li>وضعیت تیکت «باز»، «پاسخ داده شد» یا «بسته» است. برای ادامه گفتگو در همان تیکت پاسخ بدهید.</li>
+</ol>
+{% if PLATFORM_SETTINGS.support_phone %}<p>برای کارهای فوری با <a class="ltr" href="tel:{{ PLATFORM_SETTINGS.support_phone }}">{{ PLATFORM_SETTINGS.support_phone }}</a> تماس بگیرید.</p>{% endif %}
+<div class="tip">درخواست خرید دامنه و سفارش تمدید هم خودکار به‌صورت تیکت ثبت می‌شوند تا پیگیری‌شان ساده باشد.</div>

@@ -19,6 +19,8 @@ urlpatterns = [
     path("signup/plan/", views.signup_plan, name="signup_plan"),
     path("pay/<str:tenant_slug>/", views.pay, name="pay"),
     path("pay/callback/<int:invoice_id>/", views.pay_callback, name="pay_callback"),
+    path("help/", views.help_index, name="help"),
+    path("help/<slug:slug>/", views.help_article, name="help_article"),
     path("robots.txt", views.robots),
     path("sitemap.xml", views.sitemap, name="sitemap"),
     path("favicon.ico", RedirectView.as_view(url=static("img/favicon.ico"), permanent=True)),

@@ -107,6 +107,19 @@ class PlatformSettings(models.Model):
     zarinpal_merchant_id = models.CharField("مرچنت کد زرین‌پال", max_length=64, blank=True)
     zarinpal_mode = models.CharField("حالت زرین‌پال", max_length=10, choices=ZarinpalMode.choices, blank=True)
 
+    # --- Partner links shown to offices ---
+    smsir_signup_url = models.URLField(
+        "لینک ساخت حساب sms.ir برای دفترها",
+        blank=True,
+        default="https://app.sms.ir/auth/sign-up?ref=HXQGN",
+        help_text="در بخش اتصالات و یادآورهای پنل دفترها، کنار «پنل پیامک ندارید؟» نمایش داده می‌شود.",
+    )
+    domain_service_enabled = models.BooleanField(
+        "خدمت خرید و راه‌اندازی دامنه",
+        default=True,
+        help_text="بخش «دامنه را برایتان می‌خریم و راه می‌اندازیم» در سایت اصلی و پنل دفترها.",
+    )
+
     # --- How agents pay for their subscription ---
     class PaymentMode(models.TextChoices):
         ORDER = "order", "ثبت سفارش و هماهنگی تلفنی (بدون درگاه)"
