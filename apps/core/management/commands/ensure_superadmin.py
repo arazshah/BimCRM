@@ -1,7 +1,9 @@
-"""Creates the super admin from SUPERADMIN_MOBILE on deploy if they don't exist yet.
+"""Makes sure the platform super admin exists (from SUPERADMIN_MOBILE) on every deploy.
 
-The password comes from SUPERADMIN_PASSWORD when set; otherwise a random one is printed once in the
-deploy log. Change it after first login.
+- Missing: created with SUPERADMIN_PASSWORD, or a random one printed in the deploy log.
+- Existing but never logged in (last_login is empty): the first password is issued again the same way,
+  so a lost or never-seen first password is fixed by simply redeploying.
+- Existing and already used: left untouched, so a password you changed is never overwritten.
 """
 
 import secrets
@@ -12,7 +14,7 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = "Create the platform super admin from SUPERADMIN_MOBILE if missing."
+    help = "Create the platform super admin from SUPERADMIN_MOBILE if missing (or reissue the unused first password)."
 
     def handle(self, *args, **options):
         mobile = settings.SUPERADMIN_MOBILE
@@ -20,17 +22,21 @@ class Command(BaseCommand):
             self.stdout.write("SUPERADMIN_MOBILE not set; skipping.")
             return
         User = get_user_model()
-        if User.objects.filter(mobile=mobile, is_superuser=True).exists():
-            self.stdout.write("Super admin already exists.")
+        user = User.objects.filter(mobile=mobile).first()
+        if user and user.is_superuser and user.last_login is not None:
+            self.stdout.write("Super admin already exists and has logged in; password left unchanged.")
             return
+        random_password = not settings.SUPERADMIN_PASSWORD
         password = settings.SUPERADMIN_PASSWORD or secrets.token_urlsafe(12)
-        user, created = User.objects.get_or_create(mobile=mobile)
+        created = user is None
+        if created:
+            user = User(mobile=mobile)
         user.is_staff = user.is_superuser = True
+        user.is_active = True
         user.set_password(password)
         user.save()
-        self.stdout.write(
-            self.style.WARNING(
-                f"Super admin {mobile} {'created' if created else 'promoted'}."
-                + ("" if settings.SUPERADMIN_PASSWORD else f" One-time password: {password}")
-            )
-        )
+        what = "created" if created else "first password reissued"
+        msg = f"Super admin {mobile} {what}."
+        if random_password:
+            msg += f"\n>>> SUPERADMIN ONE-TIME PASSWORD: {password}  (change it after the first login)"
+        self.stdout.write(self.style.WARNING(msg))
