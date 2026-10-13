@@ -31,6 +31,8 @@ class PlatformSettingsForm(forms.ModelForm):
             "smsir_line_number",
             "zarinpal_mode",
             "zarinpal_merchant_id",
+            "enamad_code",
+            "footer_badges_html",
         ]
 
     def clean(self):
@@ -88,6 +90,14 @@ class PlatformSettingsAdmin(admin.ModelAdmin):
             {
                 "description": "مرچنت کد زرین‌پال خودتان برای فروش اشتراک و افزونه. در حالت آزمایشی پرداخت واقعی انجام نمی‌شود.",
                 "fields": ("zarinpal_mode", "zarinpal_merchant_id"),
+            },
+        ),
+        (
+            "اینماد و نمادهای اعتماد سایت اصلی",
+            {
+                "description": "برای تأیید مالکیت دامنه در اینماد، کد عددی را وارد کنید و ذخیره کنید؛ سپس در سایت اینماد "
+                "«تایید متاتگ» یا «تایید بارگذاری» را بزنید. بعد از صدور نماد، کد نشان را در کادر دوم بگذارید.",
+                "fields": ("enamad_code", "footer_badges_html"),
             },
         ),
     )

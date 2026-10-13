@@ -338,3 +338,5 @@
   .addon-list li { flex-direction: column; align-items: flex-start; gap: .2rem; }
   .topbar-login { display: none; }
 }
+.footer-badges { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .8rem; }
+.footer-badges img { max-height: 90px; background: #fff; border-radius: 8px; padding: 4px; }
