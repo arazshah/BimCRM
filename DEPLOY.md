@@ -54,18 +54,54 @@ Docker Hub درخواست‌های IP ایران را رد می‌کند، پس 
 
 و `systemctl restart docker`. اگر PyPI هم کند یا بسته بود، در Coolify آرگومان build `PIP_INDEX_URL` را روی یک mirror PyPI بگذار.
 
-## ۴. زیردامنه‌ها، دامنه نماینده‌ها و SSL
+## ۴. زیردامنه‌ها و گواهی wildcard (بدون Cloudflare)
 
-این بخش در PR بعدی کامل می‌شود و فعلاً این وضعیت را دارد:
+هدف: برای `*.bimcrm.ir` یک گواهی که خودکار تمدید شود. NS اصلی دامنه در پارس‌پک می‌ماند؛ فقط نام `_acme-challenge` را به PowerDNS خودمان می‌دهیم و Traefik تأیید DNS-01 را از همان‌جا می‌گیرد. رکورد glue در ایرنیک لازم نیست.
 
-- **کد آماده است:** مسیریابی بر اساس دامنه، بررسی NS، و آدرس `/internal/tls-ask?domain=...` که فقط برای دامنه‌های مجاز (bimcrm.ir، زیردامنه نماینده‌های موجود، دامنه‌های فعال) جواب ۲۰۰ می‌دهد.
-- **مانده:** 
-  1. **PowerDNS** روی سرور (پورت ۵۳) تا وقتی نماینده NS را روی `ns1/ns2.bimcrm.ir` گذاشت، دامنه‌اش به سرور ما اشاره کند. پنل به‌محض فعال شدن دامنه از طریق API، zone را می‌سازد.
-  2. **پراکسی با SSL درخواستی:** Traefik پیش‌فرض Coolify برای دامنه‌های ناشناخته گواهی نمی‌گیرد. دو راه: تغییر پراکسی Coolify به Caddy با `on_demand_tls` که از `/internal/tls-ask` اجازه می‌گیرد، یا یک Caddy جدا جلوی سرویس. این را با هم روی سرورت تنظیم می‌کنیم.
-  3. **گواهی wildcard** برای `*.bimcrm.ir` با چالش DNS روی همان PowerDNS.
-- **رکورد glue:** در پنل ایرنیک برای `bimcrm.ir`، نام‌سرورهای `ns1.bimcrm.ir` و `ns2.bimcrm.ir` را همراه IP سرور تعریف کن.
+**گام ۱ — رکوردهای پارس‌پک** (`SERVER_IP` = IP عمومی سرور)
 
-تا آن موقع می‌توانی `bimcrm.ir` و `admin.bimcrm.ir` را در Coolify بگذاری و چند زیردامنه آزمایشی را دستی اضافه کنی.
+| نام | نوع | مقدار |
+|---|---|---|
+| `ns1` | A | `SERVER_IP` |
+| `*` | A | `SERVER_IP` |
+| `_acme-challenge` | NS | `ns1.bimcrm.ir.` |
+
+**گام ۲ — فایروال:** پورت ۵۳ هم TCP و هم UDP را (در پنل سرویس‌دهنده‌ی سرور و `ufw`) باز کن.
+
+**گام ۳ — نصب PowerDNS در Coolify**
+1. Project → New Resource → **Docker Compose Empty**.
+2. محتوای فایل `deploy/powerdns/docker-compose.yml` همین ریپو را بچسبان.
+3. در Environment Variables: `PUBLIC_IP` (IP عمومی سرور) و `PDNS_API_KEY` (یک رشته‌ی تصادفی بلند؛ همان را در گام ۴ هم می‌گذاری).
+4. Deploy. سرویس `pdns-init` بعد از ساختن zone با موفقیت تمام می‌شود و خارج شدنش طبیعی است (لاگش باید `HTTP 201` یا `HTTP 409` نشان دهد).
+5. تست از بیرون سرور: `nslookup -type=SOA _acme-challenge.bimcrm.ir 8.8.8.8` باید به `ns1.bimcrm.ir` برسد.
+
+**گام ۴ — پیکربندی Traefik در Coolify** (Servers → سرور → Proxy → Configuration). در همان فایل yaml چهار چیز اضافه کن:
+
+۱) زیر `command:` سه خط، کنار بقیه‌ی `--certificatesresolvers...`:
+
+```yaml
+      - '--certificatesresolvers.letsencrypt-dns.acme.email=YOUR_EMAIL'
+      - '--certificatesresolvers.letsencrypt-dns.acme.storage=/traefik/acme-dns.json'
+      - '--certificatesresolvers.letsencrypt-dns.acme.dnschallenge.provider=pdns'
+```
+
+۲) زیر `environment:` سرویس traefik:
+
+```yaml
+      - PDNS_API_URL=http://bimcrm-pdns:8081
+      - PDNS_API_KEY=همان_مقدار_گام_۳
+      - PDNS_PROPAGATION_TIMEOUT=300
+```
+
+۳) Save و **Restart Proxy**. (شبکه‌ی `coolify` از قبل برای Traefik هست و PowerDNS به آن وصل شده.)
+
+۴) این ریپو را دیپلوی کن (labels مسیر wildcard روی سرویس `web` در `docker-compose.yml` هست).
+
+**گام ۵ — تست:** چند دقیقه صبر کن و `https://test123.bimcrm.ir` را باز کن. اگر خطا دارد: Proxy → Logs را ببین (`acme`, `pdns`). زیاد Restart نکن؛ Let's Encrypt بعد از چند شکست پشت‌سرهم موقتاً جلوی تلاش را می‌گیرد.
+
+### مانده
+- **دامنه‌ی `.ir` خود نماینده‌ها:** گواهی wildcard شامل آن‌ها نیست؛ برای آن‌ها پراکسی با on-demand TLS (Caddy) و `/internal/tls-ask` لازم است (مرحله‌ی بعد).
+- **ساخت خودکار zone دامنه‌ی نماینده** از طریق API پاورDNS هنوز در برنامه پیاده نشده است.
 
 ## ۵. بعد از اولین دیپلوی
 

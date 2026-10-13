@@ -1,0 +1,61 @@
+# PowerDNS (authoritative) for CRM بیمه — used ONLY to answer the ACME DNS-01 challenge
+# for the wildcard certificate *.bimcrm.ir (and later, zones of agents' own .ir domains).
+# Paste this file in Coolify: New Resource -> "Docker Compose Empty". See DEPLOY.md, section 4.
+#
+# Environment variables to set in Coolify:
+#   PUBLIC_IP    public IPv4 of the server (port 53 is bound to it; avoids the systemd-resolved clash)
+#   PDNS_API_KEY a long random string (the same value goes into the Traefik proxy config)
+
+services:
+  pdns:
+    image: powerdns/pdns-auth-49:latest
+    restart: unless-stopped
+    command:
+      - --api=yes
+      - --api-key=${PDNS_API_KEY}
+      - --webserver=yes
+      - --webserver-address=0.0.0.0
+      - --webserver-port=8081
+      - --webserver-allow-from=0.0.0.0/0,::/0
+      - --default-ttl=300
+      - --default-soa-content=ns1.bimcrm.ir hostmaster.bimcrm.ir 0 10800 3600 604800 300
+    ports:
+      - "${PUBLIC_IP}:53:53/udp"
+      - "${PUBLIC_IP}:53:53/tcp"
+    volumes:
+      - pdns-data:/var/lib/powerdns
+    networks:
+      default: {}
+      coolify:
+        aliases:
+          - bimcrm-pdns   # Traefik reaches the API at http://bimcrm-pdns:8081
+
+  # Creates the delegated zone once (409 = already exists = fine), then exits.
+  pdns-init:
+    image: curlimages/curl:8.10.1
+    restart: "no"
+    depends_on:
+      - pdns
+    environment:
+      PDNS_API_KEY: ${PDNS_API_KEY}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for i in $$(seq 1 40); do
+          code=$$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+            -H "X-API-Key: $$PDNS_API_KEY" -H 'Content-Type: application/json' \
+            -d '{"name":"_acme-challenge.bimcrm.ir.","kind":"Native","nameservers":["ns1.bimcrm.ir."]}' \
+            http://pdns:8081/api/v1/servers/localhost/zones)
+          echo "attempt $$i -> HTTP $$code"
+          if [ "$$code" = "201" ] || [ "$$code" = "409" ]; then exit 0; fi
+          sleep 3
+        done
+        exit 1
+
+networks:
+  coolify:
+    external: true
+    name: coolify
+
+volumes:
+  pdns-data:

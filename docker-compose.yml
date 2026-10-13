@@ -41,6 +41,23 @@ services:
         condition: service_started
     expose:
       - "8000"
+    labels:
+      # Wildcard router for tenant subdomains (*.bimcrm.ir). It needs the `letsencrypt-dns`
+      # resolver in the Coolify proxy config (DEPLOY.md, section 4); without it Traefik just
+      # ignores this router. Priority 1 keeps the explicit domains set in the Coolify UI first.
+      - traefik.enable=true
+      - traefik.http.routers.bimcrm-wild.rule=HostRegexp(`^[a-z0-9-]+[.]bimcrm[.]ir$$`)
+      - traefik.http.routers.bimcrm-wild.priority=1
+      - traefik.http.routers.bimcrm-wild.entrypoints=https
+      - traefik.http.routers.bimcrm-wild.tls=true
+      - traefik.http.routers.bimcrm-wild.tls.certresolver=letsencrypt-dns
+      - traefik.http.routers.bimcrm-wild.tls.domains[0].main=*.bimcrm.ir
+      - traefik.http.routers.bimcrm-wild.service=bimcrm-wild
+      - traefik.http.routers.bimcrm-wild-http.rule=HostRegexp(`^[a-z0-9-]+[.]bimcrm[.]ir$$`)
+      - traefik.http.routers.bimcrm-wild-http.priority=1
+      - traefik.http.routers.bimcrm-wild-http.entrypoints=http
+      - traefik.http.routers.bimcrm-wild-http.middlewares=redirect-to-https
+      - traefik.http.services.bimcrm-wild.loadbalancer.server.port=8000
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
       interval: 30s
