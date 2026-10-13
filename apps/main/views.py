@@ -231,6 +231,11 @@ def pay(request, tenant_slug):
     tenant = get_object_or_404(
         Tenant, slug=tenant_slug, memberships__user=request.user, memberships__role__in=["owner", "manager"]
     )
+    return start_subscription_payment(request, tenant)
+
+
+def start_subscription_payment(request, tenant):
+    """Create the invoice and send the user to Zarinpal. Called from the main site and from the panel."""
     sub: Subscription = tenant.subscription
     period = request.POST.get("period", sub.period)
     if period not in Period.values:
@@ -243,7 +248,9 @@ def pay(request, tenant_slug):
         _mark_paid(invoice, ref_id="FREE")
         messages.success(request, "اشتراک تمدید شد.")
         return redirect(tenant.panel_url() + "billing/")
-    callback = request.build_absolute_uri(reverse("main:pay_callback", args=[invoice.pk]))
+    # The callback always lives on the main domain, whichever host started the payment.
+    path = reverse("main:pay_callback", args=[invoice.pk], urlconf=settings.ROOT_URLCONF)
+    callback = f"{settings.PLATFORM_SCHEME}://{settings.PLATFORM_DOMAIN}{path}"
     try:
         authority, url = zarinpal.request_payment(amount, invoice.description, callback, request.user.mobile)
     except zarinpal.ZarinpalError as exc:
