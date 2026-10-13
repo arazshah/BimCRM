@@ -2,14 +2,16 @@
 {% load fa %}
 {% block title %}{{ addon.name|default:"افزونه" }}{% endblock %}
 {% block content %}
-<div class="page-head"><h1>{{ addon.name|default:"این بخش" }}</h1></div>
-<section class="panel-box locked">
-  <p>این بخش افزونه است و روی اشتراک شما فعال نیست.</p>
+<section class="locked card">
+  <span class="locked-ico" aria-hidden="true"><svg><use href="#p-plug"/></svg></span>
+  <h1>{{ addon.name|default:"این بخش" }}</h1>
+  <p class="locked-lead">این بخش افزونه است و روی اشتراک شما هنوز فعال نیست.</p>
   {% if addon %}
   <p>{{ addon.description }}</p>
-  <p class="num"><strong>{{ addon.monthly_price|toman }}</strong> تومان در ماه{% if addon.yearly_price %} یا {{ addon.yearly_price|toman }} تومان سالانه{% endif %}</p>
+  <p class="locked-price"><strong class="num">{{ addon.monthly_price|toman }}</strong> تومان در ماه{% if addon.yearly_price %}<span class="muted"> یا {{ addon.yearly_price|toman }} تومان سالانه</span>{% endif %}</p>
   {% endif %}
   {% if request.membership.role != "staff" %}<a class="btn" href="{% url 'panel:billing' %}">فعال‌کردن از بخش اشتراک</a>
+  <p class="muted small">فعال‌سازی فوری است و مبلغ در پرداخت بعدی اشتراک حساب می‌شود.</p>
   {% else %}<p class="muted">برای فعال‌کردن، به مالک یا مدیر دفتر بگویید.</p>{% endif %}
 </section>
 {% endblock %}

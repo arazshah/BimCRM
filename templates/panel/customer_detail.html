@@ -2,24 +2,32 @@
 {% load fa %}
 {% block title %}{{ customer.full_name }}{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>{{ customer.full_name }}</h1>
-  <div class="head-actions"><a class="btn btn-sm" href="{% url 'panel:policy_new' %}?customer={{ customer.pk }}">بیمه‌نامه جدید</a><a class="btn btn-ghost btn-sm" href="{% url 'panel:customer_edit' customer.pk %}">ویرایش</a></div>
-</div>
-<dl class="facts">
-  <div><dt>موبایل</dt><dd class="ltr num">{{ customer.mobile|fa }}</dd></div>
-  {% if customer.national_code %}<div><dt>کد ملی</dt><dd class="ltr num">{{ customer.national_code|fa }}</dd></div>{% endif %}
-  {% if customer.birth_date %}<div><dt>تولد</dt><dd>{{ customer.birth_date|jdate:"long" }}</dd></div>{% endif %}
-  {% if customer.city %}<div><dt>شهر</dt><dd>{{ customer.city }}</dd></div>{% endif %}
-  <div><dt>منبع</dt><dd>{{ customer.get_source_display }}</dd></div>
-  {% if customer.branch %}<div><dt>شعبه</dt><dd>{{ customer.branch }}</dd></div>{% endif %}
-  {% if customer.marketer %}<div><dt>بازاریاب معرف</dt><dd>{{ customer.marketer }}</dd></div>{% endif %}
-  {% if customer.sms_opt_out %}<div><dt>پیامک تبلیغاتی</dt><dd>نمی‌خواهد</dd></div>{% endif %}
-</dl>
-{% if customer.notes %}<p class="note">{{ customer.notes|linebreaksbr }}</p>{% endif %}
+<section class="profile card">
+  <div class="profile-main">
+    <span class="profile-avatar" aria-hidden="true">{{ customer.full_name|slice:":1" }}</span>
+    <div class="profile-id">
+      <h1>{{ customer.full_name }}</h1>
+      <p class="profile-meta"><a class="ltr num" href="tel:{{ customer.mobile }}">{{ customer.mobile|fa }}</a>{% if customer.city %}<span>{{ customer.city }}</span>{% endif %}{% if customer.branch %}<span class="badge-branch">{{ customer.branch }}</span>{% endif %}</p>
+    </div>
+    <div class="head-actions">
+      <a class="btn" href="{% url 'panel:policy_new' %}?customer={{ customer.pk }}"><svg aria-hidden="true"><use href="#p-plus"/></svg>بیمه‌نامه جدید</a>
+      <a class="btn btn-ghost" href="{% url 'panel:customer_edit' customer.pk %}">ویرایش</a>
+    </div>
+  </div>
+  <dl class="profile-facts">
+    {% if customer.national_code %}<div><dt>کد ملی</dt><dd class="ltr num">{{ customer.national_code|fa }}</dd></div>{% endif %}
+    {% if customer.birth_date %}<div><dt>تولد</dt><dd>{{ customer.birth_date|jdate:"long" }}</dd></div>{% endif %}
+    <div><dt>منبع آشنایی</dt><dd>{{ customer.get_source_display }}</dd></div>
+    {% if customer.marketer %}<div><dt>بازاریاب معرف</dt><dd>{{ customer.marketer }}</dd></div>{% endif %}
+    <div><dt>بیمه‌نامه</dt><dd class="num">{{ policies|length|fa }}</dd></div>
+    <div><dt>مشتری از</dt><dd>{{ customer.created_at|jdate:"long" }}</dd></div>
+    {% if customer.sms_opt_out %}<div><dt>پیامک تبلیغاتی</dt><dd>نمی‌خواهد</dd></div>{% endif %}
+  </dl>
+  {% if customer.notes %}<p class="profile-note">{{ customer.notes|linebreaksbr }}</p>{% endif %}
+</section>
 
 <section class="panel-box">
-  <h2 class="h2">بیمه‌نامه‌ها</h2>
+  <div class="box-head"><h2 class="h2">بیمه‌نامه‌ها</h2><a href="{% url 'panel:policy_new' %}?customer={{ customer.pk }}">ثبت بیمه‌نامه</a></div>
   {% if policies %}
   <div class="table-wrap"><table class="data">
     <thead><tr><th>رشته</th><th>شرکت</th><th>شماره</th><th>موضوع</th><th>پایان</th><th>حق بیمه</th><th></th></tr></thead>
