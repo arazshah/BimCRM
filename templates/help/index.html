@@ -1,0 +1,40 @@
+{% extends "main/base.html" %}
+{% block title %}راهنمای کامل CRM بیمه — آموزش سایت و پنل دفتر نمایندگی{% endblock %}
+{% block og_title %}راهنمای کامل CRM بیمه{% endblock %}
+{% block body_class %}help-page{% endblock %}
+{% block content %}
+{% include "panel/_icons.html" %}
+<section class="help-hero">
+  <div class="wrap">
+    <h1>راهنمای کامل CRM بیمه</h1>
+    <p>از ساخت سایت تا تسویه کارمزد، هر بخش با تصویر و قدم‌به‌قدم. هر جا گیر کردید، از داخل پنل تیکت بزنید.</p>
+    <div class="help-search"><svg aria-hidden="true"><use href="#p-search"/></svg><input type="search" id="hq" placeholder="جستجو در راهنما؛ مثلاً تمدید، پیامک، دامنه" aria-label="جستجو در راهنما"></div>
+  </div>
+</section>
+<section class="help-index">
+  <div class="wrap">
+    {% for name, items in sections %}
+    <div class="hsec">
+      <h2>{{ name }}</h2>
+      <ul class="hcards">
+        {% for a in items %}<li data-q="{{ a.title }} {{ a.summary }}"><a href="{% url 'main:help_article' a.slug %}"><span class="hico"><svg aria-hidden="true"><use href="#{{ a.icon }}"/></svg></span><span><strong>{{ a.title }}</strong><em>{{ a.summary }}</em></span></a></li>{% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+    <p class="hnone" id="hnone" hidden>چیزی پیدا نشد. از داخل پنل › پشتیبانی بپرسید.</p>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const q = document.getElementById("hq"), none = document.getElementById("hnone");
+  q.addEventListener("input", () => {
+    const v = q.value.trim(); let any = false;
+    document.querySelectorAll(".hcards li").forEach(li => { const ok = !v || li.dataset.q.includes(v); li.hidden = !ok; any = any || ok; });
+    document.querySelectorAll(".hsec").forEach(s => { s.hidden = ![...s.querySelectorAll("li")].some(li => !li.hidden); });
+    none.hidden = any;
+  });
+})();
+</script>
+{% endblock %}

@@ -3,13 +3,39 @@
 {% block title %}دامنه{% endblock %}
 {% block content %}
 <div class="page-head"><h1>دامنه</h1></div>
+{% if platform.domain_service_enabled %}
+<section class="concierge">
+  <div class="concierge-copy">
+    <span class="concierge-badge">خدمت ویژه</span>
+    <h2>دامنه اختصاصی را ما برایتان می‌خریم و راه می‌اندازیم</h2>
+    <p>نیازی به ایرنیک، تنظیم NS و دردسرهای فنی نیست. نام دلخواهتان را بگویید؛ ثبت دامنه .ir، اتصال به سایت و گواهی امنیتی را خودمان انجام می‌دهیم و سایت دفترتان روی آدرس خودتان بالا می‌آید.</p>
+    <ul class="concierge-points"><li>پیشنهاد و بررسی نام آزاد</li><li>ثبت به نام دفتر شما</li><li>اتصال و SSL خودکار</li></ul>
+  </div>
+  {% if service_ticket %}
+  <div class="concierge-form concierge-done">
+    <strong>درخواست شما ثبت شده است</strong>
+    <p>به‌زودی برای انتخاب و ثبت دامنه تماس می‌گیریم.</p>
+    <a class="btn btn-light" href="{% url 'panel:ticket' service_ticket.pk %}">پیگیری درخواست</a>
+  </div>
+  {% else %}
+  <form method="post" action="{% url 'panel:domain_service' %}" class="concierge-form">
+    {% csrf_token %}
+    <div class="field"><label for="ds-wanted">{{ service_form.wanted.label }} <span class="optional">(اختیاری)</span></label>{{ service_form.wanted }}</div>
+    <div class="field"><label for="ds-mobile">{{ service_form.contact_mobile.label }}</label><input id="ds-mobile" name="contact_mobile" value="{{ service_form.contact_mobile.initial }}" dir="ltr" inputmode="numeric" required></div>
+    <button class="btn btn-light" type="submit">درخواست خرید و راه‌اندازی دامنه</button>
+    <p class="concierge-note">هزینه ثبت دامنه را پیش از ثبت با شما هماهنگ می‌کنیم.</p>
+  </form>
+  {% endif %}
+</section>
+{% endif %}
+
 <section class="panel-box">
   <h2 class="h2">آدرس رایگان شما</h2>
   <p><a class="ltr" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener">{{ request.tenant.subdomain_host }}</a> همیشه فعال است. پنل هم همیشه روی همین آدرس است: <span class="ltr">{{ request.tenant.subdomain_host }}/panel</span></p>
 </section>
 
 <section class="panel-box">
-  <h2 class="h2">اتصال دامنه خودتان</h2>
+  <h2 class="h2">دامنه دارید؟ خودتان وصلش کنید</h2>
   <ol class="howto">
     <li>دامنه را از هر جا که خواستید ثبت کنید (برای .ir از ایرنیک یا نمایندگانش).</li>
     <li>در پنل ثبت دامنه، نام‌سرورها (NS) را این دو مورد بگذارید:

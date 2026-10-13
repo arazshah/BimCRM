@@ -291,3 +291,22 @@ class RenewalOrderForm(forms.Form):
         mobile = normalize_mobile(self.cleaned_data["contact_mobile"])
         validate_mobile(mobile)
         return mobile
+
+
+class DomainServiceForm(forms.Form):
+    wanted = forms.CharField(
+        label="دامنه‌های پیشنهادی شما",
+        max_length=200,
+        widget=forms.TextInput(attrs={"dir": "ltr", "id": "ds-wanted", "placeholder": "alborzbime.ir, bimealborz.ir"}),
+        help_text="یک یا چند نام؛ اگر هنوز نمی‌دانید، خالی بگذارید تا با هم انتخاب کنیم.",
+        required=False,
+    )
+    contact_mobile = forms.CharField(label="موبایل برای تماس", max_length=20)
+    note = forms.CharField(
+        label="توضیح (اختیاری)", required=False, max_length=500, widget=forms.Textarea(attrs={"rows": 2})
+    )
+
+    def clean_contact_mobile(self):
+        mobile = normalize_mobile(self.cleaned_data["contact_mobile"])
+        validate_mobile(mobile)
+        return mobile

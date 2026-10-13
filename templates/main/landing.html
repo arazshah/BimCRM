@@ -343,6 +343,28 @@
   </div>
 </section>
 
+{# ───────── Domain concierge ───────── #}
+{% if platform.domain_service_enabled %}
+<section class="domain-care" aria-labelledby="dc-title">
+  <div class="wrap dc-inner">
+    <div class="dc-copy">
+      <span class="dc-badge">خدمت ویژه</span>
+      <h2 id="dc-title">دامنه اختصاصی می‌خواهید؟ ما برایتان می‌خریم و راه می‌اندازیم</h2>
+      <p>سایت شما از روز اول روی زیردامنه رایگان کار می‌کند. اگر آدرس اختصاصی مثل <span class="ltr">alborzbime.ir</span> می‌خواهید و حوصله ایرنیک و تنظیمات فنی را ندارید، کافی است بگویید. نام آزاد را با هم پیدا می‌کنیم، به نام دفترتان ثبت می‌کنیم و سایت را با گواهی امنیتی روی دامنه خودتان بالا می‌آوریم.</p>
+      <div class="dc-actions">
+        <a class="btn" href="#start">شروع و درخواست از داخل پنل</a>
+        {% if platform.support_phone %}<a class="btn btn-ghost" href="tel:{{ platform.support_phone }}">تماس: <span class="ltr">{{ platform.support_phone }}</span></a>{% endif %}
+      </div>
+    </div>
+    <ol class="dc-steps">
+      <li><strong>نام دلخواه را بگویید</strong><span>از پنل › دامنه یا با تماس تلفنی</span></li>
+      <li><strong>ثبت به نام دفتر شما</strong><span>هزینه ثبت را پیش از آن هماهنگ می‌کنیم</span></li>
+      <li><strong>سایت روی دامنه شما</strong><span>اتصال، SSL و انتقال سایت با ما</span></li>
+    </ol>
+  </div>
+</section>
+{% endif %}
+
 {# ───────── Free trial ───────── #}
 <section class="trial" aria-labelledby="trial-title">
   <div class="wrap trial-inner">

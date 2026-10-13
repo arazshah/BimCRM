@@ -582,6 +582,8 @@ def _settings_form(**over):
         "zarinpal_merchant_id": "",
         "payment_mode": "order",
         "google_site_verification": "",
+        "smsir_signup_url": "https://app.sms.ir/auth/sign-up?ref=HXQGN",
+        "domain_service_enabled": "on",
         "order_grace_days": 3,
         "order_payment_info": "",
     }

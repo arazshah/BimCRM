@@ -21,6 +21,7 @@ urlpatterns = [
     path("site/template/", views.site_template, name="site_template"),
     path("site/publish/", views.site_publish, name="site_publish"),
     path("domains/", views.domains, name="domains"),
+    path("domains/service/", views.domain_service, name="domain_service"),
     path("domains/<int:pk>/", views.domain_action, name="domain_action"),
     path("integrations/", views.integrations, name="integrations"),
     path("integrations/<str:kind>/<str:provider>/", views.integration_edit, name="integration_edit"),

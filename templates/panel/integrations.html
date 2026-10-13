@@ -16,6 +16,13 @@
     </li>
     {% endfor %}
   </ul>
+  {% if g.kind == "sms" and PLATFORM_SETTINGS.smsir_signup_url and not sms_connected %}
+  <div class="partner-cta">
+    <span class="partner-ico" aria-hidden="true"><svg><use href="#p-megaphone"/></svg></span>
+    <div><strong>پنل پیامک ندارید؟</strong><span>در چند دقیقه حساب sms.ir بسازید؛ بعد کلید API و شماره خط را همین‌جا وارد کنید.</span></div>
+    <a class="btn btn-sm" href="{{ PLATFORM_SETTINGS.smsir_signup_url }}" target="_blank" rel="noopener">ساخت حساب sms.ir</a>
+  </div>
+  {% endif %}
   {% if g.kind == "sms" %}<p class="muted small">با پنل پیامک: یادآور تمدید به مشتریان و ورود مشتری به پنل مشتری سایت فعال می‌شود.</p>{% endif %}
   {% if g.kind == "payment" or g.kind == "sms" %}<p class="muted small">در هر دسته فقط یک سرویس فعال می‌ماند.</p>{% endif %}
 </section>

@@ -51,6 +51,7 @@
       <a href="{% url 'panel:team' %}" {% if u == "team" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-team"/></svg>همکاران</a>
       <a href="{% url 'panel:billing' %}" {% if u == "billing" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-card"/></svg>اشتراک</a>
       <a href="{% url 'panel:tickets' %}" {% if "ticket" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-help"/></svg>پشتیبانی</a>
+      <a href="{{ PLATFORM_URL }}/help/" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#p-book"/></svg>راهنمای کامل</a>
     </nav>
     {% endwith %}
     <div class="side-foot">

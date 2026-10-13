@@ -320,6 +320,42 @@ def robots(request):
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
 
 
+def help_index(request):
+    from . import help as h
+
+    return render(request, "help/index.html", {"sections": h.SECTIONS, "platform": PlatformSettings.load()})
+
+
+def help_article(request, slug):
+    from django.http import Http404
+
+    from . import help as h
+
+    article = h.BY_SLUG.get(slug)
+    if article is None:
+        raise Http404
+    prev, nxt = h.neighbours(slug)
+    return render(
+        request,
+        "help/article.html",
+        {
+            "article": article,
+            "section": h.section_of(slug),
+            "sections": h.SECTIONS,
+            "prev": prev,
+            "next": nxt,
+            "body_template": f"help/a/{slug}.html",
+            "platform": PlatformSettings.load(),
+        },
+    )
+
+
+def help_articles():
+    from . import help as h
+
+    return h.ORDER
+
+
 def sitemap(request):
     base = f"{settings.PLATFORM_SCHEME}://{settings.PLATFORM_DOMAIN}"
     today = timezone.localdate().isoformat()
@@ -327,6 +363,8 @@ def sitemap(request):
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         f"  <url><loc>{base}/</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>\n"
-        "</urlset>\n"
+        f"  <url><loc>{base}/help/</loc><lastmod>{today}</lastmod><priority>0.7</priority></url>\n"
+        + "".join(f"  <url><loc>{base}/help/{a.slug}/</loc><priority>0.6</priority></url>\n" for a in help_articles())
+        + "</urlset>\n"
     )
     return HttpResponse(xml, content_type="application/xml")
