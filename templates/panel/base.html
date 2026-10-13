@@ -4,63 +4,77 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#f4f6f8">
   <title>{% block title %}پنل{% endblock %} — {{ request.tenant.name }}</title>
   <link rel="preload" href="{% static 'fonts/Vazirmatn-VF.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/panel.css' %}">
 </head>
 <body class="panel">
+  {% include "panel/_icons.html" %}
   <a class="skip" href="#main">رفتن به محتوا</a>
   <aside class="sidebar" id="sidebar">
     <div class="side-head">
-      <span class="office">{{ request.tenant.name }}</span>
-      {% if request.branch_scope %}<span class="badge-branch">{{ request.branch_scope.name }}</span>{% endif %}
-      <a class="ltr side-url" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener">{{ request.tenant.primary_host }}</a>
+      <span class="office-mark" aria-hidden="true">{{ request.tenant.name|slice:":1" }}</span>
+      <div class="office-text">
+        <span class="office">{{ request.tenant.name }}</span>
+        <a class="ltr side-url" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener">{{ request.tenant.primary_host }}</a>
+      </div>
     </div>
+    {% if request.branch_scope %}<div class="side-branch"><span class="badge-branch">{{ request.branch_scope.name }}</span></div>{% endif %}
     {% with u=request.resolver_match.url_name %}
     <nav class="side-nav" aria-label="منوی پنل">
-      <a href="{% url 'panel:dashboard' %}" {% if u == "dashboard" %}aria-current="page"{% endif %}>داشبورد</a>
+      <a href="{% url 'panel:dashboard' %}" {% if u == "dashboard" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-home"/></svg>داشبورد</a>
       <span class="nav-group">کار روزانه</span>
-      <a href="{% url 'panel:quotes' %}" {% if u == "quotes" or u == "quote" %}aria-current="page"{% endif %}>درخواست‌های سایت</a>
-      <a href="{% url 'panel:customers' %}" {% if "customer" in u %}aria-current="page"{% endif %}>مشتریان</a>
-      <a href="{% url 'panel:policies' %}" {% if "polic" in u %}aria-current="page"{% endif %}>بیمه‌نامه‌ها و تمدید</a>
-      <a href="{% url 'panel:reminders' %}" {% if u == "reminders" %}aria-current="page"{% endif %}>یادآورهای پیامکی</a>
+      <a href="{% url 'panel:quotes' %}" {% if u == "quotes" or u == "quote" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-inbox"/></svg>درخواست‌های سایت</a>
+      <a href="{% url 'panel:customers' %}" {% if "customer" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-users"/></svg>مشتریان</a>
+      <a href="{% url 'panel:policies' %}" {% if "polic" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-doc"/></svg>بیمه‌نامه‌ها و تمدید</a>
+      <a href="{% url 'panel:reminders' %}" {% if u == "reminders" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-bell"/></svg>یادآورهای پیامکی</a>
       <span class="nav-group">افزونه‌ها</span>
       {% with f=request.features %}
-      <a href="{% if request.branch_scope %}{% url 'panel:installments' %}{% else %}{% url 'panel:finance' %}{% endif %}" {% if u in "finance installments installment_plan installment_edit commissions ledger" %}aria-current="page"{% endif %}>مالی و حسابداری{% if "finance" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
-      <a href="{% url 'panel:claims' %}" {% if "claim" in u %}aria-current="page"{% endif %}>خسارت{% if "claims" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      <a href="{% if request.branch_scope %}{% url 'panel:installments' %}{% else %}{% url 'panel:finance' %}{% endif %}" {% if u in "finance installments installment_plan installment_edit commissions ledger" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-wallet"/></svg>مالی و حسابداری{% if "finance" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      <a href="{% url 'panel:claims' %}" {% if "claim" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-shield"/></svg>خسارت{% if "claims" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
       {% if not request.branch_scope %}
-      <a href="{% url 'panel:marketers' %}" {% if "marketer" in u %}aria-current="page"{% endif %}>بازاریابان{% if "marketers" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
-      <a href="{% url 'panel:campaigns' %}" {% if "campaign" in u %}aria-current="page"{% endif %}>کمپین پیامکی{% if "sms_campaigns" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
-      <a href="{% url 'panel:reports' %}" {% if "report" in u %}aria-current="page"{% endif %}>گزارش‌ها{% if "advanced_reports" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      <a href="{% url 'panel:marketers' %}" {% if "marketer" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-network"/></svg>بازاریابان{% if "marketers" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      <a href="{% url 'panel:campaigns' %}" {% if "campaign" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-megaphone"/></svg>کمپین پیامکی{% if "sms_campaigns" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      <a href="{% url 'panel:reports' %}" {% if "report" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-chart"/></svg>گزارش‌ها{% if "advanced_reports" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
       {% endif %}
-      {% if request.membership.role != "staff" %}<a href="{% url 'panel:branches' %}" {% if "branch" in u %}aria-current="page"{% endif %}>شعبه‌ها{% if "branches" not in f %}<span class="lock">افزونه</span>{% endif %}</a>{% endif %}
+      {% if request.membership.role != "staff" %}<a href="{% url 'panel:branches' %}" {% if "branch" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-building"/></svg>شعبه‌ها{% if "branches" not in f %}<span class="lock">افزونه</span>{% endif %}</a>{% endif %}
       {% endwith %}
       <span class="nav-group">سایت</span>
-      <a href="{% url 'panel:site' %}" {% if u == "site" %}aria-current="page"{% endif %}>محتوای سایت</a>
-      <a href="{% url 'panel:site_template' %}" {% if u == "site_template" %}aria-current="page"{% endif %}>قالب</a>
-      <a href="{% url 'panel:domains' %}" {% if u == "domains" %}aria-current="page"{% endif %}>دامنه</a>
+      <a href="{% url 'panel:site' %}" {% if u == "site" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-globe"/></svg>محتوای سایت</a>
+      <a href="{% url 'panel:site_template' %}" {% if u == "site_template" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-palette"/></svg>قالب</a>
+      <a href="{% url 'panel:domains' %}" {% if u == "domains" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-link"/></svg>دامنه</a>
       <span class="nav-group">دفتر</span>
-      <a href="{% url 'panel:integrations' %}" {% if "integration" in u %}aria-current="page"{% endif %}>اتصالات</a>
-      <a href="{% url 'panel:team' %}" {% if u == "team" %}aria-current="page"{% endif %}>همکاران</a>
-      <a href="{% url 'panel:billing' %}" {% if u == "billing" %}aria-current="page"{% endif %}>اشتراک</a>
-      <a href="{% url 'panel:tickets' %}" {% if "ticket" in u %}aria-current="page"{% endif %}>پشتیبانی</a>
+      <a href="{% url 'panel:integrations' %}" {% if "integration" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-plug"/></svg>اتصالات</a>
+      <a href="{% url 'panel:team' %}" {% if u == "team" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-team"/></svg>همکاران</a>
+      <a href="{% url 'panel:billing' %}" {% if u == "billing" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-card"/></svg>اشتراک</a>
+      <a href="{% url 'panel:tickets' %}" {% if "ticket" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-help"/></svg>پشتیبانی</a>
     </nav>
     {% endwith %}
     <div class="side-foot">
-      <span>{{ request.user }}</span>
-      <a href="{{ PLATFORM_URL }}/me/?all=1">محیط‌های من</a> · <a href="{{ PLATFORM_URL }}/logout/">خروج</a>
+      <span class="user-avatar" aria-hidden="true">{{ request.user.full_name|default:"؟"|slice:":1" }}</span>
+      <div class="user-text">
+        <span class="user-name">{{ request.user }}</span>
+        <span class="user-links"><a href="{{ PLATFORM_URL }}/me/?all=1"><svg aria-hidden="true"><use href="#p-swap"/></svg>محیط‌های من</a><a href="{{ PLATFORM_URL }}/logout/"><svg aria-hidden="true"><use href="#p-logout"/></svg>خروج</a></span>
+      </div>
     </div>
   </aside>
+  <div class="scrim" aria-hidden="true" onclick="document.body.classList.remove('nav-open')"></div>
   <div class="content">
     <header class="content-top">
-      <button class="menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">منو</button>
+      <button class="menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="منو" onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))"><svg aria-hidden="true"><use href="#p-menu"/></svg></button>
+      <form class="top-search" action="{% url 'panel:customers' %}" method="get" role="search">
+        <svg aria-hidden="true"><use href="#p-search"/></svg>
+        <input type="search" name="q" placeholder="جستجوی مشتری: نام، موبایل یا کد ملی" aria-label="جستجوی مشتری">
+      </form>
       {% with sub=request.subscription %}{% if sub %}
-        {% if sub.status == "trial" %}<p class="sub-note">آزمایشی رایگان: {{ sub.days_left|fa }} روز مانده. <a href="{% url 'panel:billing' %}">پرداخت اشتراک</a></p>
-        {% elif sub.status == "grace" %}<p class="sub-note warn">اشتراک تمام شده و در مهلت پرداخت هستید. <a href="{% url 'panel:billing' %}">تمدید</a></p>
-        {% elif sub.status == "expired" %}<p class="sub-note bad">اشتراک منقضی شده؛ محیط فقط‌خواندنی است. <a href="{% url 'panel:billing' %}">تمدید</a></p>
+        {% if sub.status == "trial" %}<a class="sub-note" href="{% url 'panel:billing' %}"><svg aria-hidden="true"><use href="#p-clock"/></svg>آزمایشی: {{ sub.days_left|fa }} روز مانده</a>
+        {% elif sub.status == "grace" %}<a class="sub-note warn" href="{% url 'panel:billing' %}">اشتراک تمام شده و در مهلت پرداخت هستید؛ تمدید</a>
+        {% elif sub.status == "expired" %}<a class="sub-note bad" href="{% url 'panel:billing' %}">اشتراک منقضی شده؛ محیط فقط‌خواندنی است. تمدید</a>
         {% endif %}
       {% endif %}{% endwith %}
+      <a class="top-site" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#p-external"/></svg><span>مشاهده سایت</span></a>
     </header>
     <main id="main" class="main">
       {% if messages %}<ul class="flash" role="status">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
