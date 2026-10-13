@@ -3,7 +3,8 @@
 {% block main %}
 <section class="e-hero">
   <div class="site-wrap e-hero-grid">
-    <div>
+    <div class="e-hero-copy">
+      {% if site.years_active %}<div class="e-seal" aria-hidden="true"><span>از</span><strong>{{ site.years_active|fa }}</strong><span>سال پیش</span></div>{% endif %}
       <h1>{{ site.hero_title|default:tenant.name }}</h1>
       {% if site.hero_subtitle %}<p class="e-sub">{{ site.hero_subtitle }}</p>{% endif %}
       {% if site.years_active or site.customers_count %}
@@ -16,48 +17,61 @@
     </div>
     <div class="e-form-frame" id="quote">
       <h2>درخواست مشاوره و استعلام</h2>
+      <p class="e-form-note">کارشناس دفتر در اولین فرصت با شما تماس می‌گیرد.</p>
       {% include "sites/_quote_form.html" with submit_label="ثبت درخواست" %}
     </div>
   </div>
 </section>
 
+{% if companies %}
+<section class="e-companies" aria-label="شرکت‌های همکار"><div class="site-wrap">
+  <p class="e-co-label">همکاری با</p>
+  <ul>{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}">{% else %}{{ c.name }}{% endif %}</li>{% endfor %}</ul>
+</div></section>
+{% endif %}
+
 {% if lines %}
-<section class="e-lines" id="lines">
+<section class="e-lines" id="lines" aria-labelledby="e-lines-title">
   <div class="site-wrap">
-    <h2 class="e-title">رشته‌های بیمه</h2>
+    <h2 class="e-title" id="e-lines-title">رشته‌های بیمه</h2>
     <ul class="e-line-list">
-      {% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><span class="e-line-name">{{ l.name }}</span><span class="e-line-sum">{{ l.summary }}</span></a></li>{% endfor %}
+      {% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}">
+        <span class="e-line-icon"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg></span>
+        <span class="e-line-body"><span class="e-line-name">{{ l.name }}</span><span class="e-line-sum">{{ l.summary }}</span></span>
+        <span class="e-line-go">درخواست</span>
+      </a></li>{% endfor %}
     </ul>
   </div>
 </section>
 {% endif %}
 
 {% if site.about %}
-<section class="e-about" id="about">
+<section class="e-about" id="about" aria-labelledby="e-about-title">
   <div class="site-wrap e-about-grid">
-    <h2 class="e-title">درباره دفتر</h2>
+    <div class="e-about-side">
+      <h2 class="e-title" id="e-about-title">درباره دفتر</h2>
+      <ul class="e-principles">
+        <li><strong>پیش از خرید</strong>پوشش‌ها و استثناها را با شما مرور می‌کنیم.</li>
+        <li><strong>هنگام تمدید</strong>پیش از سررسید یادآوری می‌کنیم.</li>
+        <li><strong>هنگام خسارت</strong>پرونده را تا پرداخت پیگیری می‌کنیم.</li>
+      </ul>
+    </div>
     <div class="e-about-text">{{ site.about|linebreaks }}</div>
   </div>
 </section>
 {% endif %}
 
-{% if companies %}
-<section class="e-companies"><div class="site-wrap"><p class="e-co-label">همکاری با</p><ul>{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}">{% else %}{{ c.name }}{% endif %}</li>{% endfor %}</ul></div></section>
-{% endif %}
+{% include "sites/parts/steps.html" with title="روند کار با دفتر" %}
 
 {% if testimonials %}
-<section class="e-voices">
+<section class="e-voices" aria-labelledby="e-v-title">
   <div class="site-wrap">
-    <h2 class="e-title">از زبان بیمه‌گذاران</h2>
+    <h2 class="e-title" id="e-v-title">از زبان بیمه‌گذاران</h2>
     <div class="e-voice-grid">{% for t in testimonials %}<figure><blockquote>{{ t.text }}</blockquote><figcaption>{{ t.name }}</figcaption></figure>{% endfor %}</div>
   </div>
 </section>
 {% endif %}
 
-{% if faqs %}
-<section class="e-faq"><div class="site-wrap narrow-col">
-  <h2 class="e-title">پرسش‌های رایج</h2>
-  {% for f in faqs %}<details><summary>{{ f.question }}</summary><div>{{ f.answer|linebreaks }}</div></details>{% endfor %}
-</div></section>
-{% endif %}
+{% include "sites/parts/faq.html" with title="پرسش‌های رایج" %}
+{% include "sites/parts/contact.html" with title="برای مشاوره، دفتر در خدمت شماست" %}
 {% endblock %}

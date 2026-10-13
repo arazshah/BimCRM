@@ -1,0 +1,13 @@
+{% load fa %}{% if site.years_active or site.customers_count or tenant.agency_code %}
+<section class="s-stats" aria-label="دفتر در یک نگاه">
+  <div class="site-wrap">
+    <dl class="s-stats-list">
+      {% if site.years_active %}<div><dt>سال سابقه</dt><dd>{{ site.years_active|fa }}</dd></div>{% endif %}
+      {% if site.customers_count %}<div><dt>بیمه‌گذار</dt><dd>{{ site.customers_count|toman }}</dd></div>{% endif %}
+      {% if lines %}<div><dt>رشته بیمه</dt><dd>{{ lines|length|fa }}</dd></div>{% endif %}
+      {% if companies %}<div><dt>شرکت بیمه همکار</dt><dd>{{ companies|length|fa }}</dd></div>{% endif %}
+      {% if tenant.agency_code %}<div><dt>کد نمایندگی</dt><dd>{{ tenant.agency_code|fa }}</dd></div>{% endif %}
+    </dl>
+  </div>
+</section>
+{% endif %}

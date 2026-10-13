@@ -1,0 +1,10 @@
+{% if testimonials %}
+<section class="s-voices" aria-labelledby="s-v-title">
+  <div class="site-wrap">
+    <h2 class="s-title" id="s-v-title">{{ title|default:"مشتریان ما می‌گویند" }}</h2>
+    <div class="s-voice-grid">
+      {% for t in testimonials %}<figure class="s-voice"><blockquote>{{ t.text }}</blockquote><figcaption><span class="s-avatar" aria-hidden="true">{{ t.name|slice:":1" }}</span>{{ t.name }}</figcaption></figure>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

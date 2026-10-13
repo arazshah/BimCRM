@@ -1,0 +1,8 @@
+{% if faqs %}
+<section class="s-faq" id="faq" aria-labelledby="s-faq-title">
+  <div class="site-wrap s-faq-grid">
+    <div><h2 class="s-title" id="s-faq-title">{{ title|default:"سؤالات متداول" }}</h2><p class="s-faq-note">جواب سؤالتان اینجا نیست؟ {% if site.phone %}با <a class="ltr" href="tel:{{ site.phone }}">{{ site.phone }}</a> تماس بگیرید یا {% endif %}<a href="#quote">فرم استعلام</a> را پر کنید.</p></div>
+    <div class="s-faq-list">{% for f in faqs %}<details{% if forloop.first %} open{% endif %}><summary>{{ f.question }}</summary><div>{{ f.answer|linebreaks }}</div></details>{% endfor %}</div>
+  </div>
+</section>
+{% endif %}

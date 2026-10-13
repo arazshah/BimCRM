@@ -1,53 +1,62 @@
 {% extends "sites/modern/base.html" %}
+{% load fa %}
 {% block main %}
 <section class="m-hero">
   <div class="site-wrap m-hero-grid">
     <div class="m-hero-copy">
+      {% if tenant.agency_code %}<p class="m-badge"><svg aria-hidden="true"><use href="#i-shield"/></svg>نمایندگی رسمی، کد {{ tenant.agency_code|fa }}</p>{% endif %}
       <h1>{{ site.hero_title|default:tenant.name }}</h1>
-      {% if site.hero_subtitle %}<p>{{ site.hero_subtitle }}</p>{% endif %}
+      {% if site.hero_subtitle %}<p class="m-lead">{{ site.hero_subtitle }}</p>{% endif %}
       {% if lines %}
+      <p class="m-chips-label">چه بیمه‌ای لازم دارید؟</p>
       <ul class="m-chips">{% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg>{{ l.name }}</a></li>{% endfor %}</ul>
       {% endif %}
+      <ul class="m-assure">
+        <li><svg aria-hidden="true"><use href="#i-check"/></svg>استعلام آنلاین، بدون مراجعه</li>
+        <li><svg aria-hidden="true"><use href="#i-check"/></svg>کد پیگیری برای هر درخواست</li>
+        {% if can_portal %}<li><svg aria-hidden="true"><use href="#i-check"/></svg>پنل مشتری برای بیمه‌نامه‌ها</li>{% endif %}
+      </ul>
     </div>
     <div class="m-card" id="quote">
-      <h2>استعلام قیمت</h2>
+      <div class="m-card-head"><h2>استعلام قیمت</h2><span>رایگان و بدون تعهد</span></div>
       {% include "sites/_quote_form.html" with submit_label="دریافت قیمت" %}
     </div>
   </div>
 </section>
 
-<section class="m-how">
+{% include "sites/parts/stats.html" %}
+
+{% if lines %}
+<section class="m-lines" id="lines" aria-labelledby="m-lines-title">
   <div class="site-wrap">
-    <h2>از استعلام تا بیمه‌نامه</h2>
-    <ol class="m-steps">
-      <li><strong>فرم را پر کنید</strong><span>نوع بیمه و اطلاعات اصلی؛ کمتر از یک دقیقه.</span></li>
-      <li><strong>تماس و مقایسه</strong><span>قیمت و پوشش‌ها را با شما مرور می‌کنیم.</span></li>
-      <li><strong>صدور و تحویل</strong><span>بیمه‌نامه صادر می‌شود و وضعیت را با کد پیگیری می‌بینید.</span></li>
-    </ol>
+    <div class="m-sec-head"><h2 class="s-title" id="m-lines-title">بیمه‌هایی که ارائه می‌کنیم</h2><p>روی هر کدام بزنید تا فرم استعلام همان رشته باز شود.</p></div>
+    <ul class="m-line-grid">
+      {% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}">
+        <span class="m-line-icon"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg></span>
+        <strong>{{ l.name }}</strong><span class="m-line-sum">{{ l.summary }}</span><span class="m-line-go">استعلام قیمت</span>
+      </a></li>{% endfor %}
+    </ul>
   </div>
 </section>
+{% endif %}
+
+{% include "sites/parts/steps.html" %}
 
 {% if site.about %}
-<section class="m-about"><div class="site-wrap m-about-inner"><h2>درباره ما</h2><div>{{ site.about|linebreaks }}</div></div></section>
+<section class="m-about" aria-labelledby="m-about-title">
+  <div class="site-wrap m-about-grid">
+    <div><h2 class="s-title" id="m-about-title">درباره {{ tenant.name }}</h2><div class="m-about-text">{{ site.about|linebreaks }}</div></div>
+    <ul class="m-about-facts">
+      {% if site.years_active %}<li><strong>{{ site.years_active|fa }} سال</strong><span>تجربه در صدور، تمدید و پیگیری خسارت</span></li>{% endif %}
+      {% if site.customers_count %}<li><strong>{{ site.customers_count|toman }} بیمه‌گذار</strong><span>خانواده و کسب‌وکاری که به ما اعتماد کرده‌اند</span></li>{% endif %}
+      {% if site.working_hours %}<li><strong>ساعت کاری</strong><span>{{ site.working_hours }}</span></li>{% endif %}
+    </ul>
+  </div>
+</section>
 {% endif %}
 
-{% if testimonials %}
-<section class="m-voices"><div class="site-wrap">
-  <h2>مشتریان می‌گویند</h2>
-  <ul>{% for t in testimonials %}<li><p>{{ t.text }}</p><span>{{ t.name }}</span></li>{% endfor %}</ul>
-</div></section>
-{% endif %}
-
-{% if faqs %}
-<section class="m-faq"><div class="site-wrap m-faq-inner">
-  <h2>سؤالات متداول</h2>
-  <div>{% for f in faqs %}<details><summary>{{ f.question }}</summary>{{ f.answer|linebreaks }}</details>{% endfor %}</div>
-</div></section>
-{% endif %}
-
-<section class="m-contact"><div class="site-wrap m-contact-grid">
-  {% if site.phone %}<a href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg><span class="ltr">{{ site.phone }}</span></a>{% endif %}
-  {% if site.address %}<span><svg aria-hidden="true"><use href="#i-pin"/></svg>{{ site.address }}</span>{% endif %}
-  {% if site.working_hours %}<span><svg aria-hidden="true"><use href="#i-clock"/></svg>{{ site.working_hours }}</span>{% endif %}
-</div></section>
+{% include "sites/parts/companies.html" %}
+{% include "sites/parts/voices.html" %}
+{% include "sites/parts/faq.html" %}
+{% include "sites/parts/contact.html" %}
 {% endblock %}
