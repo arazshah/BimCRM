@@ -66,3 +66,26 @@ def test_domain_service_rejects_bad_mobile(client, tenant, owner):
     client.force_login(owner)
     client.post("/panel/domains/service/", {"contact_mobile": "123"}, HTTP_HOST=host(tenant))
     assert not Ticket.all_objects.filter(tenant=tenant).exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("picked, stored", [("#000000", ""), ("", ""), ("#c0392b", "#c0392b")])
+def test_saving_site_content_keeps_template_colour_unless_changed(client, tenant, owner, picked, stored):
+    from apps.sites.models import SiteSettings
+
+    client.force_login(owner)
+    page = client.get("/panel/site/", HTTP_HOST=host(tenant)).content.decode()
+    site = SiteSettings.all_objects.get(tenant=tenant)
+    assert f'value="{site.template_info.default_color}"' in page
+    data = {
+        "s-hero_title": "دفتر من",
+        "s-primary_color": picked,
+        "t-TOTAL_FORMS": "0",
+        "t-INITIAL_FORMS": "0",
+        "q-TOTAL_FORMS": "0",
+        "q-INITIAL_FORMS": "0",
+    }
+    resp = client.post("/panel/site/", data, HTTP_HOST=host(tenant))
+    assert resp.status_code == 302, resp.content.decode()[:500]
+    site.refresh_from_db()
+    assert site.hero_title == "دفتر من" and site.primary_color == stored

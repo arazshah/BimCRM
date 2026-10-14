@@ -171,6 +171,17 @@ class SiteContentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["lines"].queryset = self.fields["lines"].queryset.filter(is_active=True)
         self.fields["companies"].queryset = self.fields["companies"].queryset.filter(is_active=True)
+        # A colour input always submits a value (#000000 when empty), so show the colour actually in use.
+        if self.instance.pk and not self.instance.primary_color:
+            self.initial["primary_color"] = self.instance.template_info.default_color
+
+    def clean_primary_color(self):
+        """Keep following the template's colour unless the agent picked a different one."""
+        value = (self.cleaned_data.get("primary_color") or "").strip().lower()
+        default = self.instance.template_info.default_color.lower() if self.instance.pk else ""
+        if not self.instance.primary_color and value in ("", "#000000", default):
+            return ""
+        return "" if value == default else value
 
 
 TestimonialFormSet = forms.modelformset_factory(
