@@ -30,6 +30,8 @@
       <a href="{% url 'panel:quotes' %}" {% if u == "quotes" or u == "quote" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-inbox"/></svg>درخواست‌های سایت</a>
       <a href="{% url 'panel:customers' %}" {% if "customer" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-users"/></svg>مشتریان</a>
       <a href="{% url 'panel:policies' %}" {% if "polic" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-doc"/></svg>بیمه‌نامه‌ها و تمدید</a>
+      <a href="{% url 'panel:tasks' %}" {% if "task" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-tasks"/></svg>کارها و پیگیری‌ها{% if request.due_tasks %}<span class="count">{{ request.due_tasks|fa }}</span>{% endif %}</a>
+      <a href="{% url 'panel:calendar' %}" {% if u == "calendar" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-calendar"/></svg>تقویم</a>
       <a href="{% url 'panel:reminders' %}" {% if u == "reminders" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-bell"/></svg>یادآورهای پیامکی</a>
       <span class="nav-group">افزونه‌ها</span>
       {% with f=request.features %}
@@ -76,6 +78,7 @@
         {% elif sub.status == "expired" %}<a class="sub-note bad" href="{% url 'panel:billing' %}">اشتراک منقضی شده؛ محیط فقط‌خواندنی است. تمدید</a>
         {% endif %}
       {% endif %}{% endwith %}
+      <a class="top-bell" href="{% url 'panel:notifications' %}" aria-label="اعلان‌ها{% if request.unread_count %}: {{ request.unread_count }} خوانده‌نشده{% endif %}"><svg aria-hidden="true"><use href="#p-bell"/></svg>{% if request.unread_count %}<span class="dot">{{ request.unread_count|fa }}</span>{% endif %}</a>
       <a class="top-site" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#p-external"/></svg><span>مشاهده سایت</span></a>
     </header>
     <main id="main" class="main">
@@ -83,6 +86,7 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+  <script src="{% static 'js/jdate.js' %}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

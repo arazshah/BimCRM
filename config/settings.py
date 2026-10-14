@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "apps.finance",
     "apps.claims",
     "apps.messaging",
+    "apps.work",
     "apps.panel",
     "apps.main",
 ]
@@ -145,6 +146,8 @@ CELERY_BEAT_SCHEDULE = {
     "subscription-lifecycle": {"task": "apps.billing.tasks.run_subscription_lifecycle", "schedule": 3600.0},
     # Customers' renewal, installment and birthday SMS go out at 10:00 Tehran time.
     "daily-reminders": {"task": "apps.messaging.tasks.daily_reminders", "schedule": crontab(hour=10, minute=0)},
+    # Each colleague's tasks for the day (SMS digest, if the office turned it on) and automatic renewal calls.
+    "daily-work": {"task": "apps.work.tasks.daily_work", "schedule": crontab(hour=8, minute=30)},
 }
 
 # Platform SMS (sms.ir) — only for platform messages: OTP, subscription reminders, ticket replies

@@ -65,6 +65,14 @@
 
 <div class="dash-grid">
   <div class="dash-col">
+  <section class="card tasks-card" aria-labelledby="tk-title">
+    <div class="card-head"><h2 class="h2" id="tk-title">کارهای امروز من</h2><a href="{% url 'panel:tasks' %}">همه</a></div>
+    {% if my_tasks %}
+    <ul class="task-list compact">{% for t in my_tasks %}{% include "panel/_task_row.html" %}{% endfor %}</ul>
+    {% else %}
+    <p class="empty small">کاری برای امروز ندارید. <a href="{% url 'panel:task_new' %}">کار جدید</a></p>
+    {% endif %}
+  </section>
   <section class="card renew-card" aria-labelledby="ren-title">
     <div class="card-head"><h2 class="h2" id="ren-title">تمدیدهای پیش رو</h2><a href="{% url 'panel:policies' %}?f=expiring">همه</a></div>
     {% if renewals %}

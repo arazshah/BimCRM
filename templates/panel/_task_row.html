@@ -1,0 +1,14 @@
+{% load fa %}<li class="task pri-{{ t.priority }}{% if t.done_at %} done{% endif %}" id="t{{ t.pk }}">
+  <form method="post" action="{% url 'panel:task_toggle' t.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="task-check" type="submit" aria-label="{% if t.done_at %}باز کردن دوباره{% else %}انجام شد{% endif %}: {{ t.title }}"><svg aria-hidden="true"><use href="#p-check"/></svg></button></form>
+  <div class="task-body">
+    <a class="task-title" href="{% url 'panel:task_edit' t.pk %}?next={{ request.get_full_path|urlencode }}">{{ t.title }}</a>
+    <span class="task-meta">
+      {% if t.priority >= 3 %}<span class="tag {% if t.priority == 4 %}hot{% else %}warm{% endif %}">{{ t.get_priority_display }}</span>{% endif %}
+      <span class="tag">{{ t.get_kind_display }}</span>
+      {% if t.customer %}<a href="{% url 'panel:customer' t.customer_id %}">{{ t.customer.full_name }}</a>{% endif %}
+      <span class="{% if t.is_overdue %}late{% endif %}">{{ t.due_date|jdate }}{% if t.due_time %} · {{ t.due_time|time:"H:i"|fa }}{% endif %}</span>
+      <span class="muted">{% if t.assigned_to %}{{ t.assigned_to.full_name|default:t.assigned_to.mobile }}{% else %}همه همکاران{% endif %}</span>
+    </span>
+    {% if t.note %}<p class="task-note">{{ t.note|truncatechars:160 }}</p>{% endif %}
+  </div>
+</li>

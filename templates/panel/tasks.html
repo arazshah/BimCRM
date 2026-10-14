@@ -1,0 +1,27 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}کارها و پیگیری‌ها{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>کارها و پیگیری‌ها</h1><p class="page-sub">تماس‌ها، تمدیدها، مدارک و هر کاری که باید انجام شود؛ با موعد و مسئول.</p></div>
+  <div class="head-actions"><a class="btn btn-ghost btn-sm" href="{% url 'panel:calendar' %}"><svg aria-hidden="true"><use href="#p-calendar"/></svg>تقویم</a><a class="btn btn-sm" href="{% url 'panel:task_new' %}"><svg aria-hidden="true"><use href="#p-plus"/></svg>کار جدید</a></div></div>
+<div class="toolbar">
+  <nav class="tabs" aria-label="فیلتر">
+    <a href="?f=mine" {% if f == "mine" %}aria-current="true"{% endif %}>امروز و عقب‌افتاده‌های من{% if counts.mine %} <b>{{ counts.mine|fa }}</b>{% endif %}</a>
+    <a href="?f=week" {% if f == "week" %}aria-current="true"{% endif %}>۷ روز آینده</a>
+    <a href="?f=all" {% if f == "all" %}aria-current="true"{% endif %}>همه کارهای باز{% if counts.all %} <b>{{ counts.all|fa }}</b>{% endif %}</a>
+    <a href="?f=done" {% if f == "done" %}aria-current="true"{% endif %}>انجام‌شده</a>
+  </nav>
+  {% if members and f != "mine" %}<form method="get"><input type="hidden" name="f" value="{{ f }}"><select name="u" onchange="this.form.submit()" aria-label="مسئول"><option value="">همه همکاران</option>{% for m in members %}<option value="{{ m.pk }}" {% if u == m.pk|stringformat:"s" %}selected{% endif %}>{{ m.full_name|default:m.mobile }}</option>{% endfor %}</select></form>{% endif %}
+</div>
+{% if done is not None %}
+  {% if done %}<ul class="task-list">{% for t in done %}{% include "panel/_task_row.html" %}{% endfor %}</ul>{% else %}<p class="empty">هنوز کاری انجام نشده است.</p>{% endif %}
+{% elif groups %}
+  {% for label, key, items in groups %}
+  <section class="task-group g-{{ key }}"><h2 class="h2">{{ label }} <span class="muted small">{{ items|length|fa }}</span></h2>
+    <ul class="task-list">{% for t in items %}{% include "panel/_task_row.html" %}{% endfor %}</ul>
+  </section>
+  {% endfor %}
+{% else %}
+  <div class="empty-state card"><svg aria-hidden="true"><use href="#p-tasks"/></svg><p>{% if f == "mine" %}برای امروز کاری ندارید. 🎉{% else %}کار بازی نیست.{% endif %} درخواست‌های تازه سایت و تمدیدهای نزدیک خودکار به این فهرست اضافه می‌شوند.</p><a class="btn btn-ghost btn-sm" href="{% url 'panel:task_new' %}">کار جدید</a></div>
+{% endif %}
+{% endblock %}

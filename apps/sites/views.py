@@ -132,6 +132,9 @@ def submit_quote(request):
         details=details,
         customer=customer,
     )
+    from apps.work.services import on_new_quote
+
+    on_new_quote(quote)
     return render(request, "sites/quote_done.html", {**_site_context(request, site), "quote": quote})
 
 
@@ -283,6 +286,9 @@ def account_claim_report(request):
         policy=policy, incident_date=incident, description=description, reported_by_customer=True
     )
     ClaimEvent.objects.create(claim=claim, status=claim.status, note="اعلام از پنل مشتری")
+    from apps.work.services import on_customer_claim
+
+    on_customer_claim(claim)
     messages.success(request, f"خسارت با شماره پرونده {claim.code} اعلام شد. مدارک را همین‌جا بارگذاری کنید.")
     return redirect("sites:account")
 

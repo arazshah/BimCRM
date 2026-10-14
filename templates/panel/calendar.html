@@ -1,0 +1,29 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}تقویم{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>تقویم</h1><p class="page-sub">کارها، پایان بیمه‌نامه‌ها{% if "finance" in request.features %}، سررسید اقساط{% endif %} و تولد مشتریان.</p></div>
+  <div class="head-actions">
+    <a class="btn btn-ghost btn-sm" href="?m={{ offset|add:-1 }}{% if everyone %}&all=1{% endif %}">ماه قبل</a>
+    <strong class="cal-label">{{ label }}</strong>
+    <a class="btn btn-ghost btn-sm" href="?m={{ offset|add:1 }}{% if everyone %}&all=1{% endif %}">ماه بعد</a>
+    {% if offset %}<a class="btn btn-ghost btn-sm" href="?{% if everyone %}all=1{% endif %}">امروز</a>{% endif %}
+  </div></div>
+<div class="cal-legend"><span class="ev-task">کار</span><span class="ev-renewal">پایان بیمه‌نامه</span>{% if "finance" in request.features %}<span class="ev-installment">قسط</span>{% endif %}<span class="ev-birthday">تولد</span>
+  {% if is_manager %}<a class="cal-scope" href="?m={{ offset }}{% if not everyone %}&all=1{% endif %}">{% if everyone %}فقط کارهای من{% else %}کارهای همه همکاران{% endif %}</a>{% endif %}</div>
+<div class="cal card" role="table" aria-label="تقویم {{ label }}">
+  <div class="cal-head" role="row">{% for d in "شیدسچپج" %}<span role="columnheader">{% cycle "شنبه" "یکشنبه" "دوشنبه" "سه‌شنبه" "چهارشنبه" "پنجشنبه" "جمعه" %}</span>{% endfor %}</div>
+  {% for week in weeks %}<div class="cal-week" role="row">{% for c in week %}
+    {% if c %}<div class="cal-day{% if c.today %} today{% endif %}" role="cell"><span class="cal-num">{{ c.day|fa }}</span>
+      <ul>{% for e in c.events|slice:":4" %}<li class="ev-{{ e.type }}{% if e.done %} done{% endif %}"><a href="{{ e.url }}" title="{{ e.title }}">{{ e.title }}</a></li>{% endfor %}
+      {% if c.events|length > 4 %}<li class="ev-more">+{{ c.events|length|add:-4|fa }} مورد دیگر</li>{% endif %}</ul></div>
+    {% else %}<div class="cal-day empty" role="cell"></div>{% endif %}
+  {% endfor %}</div>{% endfor %}
+</div>
+<section class="panel-box cal-sync">
+  <h2 class="h2">تقویم را روی گوشی و گوگل داشته باشید</h2>
+  <p>این لینک را در تقویم گوگل (Other calendars › From URL)، آیفون (Settings › Calendar › Accounts › Add Subscribed Calendar) یا هر تقویمی که «اشتراک با لینک» دارد اضافه کنید. کارهای شما و پایان بیمه‌نامه‌ها خودکار آنجا هم دیده می‌شود.</p>
+  <div class="copy-row"><input id="cal-feed" class="ltr" readonly value="{{ feed }}" onclick="this.select()"><button class="btn btn-ghost btn-sm" type="button" onclick="navigator.clipboard.writeText(document.getElementById('cal-feed').value);this.textContent='کپی شد'">کپی</button></div>
+  <form method="post" action="{% url 'panel:calendar_reset' %}" class="muted small">{% csrf_token %}این لینک مخصوص شماست؛ اگر دست کسی افتاد <button class="linkish" type="submit">لینک تازه بسازید</button>.</form>
+</section>
+{% endblock %}

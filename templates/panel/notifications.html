@@ -1,0 +1,9 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}اعلان‌ها{% endblock %}
+{% block content %}
+<div class="page-head"><h1>اعلان‌ها</h1>{% if request.unread_count %}<form method="post">{% csrf_token %}<button class="btn btn-ghost btn-sm" type="submit">همه خوانده شد</button></form>{% endif %}</div>
+{% if items %}
+<ul class="notif-list card">{% for n in items %}<li class="{% if not n.read_at %}unread{% endif %}"><a href="{% url 'panel:notification_open' n.pk %}"><span>{{ n.text }}</span><span class="muted small">{{ n.created_at|jdate:"time" }}</span></a></li>{% endfor %}</ul>
+{% else %}<p class="empty">اعلانی ندارید. وقتی کاری به شما سپرده شود، درخواست تازه‌ای از سایت برسد یا همکاری شما را در پرونده‌ای خبر کند، اینجا می‌بینید.</p>{% endif %}
+{% endblock %}
