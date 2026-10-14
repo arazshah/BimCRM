@@ -57,6 +57,18 @@ class Customer(TenantOwned):
         verbose_name="بازاریاب معرف",
     )
     sms_opt_out = models.BooleanField("پیامک تبلیغاتی نمی‌خواهد", default=False)
+    referred_by = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="referrals",
+        verbose_name="معرف (از مشتریان)",
+    )
+    referral_code = models.CharField("کد معرف", max_length=10, blank=True, db_index=True, editable=False)
+    points_balance = models.IntegerField("امتیاز باشگاه", default=0, editable=False)
+    points_lifetime = models.PositiveIntegerField("امتیاز کل", default=0, editable=False)
+    tier = models.CharField("سطح", max_length=10, default="bronze", editable=False)
     branch = _branch_field("customers")
     created_at = models.DateTimeField("ثبت", auto_now_add=True)
 
@@ -162,6 +174,9 @@ class QuoteRequest(TenantOwned):
     message = models.TextField("توضیحات مشتری", blank=True)
     status = models.CharField("وضعیت", max_length=20, choices=Status.choices, default=Status.NEW)
     tracking_code = models.CharField("کد پیگیری", max_length=8, default=new_tracking_code, db_index=True)
+    referrer = models.ForeignKey(
+        Customer, null=True, blank=True, on_delete=models.SET_NULL, related_name="+", verbose_name="معرفی‌شده توسط مشتری"
+    )
     customer = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.SET_NULL, related_name="quotes")
     assigned_to = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="مسئول"

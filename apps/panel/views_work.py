@@ -114,6 +114,8 @@ def task_edit(request, pk=None):
         )
         if p:
             initial.update(customer=p.customer_id, title=f"پیگیری {p.line} — {p.customer.full_name}")
+    if not obj and request.GET.get("title"):
+        initial["title"] = request.GET["title"][:160]
     form = TaskForm(
         request.POST or None,
         instance=obj,
@@ -223,9 +225,11 @@ def customer_work_context(request, customer):
     from apps.crm.models import CustomerDocument
     from apps.integrations.senders import tenant_can_sms
 
+    from .views_club import customer_club_context
     from .views_docs import DocumentForm
 
     return {
+        **customer_club_context(request, customer),
         "documents": CustomerDocument.objects.filter(customer=customer).select_related("policy__line", "uploaded_by"),
         "doc_checklist": checklist(customer, customer_lines(customer)),
         "doc_form": DocumentForm(customer=customer),

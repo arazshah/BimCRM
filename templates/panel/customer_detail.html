@@ -6,7 +6,7 @@
   <div class="profile-main">
     <span class="profile-avatar" aria-hidden="true">{{ customer.full_name|slice:":1" }}</span>
     <div class="profile-id">
-      <h1>{{ customer.full_name }}</h1>
+      <h1>{{ customer.full_name }}{% if club.enabled %} <span class="tier tier-{{ customer.tier }}">{{ tier_label }}</span>{% endif %}</h1>
       <p class="profile-meta"><a class="ltr num" href="tel:{{ customer.mobile }}">{{ customer.mobile|fa }}</a>{% if customer.city %}<span>{{ customer.city }}</span>{% endif %}{% if customer.branch %}<span class="badge-branch">{{ customer.branch }}</span>{% endif %}</p>
     </div>
     <div class="head-actions">
@@ -71,6 +71,31 @@
   </section>
 </div>
 
+
+{% if cross_sell or club.enabled %}
+<div class="work-grid club-grid" id="club">
+  {% if cross_sell %}
+  <section class="panel-box xsell">
+    <h2 class="h2">فرصت‌های فروش</h2>
+    <ul class="plain-list">{% for s in cross_sell %}<li><span>{{ s }}</span><a class="btn btn-ghost btn-sm" href="{% url 'panel:task_new' %}?customer={{ customer.pk }}&title={{ 'پیشنهاد '|add:s|urlencode }}&next={{ request.path|urlencode }}">ساخت کار پیگیری</a></li>{% endfor %}</ul>
+  </section>
+  {% endif %}
+  {% if club.enabled %}
+  <section class="panel-box">
+    <div class="box-head"><h2 class="h2">باشگاه مشتریان</h2><a href="{% url 'panel:club' %}">قوانین</a></div>
+    <div class="club-summary"><span class="tier tier-{{ customer.tier }}">{{ tier_label }}</span><strong class="num">{{ customer.points_balance|fa }}</strong> امتیاز <span class="muted small">(کل: {{ customer.points_lifetime|fa }})</span></div>
+    <p class="small">لینک معرفی: <span class="ltr num">{{ ref_link }}</span> · کد <b class="ltr">{{ customer.referral_code }}</b></p>
+    {% if customer.referred_by %}<p class="small muted">معرفی‌شده توسط <a href="{% url 'panel:customer' customer.referred_by_id %}">{{ customer.referred_by.full_name }}</a></p>{% endif %}
+    {% if referrals %}<p class="small">معرفی‌کرده: {% for r in referrals %}<a href="{% url 'panel:customer' r.pk %}">{{ r.full_name }}</a>{% if not forloop.last %}، {% endif %}{% endfor %}</p>{% endif %}
+    {% if points %}<ul class="plain-list">{% for e in points %}<li><span>{{ e.get_reason_display }}{% if e.note %} <span class="muted small">{{ e.note }}</span>{% endif %}<br><span class="muted small">{{ e.created_at|jdate }}</span></span><span class="num {% if e.points < 0 %}neg{% else %}pos{% endif %}">{% if e.points > 0 %}+{% endif %}{{ e.points|fa }}</span></li>{% endfor %}</ul>{% endif %}
+    {% if request.can.segments %}
+    <form method="post" action="{% url 'panel:customer_points' customer.pk %}" class="points-form" novalidate>{% csrf_token %}
+      <input name="points" type="number" placeholder="مثلاً ‎-100" aria-label="امتیاز" required><input name="note" placeholder="توضیح، مثلاً تخفیف تمدید" aria-label="توضیح" required><button class="btn btn-ghost btn-sm" type="submit">ثبت</button>
+    </form>{% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endif %}
 
 <section class="panel-box" id="docs">
   <div class="box-head"><h2 class="h2">مدارک</h2></div>

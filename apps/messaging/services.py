@@ -152,6 +152,10 @@ def campaign_recipients(campaign: Campaign):
         qs = qs.filter(policies__line_id=campaign.line_id)
     if campaign.city:
         qs = qs.filter(city=campaign.city)
+    if campaign.segment:
+        from apps.crm.segments import customers_in
+
+        qs = customers_in(campaign.segment, qs)
     return qs.distinct()
 
 

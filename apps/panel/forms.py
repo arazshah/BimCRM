@@ -60,9 +60,37 @@ class CustomerForm(forms.ModelForm):
             "national_code": forms.TextInput(attrs={"dir": "ltr", "inputmode": "numeric"}),
         }
 
+    ref_code = forms.CharField(
+        label="کد معرف (از مشتریان باشگاه)",
+        required=False,
+        max_length=10,
+        widget=forms.TextInput(attrs={"dir": "ltr"}),
+        help_text="اگر یکی از مشتریان این شخص را معرفی کرده، کد معرفش را بنویسید تا بعد از اولین بیمه‌نامه جایزه بگیرد.",
+    )
+
     def __init__(self, *args, features=frozenset(), branch_scope=None, **kwargs):
         super().__init__(*args, **kwargs)
         _limit_addon_fields(self, features, branch_scope)
+        if self.instance.pk and self.instance.referred_by_id:
+            self.fields["ref_code"].initial = self.instance.referred_by.referral_code
+
+    def clean_ref_code(self):
+        code = self.cleaned_data["ref_code"].strip().upper()
+        if not code:
+            return None
+        ref = Customer.objects.filter(referral_code=code).exclude(pk=self.instance.pk or 0).first()
+        if ref is None:
+            raise ValidationError("مشتری‌ای با این کد معرف پیدا نشد.")
+        return ref
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        ref = self.cleaned_data.get("ref_code")
+        if ref is not None:
+            obj.referred_by = ref
+        if commit:
+            obj.save()
+        return obj
 
     def clean_mobile(self):
         mobile = normalize_mobile(self.cleaned_data["mobile"])
