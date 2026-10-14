@@ -122,6 +122,12 @@ def dashboard(request):
         )
         if n:
             alerts.append((f"{n} خسارت تازه از پنل مشتری", "panel:claims", "?s=reported"))
+    platform = PlatformSettings.load()
+    if platform.free_domain_active and not Domain.objects.filter(tenant=request.tenant).exists():
+        from apps.core.templatetags.fa import jdate
+
+        until = jdate(platform.free_domain_until, "long")
+        alerts.append((f"طرح ویژه: تا {until} دامنه ir و راه‌اندازی آن رایگان است؛ درخواست بدهید", "panel:domains", ""))
     name = (request.user.full_name or "").split(" ")[0]
     return render(
         request,
@@ -476,7 +482,8 @@ def domain_service(request):
         return redirect("panel:domains")
     wanted = form.cleaned_data["wanted"].strip()
     ticket = Ticket.objects.create(
-        subject=f"درخواست خرید دامنه{': ' + wanted if wanted else ''}"[:160],
+        subject=f"درخواست خرید دامنه{' (طرح رایگان)' if PlatformSettings.load().free_domain_active else ''}"
+        f"{': ' + wanted if wanted else ''}"[:160],
         category=Ticket.Category.DOMAIN,
         created_by=request.user,
     )

@@ -110,3 +110,30 @@ def test_video_pages_and_embeds(client):
     landing = client.get("/", HTTP_HOST=MAIN).content.decode()
     assert "video/promo.mp4" in landing and "data-play" in landing
     assert "/help/videos/" in client.get("/sitemap.xml", HTTP_HOST=MAIN).content.decode()
+
+
+@pytest.mark.django_db
+def test_free_domain_promo_shows_until_its_date(client, tenant, owner, monkeypatch):
+    import datetime
+
+    from django.utils import timezone
+
+    from apps.core.models import PlatformSettings
+
+    ps = PlatformSettings.load()
+    ps.free_domain_until = timezone.localdate() + datetime.timedelta(days=10)
+    ps.save()
+    landing = client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert "promo-ribbon" in landing and "dc-free" in landing
+    assert "رایگان" in client.get("/help/domain/", HTTP_HOST=MAIN).content.decode()
+    client.force_login(owner)
+    assert "طرح ویژه" in client.get("/panel/", HTTP_HOST=host(tenant)).content.decode()
+    assert "concierge-offer" in client.get("/panel/domains/", HTTP_HOST=host(tenant)).content.decode()
+    monkeypatch.setattr("apps.accounts.sms.send_platform_text", lambda m, t: None)
+    client.post("/panel/domains/service/", {"wanted": "x.ir", "contact_mobile": "09121234567"}, HTTP_HOST=host(tenant))
+    assert Ticket.all_objects.get(tenant=tenant).subject.startswith("درخواست خرید دامنه (طرح رایگان)")
+
+    ps.free_domain_until = timezone.localdate() - datetime.timedelta(days=1)
+    ps.save()
+    assert "promo-ribbon" not in client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert "طرح ویژه" not in client.get("/panel/", HTTP_HOST=host(tenant)).content.decode()

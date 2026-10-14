@@ -6,9 +6,10 @@
 {% if platform.domain_service_enabled %}
 <section class="concierge">
   <div class="concierge-copy">
-    <span class="concierge-badge">خدمت ویژه</span>
+    {% if platform.free_domain_active %}<span class="concierge-badge">رایگان تا {{ platform.free_domain_until|jdate:"long" }}</span>{% else %}<span class="concierge-badge">خدمت ویژه</span>{% endif %}
     <h2>دامنه اختصاصی را ما برایتان می‌خریم و راه می‌اندازیم</h2>
     <p>نیازی به ایرنیک، تنظیم NS و دردسرهای فنی نیست. نام دلخواهتان را بگویید؛ ثبت دامنه .ir، اتصال به سایت و گواهی امنیتی را خودمان انجام می‌دهیم و سایت دفترتان روی آدرس خودتان بالا می‌آید.</p>
+    {% if platform.free_domain_active %}<p class="concierge-offer">طرح ویژه: تا {{ platform.free_domain_until|jdate:"long" }} ثبت دامنه <span class="ltr">.ir</span> و راه‌اندازی آن <strong>رایگان</strong> است.</p>{% endif %}
     <ul class="concierge-points"><li>پیشنهاد و بررسی نام آزاد</li><li>ثبت به نام دفتر شما</li><li>اتصال و SSL خودکار</li></ul>
   </div>
   {% if service_ticket %}
@@ -23,7 +24,7 @@
     <div class="field"><label for="ds-wanted">{{ service_form.wanted.label }} <span class="optional">(اختیاری)</span></label>{{ service_form.wanted }}</div>
     <div class="field"><label for="ds-mobile">{{ service_form.contact_mobile.label }}</label><input id="ds-mobile" name="contact_mobile" value="{{ service_form.contact_mobile.initial }}" dir="ltr" inputmode="numeric" required></div>
     <button class="btn btn-light" type="submit">درخواست خرید و راه‌اندازی دامنه</button>
-    <p class="concierge-note">هزینه ثبت دامنه را پیش از ثبت با شما هماهنگ می‌کنیم.</p>
+    <p class="concierge-note">{% if platform.free_domain_active %}ثبت دامنه ir و راه‌اندازی تا {{ platform.free_domain_until|jdate:"long" }} رایگان است.{% else %}هزینه ثبت دامنه را پیش از ثبت با شما هماهنگ می‌کنیم.{% endif %}</p>
   </form>
   {% endif %}
 </section>

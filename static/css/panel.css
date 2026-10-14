@@ -538,3 +538,5 @@ input[type=file] { font: inherit; font-size: 13.5px; padding: .5rem; border: 1px
 .concierge-done strong { color: #fff; font-size: 17px; }
 .concierge-done .btn { align-self: flex-start; }
 @media (max-width: 980px) { .concierge { grid-template-columns: 1fr; } }
+.concierge-offer { background: rgba(31, 196, 151, .16); border: 1px solid rgba(31, 196, 151, .45); color: #d9fff1; border-radius: 10px; padding: .55rem .8rem; font-size: 14px; margin: .2rem 0 .8rem; }
+.concierge-offer strong { color: #8ff0d0; }

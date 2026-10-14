@@ -584,6 +584,7 @@ def _settings_form(**over):
         "google_site_verification": "",
         "smsir_signup_url": "https://app.sms.ir/auth/sign-up?ref=HXQGN",
         "domain_service_enabled": "on",
+        "free_domain_until": "2026-12-20",
         "order_grace_days": 3,
         "order_payment_info": "",
     }

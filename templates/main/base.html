@@ -1,4 +1,4 @@
-{% load static %}<!doctype html>
+{% load static fa %}<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8">
@@ -30,6 +30,7 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <a class="skip" href="#content">رفتن به محتوا</a>
+  {% if PLATFORM_SETTINGS.free_domain_active %}<a class="promo-ribbon" href="{{ PLATFORM_URL }}/#domain"><b>طرح ویژه</b> تا {{ PLATFORM_SETTINGS.free_domain_until|jdate:"long" }}: ثبت دامنه <span class="ltr">.ir</span> و راه‌اندازی سایت روی آن <strong>رایگان</strong> است ←</a>{% endif %}
   <header class="topbar">
     <div class="wrap topbar-inner">
       <a class="brand" href="{{ PLATFORM_URL }}/"><span class="brand-mark" aria-hidden="true"></span>CRM بیمه</a>
