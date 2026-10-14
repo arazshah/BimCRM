@@ -7,7 +7,8 @@
 <section class="plan-hero">
   <div class="plan-hero-main">
     <span class="tag {% if sub.status == 'active' %}ok{% elif sub.status == 'trial' %}warm{% else %}hot{% endif %}">{{ sub.get_status_display }}</span>
-    <h2>{{ sub.package.name }}</h2>
+    <h2>پکیج {{ sub.package.name }}</h2>
+    {% if sub.package.tagline %}<p class="plan-tagline">{{ sub.package.tagline }}</p>{% endif %}
     <p>اعتبار تا <strong>{{ sub.current_period_end|jdate:"long" }}</strong> <span class="plan-days">({{ sub.days_left|fa }} روز مانده)</span></p>
     {% if can_manage %}
       {% if online %}
@@ -75,15 +76,31 @@
 </section>
 {% endif %}
 
-{% if can_manage %}
-<form method="post" class="panel-box">
-  {% csrf_token %}
-  <h2 class="h2">فضا و افزونه‌ها</h2>
-  <h3 class="h3 sub-h">فضای ذخیره</h3>
-  <div class="option-rows">
-    {% for t in tiers %}<label class="option-row"><input type="radio" name="storage_tier" value="{{ t.pk }}" {% if t.pk == sub.storage_tier_id %}checked{% endif %}><span>{{ t.name }}</span><span class="muted">{% if t.monthly_price %}{{ t.monthly_price|toman }} تومان در ماه{% else %}داخل پکیج{% endif %}</span></label>{% endfor %}
+<section class="panel-box plans-box" id="plans" aria-labelledby="plans-title">
+  <h2 class="h2" id="plans-title">پکیج‌ها</h2>
+  <p class="muted small">امکانات اصلی در هر سه هست. با تغییر پکیج هیچ اطلاعاتی از بین نمی‌رود؛ مبلغ جدید از تمدید بعدی حساب می‌شود.</p>
+  {% if cheaper and can_manage %}<div class="saving-tip">
+    <div><strong>صرفه‌جویی ماهانه {{ cheaper.saving|toman }} تومان</strong><span>امکاناتی که الان دارید همه در پکیج «{{ cheaper.plan.name }}» هست؛ با تغییر پکیج همین‌ها را ارزان‌تر دارید.</span></div>
+    <form method="post">{% csrf_token %}<input type="hidden" name="change_plan" value="{{ cheaper.plan.pk }}"><button class="btn btn-sm" type="submit">تغییر به «{{ cheaper.plan.name }}»</button></form>
+  </div>{% endif %}
+  <div class="prices" data-period="{{ sub.period }}">
+    {% include "billing/_period_toggle.html" with period_value=sub.period %}
+    {% include "billing/_plans.html" with mode="panel" %}
+    {% include "billing/_compare.html" %}
   </div>
-  <h3 class="h3 sub-h">افزونه‌ها</h3>
+</section>
+
+{% if can_manage %}
+<form method="post" class="panel-box" id="extras">
+  {% csrf_token %}
+  <h2 class="h2">اضافه بر پکیج</h2>
+  <p class="muted small">فقط اگر لازم شد. اگر چند امکان اضافه لازم دارید، معمولاً پکیج بالاتر ارزان‌تر درمی‌آید.</p>
+  {% if included_addons %}<p class="included-note">داخل پکیج شما: {% for a in included_addons %}<span class="tag ok">{{ a.name }}</span>{% endfor %}</p>{% endif %}
+  <h3 class="h3 sub-h">فضای فایل <span class="muted small">— برای فایل بیمه‌نامه‌ها و مدارک؛ هر گیگ حدود ۲٬۰۰۰ فایل</span></h3>
+  <div class="option-rows">
+    {% for t, extra in tiers %}<label class="option-row"><input type="radio" name="storage_tier" value="{{ t.pk }}" {% if t.pk == sub.storage_tier_id %}checked{% endif %}><span>{{ t.storage_label|fa }}</span><span class="muted">{% if t.storage_mb == base_mb or not extra %}داخل پکیج{% else %}{{ extra|toman }} تومان بیشتر در ماه{% endif %}</span></label>{% endfor %}
+  </div>
+  <h3 class="h3 sub-h">همکار، دامنه و امکان جداگانه</h3>
   <div class="option-rows">
     {% for a in addons %}{% with q=items|get_item:a.code %}
     <label class="option-row">
@@ -94,7 +111,6 @@
     {% endwith %}{% endfor %}
   </div>
   <button class="btn" type="submit">ثبت تغییرات</button>
-  <p class="muted small">تغییرات از همین حالا فعال می‌شود و مبلغش در پرداخت بعدی حساب می‌شود.</p>
 </form>
 {% endif %}
 {% endif %}

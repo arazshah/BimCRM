@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import Membership, normalize_mobile
-from apps.billing.models import Addon, Invoice, Period, StorageTier, SubscriptionItem
+from apps.billing.models import Addon, Invoice, Package, Period, StorageTier, SubscriptionItem
 from apps.claims.models import Claim
 from apps.core import jalali
 from apps.core.dns import check_domain
@@ -814,31 +814,37 @@ def billing_order_detail(request, pk):
 def billing(request):
     sub = request.subscription
     if request.method == "POST" and request.membership.role in MANAGERS and sub:
-        tier = StorageTier.objects.filter(pk=request.POST.get("storage_tier"), is_active=True).first()
-        if tier:
-            sub.storage_tier = tier
-            sub.save(update_fields=["storage_tier"])
-        for addon in Addon.objects.filter(is_active=True):
-            raw = request.POST.get(f"addon_{addon.code}")
-            qty = (int(raw) if (raw or "").isdigit() else 0) if addon.per_unit else (1 if raw else 0)
-            if qty:
-                SubscriptionItem.objects.update_or_create(subscription=sub, addon=addon, defaults={"quantity": qty})
-            else:
-                SubscriptionItem.objects.filter(subscription=sub, addon=addon).delete()
-        messages.success(request, "تغییرات ثبت شد و از همین حالا فعال است؛ مبلغ آن در تمدید بعدی حساب می‌شود.")
-        return redirect("panel:billing")
+        if request.POST.get("change_plan"):
+            return _change_plan(request, sub)
+        return _save_extras(request, sub)
     items = {i.addon.code: i.quantity for i in sub.items.select_related("addon")} if sub else {}
     platform = PlatformSettings.load()
+    from apps.billing import pricing
     from apps.billing.orders import open_order
 
+    plans = list(Package.plans())
+    base_tier = sub.package.storage_tier if sub else None
+    base_mb, base_price = (base_tier.storage_mb, base_tier.monthly_price) if base_tier else (0, 0)
+    included = sub.included_codes() if sub else set()
     return render(
         request,
         "panel/billing.html",
         {
             "sub": sub,
             "items": items,
-            "tiers": StorageTier.objects.filter(is_active=True),
-            "addons": Addon.objects.filter(is_active=True),
+            "plans": plans,
+            "cards": pricing.plan_cards(plans),
+            "compare": pricing.comparison(plans),
+            "current": sub.package if sub else None,
+            "cheaper": pricing.cheaper_plan(sub) if sub else None,
+            "tiers": [
+                (t, max(0, t.monthly_price - base_price))
+                for t in StorageTier.objects.filter(is_active=True, storage_mb__gte=base_mb).order_by("storage_mb")
+            ],
+            "base_mb": base_mb,
+            "addons": [a for a in Addon.objects.filter(is_active=True) if a.code not in included],
+            "included_addons": [a for a in Addon.objects.filter(is_active=True) if a.code in included],
+            "storage_extra": sub.storage_extra_price(sub.period) if sub else 0,
             "periods": Period.choices,
             "invoices": Invoice.objects.filter(tenant=request.tenant)[:20],
             "used": storage_used_bytes(request.tenant),
@@ -852,6 +858,63 @@ def billing(request):
             "order_form": RenewalOrderForm(initial_mobile=request.user.mobile),
         },
     )
+
+
+def _change_plan(request, sub):
+    plan = Package.plans().filter(pk=request.POST.get("change_plan")).first()
+    if plan is None or plan.pk == sub.package_id:
+        return redirect("panel:billing")
+    used = storage_used_bytes(request.tenant)
+    tier = sub.storage_tier
+    # Storage: never below what the new plan includes; going down only if the files fit.
+    if plan.storage_tier and (tier.storage_mb < plan.storage_tier.storage_mb or tier == sub.package.storage_tier):
+        tier = plan.storage_tier
+    if used > tier.storage_mb * 1024 * 1024:
+        messages.error(
+            request, f"فایل‌های دفتر بیشتر از فضای «{plan.name}» است. اول فایل‌های قدیمی را کم کنید یا فضای بیشتر بگیرید."
+        )
+        return redirect("panel:billing")
+    staff = Membership.objects.filter(tenant=request.tenant, is_active=True).count()
+    extra_users = sub.addon_quantity(Addon.Code.EXTRA_USER)
+    if staff > plan.included_users + extra_users:
+        messages.error(
+            request,
+            f"«{plan.name}» برای {plan.included_users} همکار است و دفتر شما {staff} همکار دارد. "
+            "اول دسترسی چند همکار را بردارید یا همکار اضافه بگیرید.",
+        )
+        return redirect("panel:billing")
+    sub.package = plan
+    sub.storage_tier = tier
+    sub.save(update_fields=["package", "storage_tier"])
+    # Anything the new plan already contains is no longer bought separately.
+    sub.items.filter(addon__code__in=plan.included_codes()).delete()
+    messages.success(request, f"پکیج «{plan.name}» از همین حالا فعال است؛ مبلغ جدید در تمدید بعدی حساب می‌شود.")
+    return redirect("panel:billing")
+
+
+def _save_extras(request, sub):
+    base_mb = sub.package.storage_tier.storage_mb if sub.package.storage_tier else 0
+    tier = StorageTier.objects.filter(
+        pk=request.POST.get("storage_tier"), is_active=True, storage_mb__gte=base_mb
+    ).first()
+    if tier:
+        if storage_used_bytes(request.tenant) > tier.storage_mb * 1024 * 1024:
+            messages.error(request, "فایل‌های دفتر از این فضا بیشتر است.")
+            return redirect("panel:billing")
+        sub.storage_tier = tier
+        sub.save(update_fields=["storage_tier"])
+    included = sub.included_codes()
+    for addon in Addon.objects.filter(is_active=True).exclude(code__in=included):
+        raw = request.POST.get(f"addon_{addon.code}")
+        qty = (int(raw) if (raw or "").isdigit() else 0) if addon.per_unit else (1 if raw else 0)
+        if qty:
+            SubscriptionItem.objects.update_or_create(
+                subscription=sub, addon=addon, defaults={"quantity": min(qty, 50)}
+            )
+        else:
+            SubscriptionItem.objects.filter(subscription=sub, addon=addon).delete()
+    messages.success(request, "تغییرات ثبت شد و از همین حالا فعال است؛ مبلغ آن در تمدید بعدی حساب می‌شود.")
+    return redirect("panel:billing")
 
 
 # ---------------- Support tickets ----------------

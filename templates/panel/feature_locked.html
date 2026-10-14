@@ -5,13 +5,13 @@
 <section class="locked card">
   <span class="locked-ico" aria-hidden="true"><svg><use href="#p-plug"/></svg></span>
   <h1>{{ addon.name|default:"این بخش" }}</h1>
-  <p class="locked-lead">این بخش افزونه است و روی اشتراک شما هنوز فعال نیست.</p>
-  {% if addon %}
-  <p>{{ addon.description }}</p>
-  <p class="locked-price"><strong class="num">{{ addon.monthly_price|toman }}</strong> تومان در ماه{% if addon.yearly_price %}<span class="muted"> یا {{ addon.yearly_price|toman }} تومان سالانه</span>{% endif %}</p>
-  {% endif %}
-  {% if request.membership.role != "staff" %}<a class="btn" href="{% url 'panel:billing' %}">فعال‌کردن از بخش اشتراک</a>
-  <p class="muted small">فعال‌سازی فوری است و مبلغ در پرداخت بعدی اشتراک حساب می‌شود.</p>
+  <p class="locked-lead">این امکان در پکیج فعلی شما نیست.</p>
+  {% if addon %}<p>{{ addon.description }}</p>{% endif %}
+  {% if request.membership.role != "staff" %}
+    {% if plan %}<p class="locked-price">در پکیج <strong>«{{ plan.name }}»</strong> هست: <strong class="num">{{ plan.monthly_price|toman }}</strong> تومان در ماه</p>{% endif %}
+    {% if addon %}<p class="muted">یا فقط همین امکان را جداگانه اضافه کنید: {{ addon.monthly_price|toman }} تومان در ماه</p>{% endif %}
+    <div class="locked-actions"><a class="btn" href="{% url 'panel:billing' %}#plans">مقایسه و تغییر پکیج</a>{% if addon %}<a class="btn btn-ghost" href="{% url 'panel:billing' %}#extras">افزودن جداگانه</a>{% endif %}</div>
+    <p class="muted small">فعال‌سازی فوری است و مبلغ در تمدید بعدی حساب می‌شود.</p>
   {% else %}<p class="muted">برای فعال‌کردن، به مالک یا مدیر دفتر بگویید.</p>{% endif %}
 </section>
 {% endblock %}

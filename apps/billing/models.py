@@ -31,23 +31,60 @@ class PricedItem(models.Model):
 
 
 class Package(PricedItem):
-    """The mandatory base package every workspace has."""
+    """A plan the agent picks: price, included storage, users, domains and the add-ons it already contains."""
 
     included_users = models.PositiveIntegerField("کاربر شامل", default=1)
     included_domains = models.PositiveIntegerField("دامنه شامل", default=1)
-    is_default = models.BooleanField("پکیج پیش‌فرض ثبت‌نام", default=False)
-    features = models.TextField("فهرست امکانات (هر خط یکی)", blank=True)
+    is_default = models.BooleanField(
+        "پکیج پیش‌فرض", default=False, help_text="وقتی پکیجی انتخاب نشده (مثلاً ساخت دستی محیط)"
+    )
+    is_recommended = models.BooleanField(
+        "پیشنهاد ما", default=False, help_text="در صفحه قیمت برجسته و از پیش انتخاب‌شده"
+    )
+    tagline = models.CharField("یک خط معرفی", max_length=140, blank=True)
+    best_for = models.CharField("مناسب برای", max_length=200, blank=True)
+    storage_tier = models.ForeignKey(
+        "StorageTier", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name="فضای شامل"
+    )
+    addons = models.ManyToManyField("Addon", blank=True, related_name="packages", verbose_name="امکانات شامل")
+    features = models.TextField("امکانات اصلی (هر خط یکی)", blank=True)
 
     class Meta(PricedItem.Meta):
-        verbose_name = "پکیج پایه"
-        verbose_name_plural = "پکیج‌های پایه"
+        verbose_name = "پکیج"
+        verbose_name_plural = "پکیج‌ها"
 
     def feature_lines(self):
         return [line.strip() for line in self.features.splitlines() if line.strip()]
 
+    def included_codes(self) -> set[str]:
+        return set(self.addons.filter(is_active=True).values_list("code", flat=True))
+
+    @property
+    def storage_label(self) -> str:
+        return self.storage_tier.storage_label if self.storage_tier else ""
+
+    @property
+    def yearly_months_free(self) -> int:
+        """How many months a yearly payment saves, rounded down."""
+        if not self.monthly_price or not self.yearly_price:
+            return 0
+        return max(0, 12 - round(self.yearly_price / self.monthly_price))
+
+    @classmethod
+    def plans(cls):
+        return cls.objects.filter(is_active=True).select_related("storage_tier").prefetch_related("addons")
+
     @classmethod
     def default(cls):
         return cls.objects.filter(is_active=True).order_by("-is_default", "order").first()
+
+    @classmethod
+    def recommended(cls):
+        return cls.objects.filter(is_active=True).order_by("-is_recommended", "order").first()
+
+    @classmethod
+    def cheapest_with(cls, code: str):
+        return cls.objects.filter(is_active=True, addons__code=code).order_by("monthly_price").first()
 
 
 class StorageTier(PricedItem):
@@ -113,8 +150,17 @@ class Subscription(models.Model):
     def days_left(self) -> int:
         return max(0, (self.current_period_end - timezone.now()).days)
 
+    def included_codes(self) -> set[str]:
+        return self.package.included_codes()
+
     def active_addon_codes(self) -> set[str]:
-        return set(self.items.filter(addon__is_active=True).values_list("addon__code", flat=True))
+        bought = set(self.items.filter(addon__is_active=True).values_list("addon__code", flat=True))
+        return self.included_codes() | bought
+
+    def extra_items(self):
+        """Add-ons bought on top of the plan (anything the plan already contains is free)."""
+        included = self.included_codes()
+        return [i for i in self.items.select_related("addon").order_by("addon__order") if i.addon.code not in included]
 
     def addon_quantity(self, code: str) -> int:
         item = self.items.filter(addon__code=code).first()
@@ -129,10 +175,19 @@ class Subscription(models.Model):
     def storage_limit_bytes(self) -> int:
         return self.storage_tier.storage_mb * 1024 * 1024
 
+    def storage_extra_price(self, period: str) -> int:
+        """Storage above what the plan includes is charged at the difference between the two tiers."""
+        base = self.package.storage_tier
+        if base is None:
+            return self.storage_tier.price_for(period)
+        if self.storage_tier.storage_mb <= base.storage_mb:
+            return 0
+        return max(0, self.storage_tier.price_for(period) - base.price_for(period))
+
     def renewal_amount(self, period: str | None = None) -> int:
         period = period or self.period
-        total = self.package.price_for(period) + self.storage_tier.price_for(period)
-        for item in self.items.select_related("addon"):
+        total = self.package.price_for(period) + self.storage_extra_price(period)
+        for item in self.extra_items():
             total += item.addon.price_for(period) * item.quantity
         return total
 

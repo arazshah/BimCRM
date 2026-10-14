@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from apps.accounts.models import normalize_mobile, validate_mobile
-from apps.billing.models import Addon, Period, StorageTier
+from apps.billing.models import Package, Period
 from apps.core.models import is_subdomain_available
 from apps.sites import registry
 
@@ -63,32 +63,13 @@ class PlanForm(forms.Form):
     period = forms.ChoiceField(
         label="دوره پرداخت", choices=Period.choices, widget=forms.RadioSelect, initial=Period.MONTHLY
     )
-    storage_tier = forms.ModelChoiceField(
-        label="فضا", queryset=StorageTier.objects.filter(is_active=True), widget=forms.RadioSelect, empty_label=None
+    package = forms.ModelChoiceField(
+        label="پکیج", queryset=Package.objects.none(), widget=forms.RadioSelect, empty_label=None
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.addons = list(Addon.objects.filter(is_active=True))
-        for addon in self.addons:
-            if addon.per_unit:
-                self.fields[f"addon_{addon.code}"] = forms.IntegerField(
-                    label=addon.name, min_value=0, max_value=50, initial=0, required=False
-                )
-            else:
-                self.fields[f"addon_{addon.code}"] = forms.BooleanField(label=addon.name, required=False)
-        tiers = self.fields["storage_tier"].queryset
-        if tiers.exists() and not self.is_bound:
-            self.initial.setdefault("storage_tier", tiers.first().pk)
-
-    def selected_addons(self) -> dict:
-        result = {}
-        for addon in self.addons:
-            value = self.cleaned_data.get(f"addon_{addon.code}")
-            qty = int(value or 0) if addon.per_unit else (1 if value else 0)
-            if qty:
-                result[addon] = qty
-        return result
-
-    def addon_rows(self):
-        return [(addon, self[f"addon_{addon.code}"]) for addon in self.addons]
+        self.fields["package"].queryset = Package.plans()
+        rec = Package.recommended()
+        if rec and not self.is_bound:
+            self.initial.setdefault("package", rec.pk)

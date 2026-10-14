@@ -6,8 +6,24 @@ from .models import Addon, Invoice, Package, StorageTier, Subscription, Subscrip
 
 @admin.register(Package)
 class PackageAdmin(admin.ModelAdmin):
-    list_display = ("name", "monthly_price", "yearly_price", "included_users", "is_default", "is_active")
-    list_editable = ("monthly_price", "yearly_price", "is_active")
+    list_display = (
+        "name",
+        "monthly_price",
+        "yearly_price",
+        "included_users",
+        "storage_tier",
+        "is_recommended",
+        "is_active",
+        "order",
+    )
+    list_editable = ("monthly_price", "yearly_price", "is_recommended", "is_active", "order")
+    filter_horizontal = ("addons",)
+    fieldsets = (
+        (None, {"fields": ("name", "tagline", "best_for", "is_recommended", "is_active", "order")}),
+        ("قیمت (تومان)", {"fields": ("monthly_price", "yearly_price")}),
+        ("داخل پکیج", {"fields": ("included_users", "included_domains", "storage_tier", "addons", "features")}),
+        ("پیشرفته", {"classes": ("collapse",), "fields": ("description", "is_default")}),
+    )
 
 
 @admin.register(StorageTier)

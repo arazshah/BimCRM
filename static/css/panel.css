@@ -680,3 +680,10 @@ h1 .tier { font-size: 13px; vertical-align: 6px; }
 .team-perf td { vertical-align: middle; }
 .perf-bar { display: block; height: 6px; border-radius: 9px; background: var(--line-soft); margin-bottom: 4px; overflow: hidden; min-width: 80px; }
 .perf-bar span { display: block; height: 100%; background: var(--seal); border-radius: 9px; }
+.locked-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 14px 0 8px; }
+.plans-box .prices { margin-top: 14px; }
+.plan-tagline { color: #c9d5e6; margin: 0 0 .6rem; }
+.included-note { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 14px; }
+.saving-tip { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: #fff8e6; border: 1px solid #f3d58f; border-radius: 14px; padding: 14px 16px; margin: 12px 0 4px; }
+.saving-tip strong { display: block; color: #6b4700; }
+.saving-tip span { font-size: 14px; color: var(--ink-2); }

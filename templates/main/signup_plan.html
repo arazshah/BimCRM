@@ -1,76 +1,21 @@
 {% extends "main/base.html" %}
 {% block robots %}<meta name="robots" content="noindex">{% endblock %}
 {% load fa %}
-{% block title %}فضا و افزونه‌ها — CRM بیمه{% endblock %}
+{% block title %}انتخاب پکیج — CRM بیمه{% endblock %}
 {% block content %}
-<section class="narrow wide">
+<section class="narrow wider">
   {% include "main/_steps.html" %}
-  <h1>فضا و افزونه‌ها</h1>
-  <p class="muted">{{ platform.trial_days|fa }} روز اول رایگان است و هرچه انتخاب کنید در این مدت فعال است. پرداخت بعد از آزمایشی، از داخل پنل.</p>
+  <h1>یک پکیج انتخاب کنید</h1>
+  <p class="muted">{{ platform.trial_days|fa }} روز اول با همه امکانات همین پکیج رایگان است؛ کارت بانکی لازم نیست. بعداً هر وقت خواستید، پکیج را از داخل پنل عوض کنید.</p>
   <form method="post" id="plan-form">
     {% csrf_token %}
-    <div class="plan-block">
-      <h2 class="h3">{{ package.name }}</h2>
-      <p class="muted small">{{ package.description }}</p>
-      <p><span class="num" data-price-m="{{ package.monthly_price }}" data-price-y="{{ package.yearly_price }}"></span></p>
+    {% if form.errors %}<p class="form-error">یک پکیج انتخاب کنید.</p>{% endif %}
+    <div class="prices" data-period="{{ form.period.value|default:'monthly' }}">
+      {% include "billing/_period_toggle.html" with period_name="period" period_value=form.period.value %}
+      {% include "billing/_plans.html" with mode="signup" %}
+      {% include "billing/_compare.html" %}
     </div>
-    <fieldset class="plan-block">
-      <legend>دوره پرداخت</legend>
-      {% for opt in form.period %}<label class="pill">{{ opt.tag }} {{ opt.choice_label }}</label>{% endfor %}
-      {% if platform.yearly_discount_note %}<span class="muted small">سالانه: {{ platform.yearly_discount_note }}</span>{% endif %}
-    </fieldset>
-    <fieldset class="plan-block">
-      <legend>فضا</legend>
-      <div class="option-rows">
-      {% for tier in form.storage_tier.field.queryset %}
-        <label class="option-row"><input type="radio" name="storage_tier" value="{{ tier.pk }}" {% if form.storage_tier.value|stringformat:"s" == tier.pk|stringformat:"s" %}checked{% endif %}
-          data-price-m="{{ tier.monthly_price }}" data-price-y="{{ tier.yearly_price }}">
-          <span>{{ tier.name }}</span><span class="price-cell" data-price-m="{{ tier.monthly_price }}" data-price-y="{{ tier.yearly_price }}"></span></label>
-      {% endfor %}
-      </div>
-    </fieldset>
-    <fieldset class="plan-block">
-      <legend>افزونه‌ها <span class="muted small">(اختیاری؛ بعداً هم می‌شود)</span></legend>
-      <div class="option-rows">
-      {% for addon, field in form.addon_rows %}
-        <label class="option-row">
-          {% if addon.per_unit %}<input type="number" name="{{ field.html_name }}" value="{{ field.value|default:0 }}" min="0" max="50" class="qty" data-price-m="{{ addon.monthly_price }}" data-price-y="{{ addon.yearly_price }}">
-          {% else %}<input type="checkbox" name="{{ field.html_name }}" {% if field.value %}checked{% endif %} data-price-m="{{ addon.monthly_price }}" data-price-y="{{ addon.yearly_price }}">{% endif %}
-          <span>{{ addon.name }}<br><span class="muted small">{{ addon.description }}</span></span>
-          <span class="price-cell" data-price-m="{{ addon.monthly_price }}" data-price-y="{{ addon.yearly_price }}"></span>
-        </label>
-      {% endfor %}
-      </div>
-    </fieldset>
-    <div class="total-bar">
-      <span>جمع بعد از آزمایشی: <strong class="num" id="total"></strong></span>
-      <div class="actions"><a class="btn btn-ghost" href="{% url 'main:signup_template' %}">قبلی</a><button class="btn" type="submit">ساخت محیط و شروع آزمایشی</button></div>
-    </div>
+    <div class="actions plan-actions"><a class="btn btn-ghost" href="{% url 'main:signup_template' %}">قبلی</a><button class="btn" type="submit">ساخت محیط و شروع {{ platform.trial_days|fa }} روز رایگان</button></div>
   </form>
 </section>
-{% endblock %}
-{% block scripts %}
-<script>
-(() => {
-  const form = document.getElementById("plan-form");
-  const fa = n => n.toLocaleString("fa-IR");
-  const period = () => (form.querySelector("input[name=period]:checked") || {}).value || "monthly";
-  const key = () => period() === "yearly" ? "priceY" : "priceM";
-  const unit = () => period() === "yearly" ? " تومان در سال" : " تومان در ماه";
-  function render() {
-    form.querySelectorAll(".price-cell, .plan-block > p > span").forEach(el => {
-      const v = +el.dataset[key()];
-      el.textContent = v ? fa(v) + unit() : "داخل پکیج";
-    });
-    let total = +form.querySelector(".plan-block > p > span").dataset[key()];
-    const tier = form.querySelector("input[name=storage_tier]:checked");
-    if (tier) total += +tier.dataset[key()];
-    form.querySelectorAll("input[type=checkbox][data-price-m]").forEach(c => { if (c.checked) total += +c.dataset[key()]; });
-    form.querySelectorAll("input.qty").forEach(q => { total += (+q.value || 0) * +q.dataset[key()]; });
-    document.getElementById("total").textContent = fa(total) + unit();
-  }
-  form.addEventListener("input", render);
-  render();
-})();
-</script>
 {% endblock %}

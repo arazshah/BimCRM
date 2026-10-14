@@ -1,0 +1,4 @@
+{% load fa %}{% with r=plans|first %}<div class="period-toggle" role="radiogroup" aria-label="دوره پرداخت">
+  <label><input type="radio" name="{{ period_name|default:'period_view' }}" value="monthly" {% if period_value != "yearly" %}checked{% endif %} onchange="this.closest('.prices').dataset.period=this.value"><span>ماهانه</span></label>
+  <label><input type="radio" name="{{ period_name|default:'period_view' }}" value="yearly" {% if period_value == "yearly" %}checked{% endif %} onchange="this.closest('.prices').dataset.period=this.value"><span>سالانه{% if r.yearly_months_free %} <em>{{ r.yearly_months_free|fa }} ماه رایگان</em>{% endif %}</span></label>
+</div>{% endwith %}

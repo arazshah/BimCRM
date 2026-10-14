@@ -1,0 +1,28 @@
+{% load fa %}{# Plan cards. mode: landing | signup | panel. Prices switch with [data-period] on .prices #}
+<div class="plans-grid">
+  {% for c in cards %}{% with p=c.plan %}
+  {% if mode == "signup" %}<label class="pcard{% if p.is_recommended %} rec{% endif %}">
+    <input type="radio" name="package" value="{{ p.pk }}" {% if form.package.value|stringformat:"s" == p.pk|stringformat:"s" %}checked{% endif %} required>
+  {% else %}<article class="pcard{% if p.is_recommended %} rec{% endif %}{% if current and current.pk == p.pk %} current{% endif %}">{% endif %}
+    {% if p.is_recommended %}<span class="pc-badge">پیشنهاد ما</span>{% endif %}
+    <h3>{{ p.name }}</h3>
+    <p class="pc-tag">{{ p.tagline }}</p>
+    <p class="pc-price">
+      <span class="pm"><b class="num">{{ p.monthly_price|toman }}</b> تومان <small>در ماه</small></span>
+      <span class="py"><b class="num">{{ p.yearly_price|toman }}</b> تومان <small>در سال</small>{% if p.yearly_months_free %}<em>{{ p.yearly_months_free|fa }} ماه رایگان</em>{% endif %}</span>
+    </p>
+    {% if p.best_for %}<p class="pc-for"><span>مناسب برای</span>{{ p.best_for }}</p>{% endif %}
+    <ul class="pc-list">
+      <li><strong>{{ p.included_users|fa }} همکار</strong> · <strong>{{ p.storage_label|fa }}</strong> فضای فایل · <strong>{{ p.included_domains|fa }}</strong> دامنه</li>
+      {% if c.prev %}<li class="pc-all">همه امکانات «{{ c.prev.name }}»، به‌علاوه:</li>{% else %}{% for f in p.feature_lines %}<li>{{ f }}</li>{% endfor %}{% endif %}
+      {% for a in c.adds %}<li class="pc-add">{{ a.name }}<span>{{ a.description }}</span></li>{% endfor %}
+    </ul>
+    {% if mode == "landing" %}<a class="btn btn-block{% if not p.is_recommended %} btn-ghost{% endif %}" href="#start">شروع {{ platform.trial_days|fa }} روز رایگان</a>
+    {% elif mode == "signup" %}<span class="pc-pick" aria-hidden="true">انتخاب</span>
+    {% elif mode == "panel" %}
+      {% if current and current.pk == p.pk %}<span class="pc-current">پکیج فعلی شما</span>
+      {% elif can_manage %}<form method="post">{% csrf_token %}<input type="hidden" name="change_plan" value="{{ p.pk }}"><button class="btn btn-block{% if not p.is_recommended %} btn-ghost{% endif %}" type="submit">تغییر به «{{ p.name }}»</button></form>{% endif %}
+    {% endif %}
+  {% if mode == "signup" %}</label>{% else %}</article>{% endif %}
+  {% endwith %}{% endfor %}
+</div>
