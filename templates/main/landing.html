@@ -252,79 +252,48 @@
   </div>
 </section>
 
-{# ───────── Full inventory ───────── #}
-<section class="inventory" aria-labelledby="inv-title">
+{# ───────── Full feature explorer ───────── #}
+<section class="inventory" id="all-features" aria-labelledby="inv-title" data-cat="all" data-plan="all">
+  {% include "panel/_icons.html" %}
   <div class="wrap">
     <header class="sec-head">
-      <h2 id="inv-title">فهرست کامل امکانات</h2>
-      <p>هرچه برچسب ندارد در هر سه پکیج هست. موارد <span class="tag">حرفه‌ای</span> و <span class="tag">دفتر بزرگ</span> در همان پکیج‌ها هستند و جداگانه هم روی هر پکیج اضافه می‌شوند.</p>
+      <h2 id="inv-title">همه امکانات، به زبان ساده</h2>
+      <p>{{ feature_total|fa }} امکان، هرکدام در یک جمله: چه کار می‌کند و به چه دردتان می‌خورد. کنار هر کدام نوشته در کدام پکیج هست؛ برای جزئیات، راهنما یا ویدیوی همان امکان را باز کنید.</p>
     </header>
-    <div class="inv-grid">
-      <div class="inv-col">
-        <h3>سایت و فروش آنلاین</h3>
-        <ul>
-          <li>پنج قالب حرفه‌ای، قابل تعویض بدون از دست رفتن محتوا</li>
-          <li>زیردامنه رایگان و اتصال دامنه ir خودتان</li>
-          <li>گواهی SSL خودکار</li>
-          <li>فرم استعلام با فیلدهای مخصوص هر رشته</li>
-          <li>کد پیگیری درخواست برای مشتری</li>
-          <li>نظرات مشتریان، سؤالات متداول و معرفی دفتر</li>
-          <li>نماد اعتماد، ساماندهی و کد دلخواه</li>
-          <li>درگاه پرداخت و پنل پیامک با حساب خود دفتر</li>
-        </ul>
+    <div class="fx-bar">
+      <div class="fx-tabs" role="tablist" aria-label="دسته امکانات">
+        <button type="button" role="tab" data-fx-cat="all" aria-selected="true">همه <b>{{ feature_total|fa }}</b></button>
+        {% for c in explorer %}<button type="button" role="tab" data-fx-cat="{{ c.key }}" aria-selected="false"><svg aria-hidden="true"><use href="#{{ c.icon }}"/></svg>{{ c.title }} <b>{{ c.items|length|fa }}</b></button>{% endfor %}
       </div>
-      <div class="inv-col">
-        <h3>مشتری و بیمه‌نامه</h3>
-        <ul>
-          <li>پرونده کامل بیمه‌گذار با تاریخچه تماس‌ها، یادداشت‌ها و پیامک‌ها</li>
-          <li>مدارک مشتری با چک‌لیست هر رشته؛ ارسال مدارک توسط خود مشتری</li>
-          <li>تماس، واتس‌اپ و پیامک تکی از داخل پرونده</li>
-          <li>بیمه‌نامه با فایل، تاریخ‌ها و شرکت بیمه</li>
-          <li>ورود مشتری‌های قبلی از اکسل</li>
-          <li>صندوق درخواست‌های سایت با وضعیت</li>
-          <li>پنل مشتری با ورود موبایلی</li>
-          <li>یادآور تمدید در روزهای دلخواه (مثلاً ۳۰، ۱۵ و ۳ روز مانده)</li>
-          <li>پیامک یادآور با نام دفتر</li>
-          <li>کمپین پیامکی گروهی و مناسبتی <span class="tag">حرفه‌ای</span></li>
-        </ul>
-      </div>
-      <div class="inv-col">
-        <h3>پیگیری، فروش و وفاداری</h3>
-        <ul>
-          <li>کارها با موعد، اولویت و مسئول؛ «کارهای امروز من»</li>
-          <li>کار خودکار برای هر درخواست سایت و هر تمدید نزدیک</li>
-          <li>تقویم شمسی، همگام با تقویم گوگل و گوشی</li>
-          <li>اعلان داخلی و پیامک کارهای روز به همکاران</li>
-          <li>بخش‌های هوشمند مشتری و پیشنهاد فروش متقابل</li>
-          <li>باشگاه مشتریان: امتیاز، سطح نقره‌ای و طلایی</li>
-          <li>کد و لینک معرف برای هر مشتری</li>
-        </ul>
-      </div>
-      <div class="inv-col">
-        <h3>مالی و خسارت</h3>
-        <ul>
-          <li>اقساط و چک با سررسید <span class="tag">حرفه‌ای</span></li>
-          <li>کارمزد هر بیمه‌نامه <span class="tag">حرفه‌ای</span></li>
-          <li>دفتر درآمد و هزینه <span class="tag">حرفه‌ای</span></li>
-          <li>اعلام خسارت از پنل مشتری با مدارک <span class="tag">حرفه‌ای</span></li>
-          <li>پیگیری مرحله‌به‌مرحله خسارت <span class="tag">حرفه‌ای</span></li>
-          <li>گزارش تولید، نرخ تمدید و هدف فروش <span class="tag">حرفه‌ای</span></li>
-          <li>عملکرد همکاران و سرعت پاسخ به مشتری <span class="tag">حرفه‌ای</span></li>
-        </ul>
-      </div>
-      <div class="inv-col">
-        <h3>تیم و خیال راحت</h3>
-        <ul>
-          <li>همکاران با موبایل خودشان و دسترسی اختصاصی هر کارمند</li>
-          <li>چند شعبه زیر یک حساب <span class="tag">دفتر بزرگ</span></li>
-          <li>بازاریاب با کد معرف و کمیسیون چندسطحی <span class="tag">دفتر بزرگ</span></li>
-          <li>اطلاعات هر دفتر جدا از دفترهای دیگر، در خود پایگاه داده</li>
-          <li>فضای ذخیره قابل افزایش</li>
-          <li>بدون نصب؛ روی موبایل و کامپیوتر</li>
-          <li>پشتیبانی با تیکت از داخل پنل</li>
-        </ul>
+      <div class="fx-plan" role="radiogroup" aria-label="نمایش امکانات یک پکیج">
+        <span>در پکیج:</span>
+        <label><input type="radio" name="fx-plan" value="all" checked><span>همه</span></label>
+        {% for p in plans %}<label><input type="radio" name="fx-plan" value="{{ p.pk }}"><span>{{ p.name }}</span></label>{% endfor %}
       </div>
     </div>
+    {% for c in explorer %}
+    <div class="fx-group" data-group="{{ c.key }}">
+      <h3 class="fx-cat"><span class="fx-cat-ico"><svg aria-hidden="true"><use href="#{{ c.icon }}"/></svg></span>{{ c.title }}</h3>
+      <ul class="fx-grid">
+        {% for it in c.items %}<li class="fx-card" data-plans="{{ it.plans }}">
+          <span class="fx-ico"><svg aria-hidden="true"><use href="#{{ it.f.icon }}"/></svg></span>
+          <h4>{{ it.f.title }}</h4>
+          <p>{{ it.f.text }}</p>
+          <div class="fx-foot">
+            <span class="fx-badge fx-{{ it.level }}">{{ it.badge }}</span>
+            <span class="fx-links"><a href="{{ PLATFORM_URL }}/help/{{ it.f.help }}/">راهنما</a>{% if it.video %}<a href="{{ PLATFORM_URL }}/help/videos/#{{ it.video }}">▶ ویدیو</a>{% endif %}</span>
+          </div>
+          <span class="fx-off">در این پکیج نیست؛ جداگانه هم اضافه می‌شود</span>
+        </li>{% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+    <ul class="fx-trust">
+      <li><svg aria-hidden="true"><use href="#p-globe"/></svg>بدون نصب؛ روی موبایل و کامپیوتر</li>
+      <li><svg aria-hidden="true"><use href="#p-shield"/></svg>اطلاعات هر دفتر جدا و امن</li>
+      <li><svg aria-hidden="true"><use href="#p-help"/></svg>پشتیبانی با تیکت از داخل پنل</li>
+      <li><svg aria-hidden="true"><use href="#p-book"/></svg>راهنمای تصویری و ویدیویی برای هر امکان</li>
+    </ul>
   </div>
 </section>
 
@@ -452,6 +421,22 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+(() => {
+  const sec = document.getElementById("all-features"); if (!sec) return;
+  sec.querySelectorAll("[data-fx-cat]").forEach(b => b.addEventListener("click", () => {
+    sec.dataset.cat = b.dataset.fxCat;
+    sec.querySelectorAll("[data-fx-cat]").forEach(x => x.setAttribute("aria-selected", x === b));
+    sec.querySelectorAll(".fx-group").forEach(g => { g.hidden = b.dataset.fxCat !== "all" && g.dataset.group !== b.dataset.fxCat; });
+  }));
+  sec.querySelectorAll("input[name=fx-plan]").forEach(r => r.addEventListener("change", () => {
+    sec.dataset.plan = r.value;
+    sec.querySelectorAll(".fx-card").forEach(c => c.classList.toggle("off", r.value !== "all" && !c.dataset.plans.split(" ").includes(r.value)));
+  }));
+  // On phones, 32 cards is a long scroll: start with the first group and let the tabs do the rest.
+  if (window.matchMedia("(max-width: 700px)").matches) { const first = sec.querySelectorAll("[data-fx-cat]")[1]; if (first) first.click(); }
+})();
+</script>
 <script>
 (() => {
   // Address claim: live availability + the mock browser shows the typed address.
