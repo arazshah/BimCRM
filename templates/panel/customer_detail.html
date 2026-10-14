@@ -11,6 +11,7 @@
     </div>
     <div class="head-actions">
       <a class="btn" href="{% url 'panel:policy_new' %}?customer={{ customer.pk }}"><svg aria-hidden="true"><use href="#p-plus"/></svg>بیمه‌نامه جدید</a>
+      <a class="btn btn-ghost" href="{% url 'panel:task_new' %}?customer={{ customer.pk }}&next={{ request.path|urlencode }}"><svg aria-hidden="true"><use href="#p-tasks"/></svg>کار پیگیری</a>
       <a class="btn btn-ghost" href="{% url 'panel:customer_edit' customer.pk %}">ویرایش</a>
     </div>
   </div>
@@ -23,8 +24,52 @@
     <div><dt>مشتری از</dt><dd>{{ customer.created_at|jdate:"long" }}</dd></div>
     {% if customer.sms_opt_out %}<div><dt>پیامک تبلیغاتی</dt><dd>نمی‌خواهد</dd></div>{% endif %}
   </dl>
+  <div class="quick-contact">
+    <a href="tel:{{ customer.mobile }}"><svg aria-hidden="true"><use href="#p-phone"/></svg>تماس</a>
+    <a href="https://wa.me/98{{ customer.mobile|slice:"1:" }}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#p-chat"/></svg>واتس‌اپ</a>
+    <a href="#sms-box"><svg aria-hidden="true"><use href="#p-sms"/></svg>پیامک</a>
+    <a href="#timeline"><svg aria-hidden="true"><use href="#p-note"/></svg>ثبت تعامل</a>
+  </div>
   {% if customer.notes %}<p class="profile-note">{{ customer.notes|linebreaksbr }}</p>{% endif %}
 </section>
+
+<div class="work-grid" id="timeline">
+  <section class="panel-box">
+    <div class="box-head"><h2 class="h2">ثبت تعامل</h2></div>
+    <form method="post" action="{% url 'panel:activity_add' customer.pk %}" class="activity-form" novalidate>
+      {% csrf_token %}
+      <div class="kind-pills">{% for v, l in activity_form.fields.kind.choices %}<label><input type="radio" name="kind" value="{{ v }}" {% if forloop.first %}checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div>
+      {{ activity_form.body }}
+      <details class="more"><summary>اطلاع به همکار یا کار پیگیری</summary>
+        <div class="field"><label for="{{ activity_form.notify.id_for_label }}">{{ activity_form.notify.label }}</label>{{ activity_form.notify }}</div>
+        <div class="two-fields"><div class="field"><label for="{{ activity_form.follow_up.id_for_label }}">{{ activity_form.follow_up.label }}</label>{{ activity_form.follow_up }}</div>
+        <div class="field"><label for="{{ activity_form.follow_title.id_for_label }}">{{ activity_form.follow_title.label }}</label>{{ activity_form.follow_title }}</div></div>
+      </details>
+      <button class="btn btn-sm" type="submit">ثبت در پرونده</button>
+    </form>
+    <form method="post" action="{% url 'panel:customer_sms' customer.pk %}" class="sms-form" id="sms-box" novalidate>
+      {% csrf_token %}
+      <label for="sms-text" class="h3">پیامک به {{ customer.full_name }}</label>
+      {% if can_sms %}<textarea id="sms-text" name="text" rows="2" maxlength="600" required placeholder="متن پیامک…"></textarea><button class="btn btn-ghost btn-sm" type="submit">ارسال از خط دفتر</button>
+      {% else %}<p class="muted small">برای ارسال پیامک، پنل پیامک دفتر را از <a href="{% url 'panel:integrations' %}">اتصالات</a> وصل کنید.</p>{% endif %}
+    </form>
+    {% if open_tasks %}
+    <h3 class="h3">کارهای باز</h3>
+    <ul class="task-list compact">{% for t in open_tasks %}{% include "panel/_task_row.html" %}{% endfor %}</ul>
+    {% endif %}
+  </section>
+  <section class="panel-box">
+    <div class="box-head"><h2 class="h2">تاریخچه</h2></div>
+    {% if timeline %}
+    <ol class="timeline">{% for i in timeline %}
+      <li class="tl-{{ i.kind }}"><span class="tl-dot" aria-hidden="true"></span>
+        <div><strong>{% if i.url %}<a href="{{ i.url }}">{{ i.title }}</a>{% else %}{{ i.title }}{% endif %}</strong>{% if i.extra %} <span class="tag">{{ i.extra }}</span>{% endif %}{% if i.ok is False %} <span class="tag hot" title="{{ i.error }}">ارسال نشد</span>{% endif %}
+          {% if i.body %}<p>{{ i.body|linebreaksbr }}</p>{% endif %}
+          <span class="muted small">{{ i.at|jdate:"time" }}{% if i.by %} · {{ i.by.full_name|default:i.by.mobile }}{% endif %}</span></div></li>
+    {% endfor %}</ol>
+    {% else %}<p class="empty">هنوز چیزی ثبت نشده. اولین تماس یا یادداشت را از کادر کناری ثبت کنید.</p>{% endif %}
+  </section>
+</div>
 
 <section class="panel-box">
   <div class="box-head"><h2 class="h2">بیمه‌نامه‌ها</h2><a href="{% url 'panel:policy_new' %}?customer={{ customer.pk }}">ثبت بیمه‌نامه</a></div>

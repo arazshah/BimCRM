@@ -36,6 +36,17 @@ def panel_view(*, write_ok_when_expired=False, managers_only=False, feature=None
             if tenant.status == Tenant.Status.SUSPENDED:
                 return render(request, "panel/suspended.html", status=403)
             request.membership = membership
+            from django.db.models import Q
+            from django.utils import timezone
+
+            from apps.work.models import Notification, Task
+
+            request.unread_count = Notification.objects.filter(user=request.user, read_at__isnull=True).count()
+            request.due_tasks = (
+                Task.objects.filter(done_at__isnull=True, due_date__lte=timezone.localdate())
+                .filter(Q(assigned_to=request.user) | Q(assigned_to__isnull=True))
+                .count()
+            )
             request.subscription = getattr(tenant, "subscription", None)
             request.features = request.subscription.active_addon_codes() if request.subscription else set()
             # Staff assigned to a branch only see that branch's records (branches add-on).

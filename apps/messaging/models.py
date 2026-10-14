@@ -23,6 +23,17 @@ class ReminderSettings(TenantOwned):
     installment_text = models.TextField("متن یادآور قسط", default=DEFAULT_INSTALLMENT_TEXT)
     birthday_enabled = models.BooleanField("تبریک تولد", default=False)
     birthday_text = models.TextField("متن تبریک تولد", default=DEFAULT_BIRTHDAY_TEXT)
+    renewal_tasks_enabled = models.BooleanField(
+        "ساخت خودکار «کار تماس تمدید» برای همکاران",
+        default=True,
+        help_text="چند روز مانده به پایان هر بیمه‌نامه، یک کار تماس در فهرست کارها ساخته می‌شود.",
+    )
+    renewal_task_days = models.PositiveSmallIntegerField("کار تماس تمدید، چند روز مانده", default=10)
+    staff_digest_enabled = models.BooleanField(
+        "پیامک کارهای روز به همکاران",
+        default=False,
+        help_text="هر روز ساعت ۸:۳۰ به هر همکاری که کار امروز یا عقب‌افتاده دارد، یک پیامک کوتاه از پنل پیامک دفتر می‌رود.",
+    )
 
     class Meta:
         verbose_name = "تنظیمات یادآور"
@@ -76,6 +87,8 @@ class MessageLog(TenantOwned):
         CAMPAIGN = "campaign", "کمپین"
         CLAIM = "claim", "خسارت"
         QUOTE = "quote", "درخواست"
+        MANUAL = "manual", "پیامک دستی"
+        STAFF = "staff", "کارهای روز همکاران"
 
     kind = models.CharField("نوع", max_length=20, choices=Kind.choices)
     key = models.CharField(max_length=80, help_text="Prevents sending the same reminder twice")

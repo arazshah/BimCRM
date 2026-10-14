@@ -86,6 +86,7 @@ class Membership(models.Model):
         help_text="کارمند شعبه فقط مشتریان و پرونده‌های همان شعبه را می‌بیند",
     )
     is_active = models.BooleanField("فعال", default=True)
+    calendar_token = models.CharField(max_length=64, blank=True, db_index=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

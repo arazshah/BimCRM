@@ -44,6 +44,7 @@ from .forms import (
     TestimonialFormSet,
     TicketForm,
 )
+from .views_work import customer_work_context
 
 User = get_user_model()
 
@@ -128,12 +129,21 @@ def dashboard(request):
 
         until = jdate(platform.free_domain_until, "long")
         alerts.append((f"طرح ویژه: تا {until} دامنه ir و راه‌اندازی آن رایگان است؛ درخواست بدهید", "panel:domains", ""))
+    from apps.work.models import Task
+
+    my_tasks = (
+        Task.objects.filter(done_at__isnull=True, due_date__lte=today)
+        .filter(Q(assigned_to=request.user) | Q(assigned_to__isnull=True))
+        .select_related("customer")
+        .order_by("due_date", "-priority")[:6]
+    )
     name = (request.user.full_name or "").split(" ")[0]
     return render(
         request,
         "panel/dashboard.html",
         {
             "renewals": renewals,
+            "my_tasks": my_tasks,
             "new_quotes": quotes_qs.filter(status=QuoteRequest.Status.NEW).select_related("line")[:6],
             "stats": {
                 "customers": customers_qs.count(),
@@ -211,6 +221,7 @@ def customer_detail(request, pk):
             "claims": Claim.objects.filter(policy__customer=customer).select_related("policy__line")
             if "claims" in request.features
             else None,
+            **customer_work_context(request, customer),
         },
     )
 

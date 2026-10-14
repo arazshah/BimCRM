@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from . import views_addons as addons
+from . import views_work as work
 
 app_name = "panel"
 
@@ -12,6 +13,17 @@ urlpatterns = [
     path("customers/import/", views.customer_import, name="customer_import"),
     path("customers/<int:pk>/", views.customer_detail, name="customer"),
     path("customers/<int:pk>/edit/", views.customer_edit, name="customer_edit"),
+    path("customers/<int:pk>/activity/", work.activity_add, name="activity_add"),
+    path("customers/<int:pk>/sms/", work.customer_sms, name="customer_sms"),
+    path("tasks/", work.tasks, name="tasks"),
+    path("tasks/new/", work.task_edit, name="task_new"),
+    path("tasks/<int:pk>/edit/", work.task_edit, name="task_edit"),
+    path("tasks/<int:pk>/toggle/", work.task_toggle, name="task_toggle"),
+    path("calendar/", work.calendar, name="calendar"),
+    path("calendar/reset/", work.calendar_token_reset, name="calendar_reset"),
+    path("calendar/feed/<str:token>.ics", work.calendar_feed, name="calendar_feed"),
+    path("notifications/", work.notifications, name="notifications"),
+    path("notifications/<int:pk>/", work.notification_open, name="notification_open"),
     path("policies/", views.policies, name="policies"),
     path("policies/new/", views.policy_edit, name="policy_new"),
     path("policies/<int:pk>/edit/", views.policy_edit, name="policy_edit"),

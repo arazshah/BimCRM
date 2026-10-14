@@ -160,6 +160,9 @@ class ReminderSettingsForm(forms.ModelForm):
             "installment_text",
             "birthday_enabled",
             "birthday_text",
+            "renewal_tasks_enabled",
+            "renewal_task_days",
+            "staff_digest_enabled",
         ]
         widgets = {
             "renewal_text": forms.Textarea(attrs={"rows": 3}),

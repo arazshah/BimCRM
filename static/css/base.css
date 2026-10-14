@@ -52,7 +52,7 @@ p { margin: 0 0 1em; }
 .field > label, .field-label { display: block; font-weight: 600; font-size: 14px; margin-bottom: .35rem; }
 .field .help { color: var(--muted); font-size: 13px; margin-top: .3rem; }
 .field .errors { color: var(--red); font-size: 13px; margin-top: .3rem; list-style: none; padding: 0; }
-input[type=text], input[type=tel], input[type=email], input[type=number], input[type=date], input[type=search], input[type=url], input:not([type]), select, textarea {
+input[type=text], input[type=tel], input[type=email], input[type=number], input[type=date], input[type=time], input[type=password], input[type=search], input[type=url], input:not([type]), select, textarea {
   width: 100%; font: inherit; color: var(--ink); background: #fff; border: 1px solid #c9d0da; border-radius: 8px; padding: .55em .8em; }
 input:focus, select:focus, textarea:focus { border-color: var(--seal); outline: none; box-shadow: 0 0 0 3px var(--seal-soft); }
 input[type=color] { width: 56px; height: 38px; padding: 2px; border: 1px solid #c9d0da; border-radius: 8px; background: #fff; }
