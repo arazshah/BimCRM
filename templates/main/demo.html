@@ -1,0 +1,69 @@
+{% extends "main/base.html" %}
+{% load static fa %}
+{% block title %}دموی زنده CRM بیمه — سایت و پنل یک دفتر نمایندگی بیمه را همین حالا ببینید{% endblock %}
+{% block og_title %}دموی زنده: سایت و پنل دفتر بیمه شما این‌طور می‌شود{% endblock %}
+{% block description %}بدون ثبت‌نام، سایت، پنل مدیریت و پنل مشتری یک دفتر نمایندگی بیمه نمونه را با اطلاعات کامل ببینید: تمدیدها، استعلام‌ها، اقساط، خسارت، گزارش و باشگاه مشتریان.{% endblock %}
+{% block body_class %}demo-page{% endblock %}
+{% block content %}
+<section class="demo-hero">
+  <div class="wrap">
+    <p class="demo-live"><span aria-hidden="true"></span>دموی زنده، بدون ثبت‌نام</p>
+    <h1>دفتر شما این‌طور می‌شود</h1>
+    <p class="demo-lead">«دفتر بیمه آرمان» یک دفتر نمونه با اطلاعات کامل است. هر جا را خواستید باز کنید و دکمه‌ها را بزنید؛ چیزی ذخیره نمی‌شود.</p>
+  </div>
+</section>
+
+<section class="demo-doors">
+  <div class="wrap">
+    <ol class="demo-grid">
+      <li class="demo-card">
+        <a class="demo-shot" href="{{ site_url }}" target="_blank" rel="noopener">
+          <span class="demo-url" dir="ltr">{{ host }}</span>
+          <img src="{% static 'demo/site.jpg' %}" alt="سایت دفتر بیمه نمونه با فرم استعلام آنلاین" width="640" height="400" loading="lazy">
+        </a>
+        <div class="demo-body">
+          <span class="demo-num">۱</span>
+          <h2>سایت شما</h2>
+          <p>چیزی که مشتری می‌بیند.</p>
+          <ul class="ticks"><li>فرم استعلام برای هر رشته</li><li>شرکت‌های همکار، نظر مشتری‌ها، سؤالات</li><li>پیگیری درخواست با کد</li></ul>
+          <a class="btn btn-block" href="{{ site_url }}" target="_blank" rel="noopener">دیدن سایت</a>
+        </div>
+      </li>
+      <li class="demo-card demo-main">
+        <a class="demo-shot" href="{{ panel_url }}" target="_blank" rel="noopener">
+          <span class="demo-url" dir="ltr">{{ host }}/panel</span>
+          <img src="{% static 'demo/panel.jpg' %}" alt="پنل مدیریت دفتر بیمه با تمدیدهای پیش‌رو و کارهای امروز" width="640" height="400" loading="lazy">
+        </a>
+        <div class="demo-body">
+          <span class="demo-num">۲</span>
+          <h2>پنل مدیریت شما</h2>
+          <p>جایی که دفتر را می‌گردانید.</p>
+          <ul class="ticks"><li>تمدیدهای پیش‌رو و یادآور پیامکی</li><li>مشتری، بیمه‌نامه، قسط و چک</li><li>خسارت، کارمزد، گزارش و همکاران</li></ul>
+          <a class="btn btn-block" href="{{ panel_url }}" target="_blank" rel="noopener">ورود به پنل نمونه</a>
+        </div>
+      </li>
+      <li class="demo-card">
+        <a class="demo-shot" href="{{ portal_url }}" target="_blank" rel="noopener">
+          <span class="demo-url" dir="ltr">{{ host }}/account</span>
+          <img src="{% static 'demo/portal.jpg' %}" alt="پنل مشتری با بیمه‌نامه‌ها، اقساط و خسارت" width="640" height="400" loading="lazy">
+        </a>
+        <div class="demo-body">
+          <span class="demo-num">۳</span>
+          <h2>پنل مشتری شما</h2>
+          <p>مشتری خودش کارهایش را می‌کند.</p>
+          <ul class="ticks"><li>دیدن بیمه‌نامه‌ها و اقساط</li><li>اعلام خسارت با عکس مدارک</li><li>امتیاز باشگاه و کد معرف</li></ul>
+          <a class="btn btn-block" href="{{ portal_url }}" target="_blank" rel="noopener">دیدن پنل مشتری</a>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="demo-cta">
+  <div class="wrap">
+    <h2>پسندیدید؟ نسخهٔ خودتان را بسازید</h2>
+    <p>با نام و اطلاعات دفتر خودتان، در ۵ دقیقه. {{ platform.trial_days|fa }} روز رایگان، بدون کارت بانکی.</p>
+    <a class="btn" href="{{ PLATFORM_URL }}/#start">ساخت رایگان سایت و پنل</a>
+  </div>
+</section>
+{% endblock %}

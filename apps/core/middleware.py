@@ -101,3 +101,34 @@ class HostCookieDomainMiddleware:
                 if name in response.cookies:
                     response.cookies[name]["domain"] = ""
         return response
+
+
+class LiveDemoMiddleware:
+    """The public demo office: everyone browses its panel as the demo owner, and nothing is ever saved."""
+
+    NOTICE = "این نسخهٔ نمایشی است و تغییرات ذخیره نمی‌شود. برای دفتر خودتان، سایت و پنل رایگان بسازید."
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        tenant = getattr(request, "tenant", None)
+        request.live_demo = bool(tenant is not None and tenant.demo_built_on)
+        if not request.live_demo:
+            return self.get_response(request)
+        from django.contrib import messages
+        from django.shortcuts import redirect
+        from django.utils.http import url_has_allowed_host_and_scheme
+
+        from apps.main.demo import refresh
+
+        refresh(tenant)
+        if request.path.startswith("/panel"):
+            request.user = tenant.owner
+        if request.method not in ("GET", "HEAD", "OPTIONS"):
+            messages.info(request, self.NOTICE)
+            back = request.META.get("HTTP_REFERER", "")
+            if not url_has_allowed_host_and_scheme(back, allowed_hosts={request.get_host()}):
+                back = request.path
+            return redirect(back)
+        return self.get_response(request)

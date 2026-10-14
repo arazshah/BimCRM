@@ -83,6 +83,7 @@
       <a class="top-site" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#p-external"/></svg><span>مشاهده سایت</span></a>
     </header>
     <main id="main" class="main">
+      {% if request.live_demo %}<div class="demo-strip" role="note"><b>پنل نمونه</b> هر بخشی را باز کنید و دکمه‌ها را امتحان کنید؛ چیزی ذخیره نمی‌شود. <a class="btn btn-sm" href="{{ PLATFORM_URL }}/#start">ساخت پنل خودم، رایگان</a></div>{% endif %}
       {% if messages %}<ul class="flash" role="status">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
       {% block content %}{% endblock %}
     </main>

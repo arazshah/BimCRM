@@ -176,6 +176,10 @@ def track(request):
 
 
 def _customer_mobile(request):
+    if getattr(request, "live_demo", False):
+        from apps.main.demo import DEMO_CUSTOMER_MOBILE
+
+        return DEMO_CUSTOMER_MOBILE
     raw = request.COOKIES.get(CUSTOMER_COOKIE)
     if not raw:
         return None

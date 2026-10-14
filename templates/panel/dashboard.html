@@ -23,7 +23,7 @@
 </section>
 {% endif %}
 
-{% if checklist_done < checklist|length %}
+{% if checklist_done < checklist|length and not request.live_demo %}
 <section class="card setup" aria-labelledby="setup-title">
   <div class="setup-top">
     <h2 class="h2" id="setup-title">راه‌اندازی دفتر</h2>

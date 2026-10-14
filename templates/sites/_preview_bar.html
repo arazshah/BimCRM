@@ -1,4 +1,6 @@
-{% if is_demo and not is_embed %}
+{% if request.live_demo and not is_embed %}
+<div class="preview-bar demo-bar" role="note">{% if messages %}{% for m in messages %}{{ m }} {% endfor %}{% else %}این سایت نمونه است؛ سایت دفتر شما همین‌طور می‌شود.{% endif %} <a href="{{ PLATFORM_URL }}/#start">ساخت رایگان سایت خودم</a> · <a href="/panel/">دیدن پنل مدیریت</a></div>
+{% elif is_demo and not is_embed %}
 <div class="preview-bar" role="note">پیش‌نمایش قالب «{{ tpl.name }}» با محتوای نمونه. <a href="/signup/">همین قالب را برای دفترم می‌خواهم</a></div>
 {% elif is_preview %}
 <div class="preview-bar" role="note">این سایت هنوز منتشر نشده و فقط شما و همکارانتان آن را می‌بینید. <a href="/panel/site/">انتشار از پنل</a></div>
