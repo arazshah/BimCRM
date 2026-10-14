@@ -64,6 +64,7 @@ class Campaign(TenantOwned):
         "core.LineOfBusiness", null=True, blank=True, on_delete=models.SET_NULL, verbose_name="فقط دارندگان رشته"
     )
     city = models.CharField("فقط شهر", max_length=60, blank=True)
+    segment = models.CharField("فقط این بخش از مشتریان", max_length=30, blank=True)
     status = models.CharField("وضعیت", max_length=20, choices=Status.choices, default=Status.DRAFT)
     recipients = models.PositiveIntegerField("گیرندگان", default=0)
     sent = models.PositiveIntegerField("ارسال‌شده", default=0)
@@ -89,6 +90,7 @@ class MessageLog(TenantOwned):
         QUOTE = "quote", "درخواست"
         MANUAL = "manual", "پیامک دستی"
         STAFF = "staff", "کارهای روز همکاران"
+        CLUB = "club", "باشگاه مشتریان"
 
     kind = models.CharField("نوع", max_length=20, choices=Kind.choices)
     key = models.CharField(max_length=80, help_text="Prevents sending the same reminder twice")

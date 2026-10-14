@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.claims",
     "apps.messaging",
     "apps.work",
+    "apps.club",
     "apps.panel",
     "apps.main",
 ]

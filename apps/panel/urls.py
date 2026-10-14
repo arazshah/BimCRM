@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from . import views_addons as addons
+from . import views_club as club
 from . import views_docs as docs
 from . import views_work as work
 
@@ -18,6 +19,10 @@ urlpatterns = [
     path("customers/<int:pk>/sms/", work.customer_sms, name="customer_sms"),
     path("customers/<int:pk>/documents/", docs.document_upload, name="document_upload"),
     path("customers/<int:pk>/documents/<int:doc_id>/delete/", docs.document_delete, name="document_delete"),
+    path("customers/<int:pk>/points/", club.customer_points, name="customer_points"),
+    path("segments/", club.segments, name="segments"),
+    path("segments/<str:code>/tasks/", club.segment_tasks, name="segment_tasks"),
+    path("club/", club.club, name="club"),
     path("tasks/", work.tasks, name="tasks"),
     path("tasks/new/", work.task_edit, name="task_new"),
     path("tasks/<int:pk>/edit/", work.task_edit, name="task_edit"),

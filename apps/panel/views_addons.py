@@ -174,6 +174,10 @@ def installment_edit(request, pk):
         if inst.status == Installment.Status.PAID and not inst.paid_at:
             inst.paid_at = timezone.localdate()
         inst.save()
+        if inst.status == Installment.Status.PAID:
+            from apps.club.services import on_installment_paid
+
+            on_installment_paid(inst)
         messages.success(request, "قسط ذخیره شد.")
         return redirect("panel:installments")
     return render(
@@ -190,6 +194,9 @@ def installment_paid(request, pk):
     inst.status = Installment.Status.PAID
     inst.paid_at = timezone.localdate()
     inst.save(update_fields=["status", "paid_at"])
+    from apps.club.services import on_installment_paid
+
+    on_installment_paid(inst)
     messages.success(request, "قسط وصول شد.")
     return _next(request, "panel:installments")
 
@@ -447,7 +454,10 @@ def marketer_detail(request, pk):
 
 @panel_view(feature="sms_campaigns", perm="campaigns")
 def campaigns(request):
-    form = CampaignForm(request.POST or None)
+    from apps.crm.segments import BY_CODE
+
+    seg = BY_CODE.get(request.GET.get("seg", ""))
+    form = CampaignForm(request.POST or None, initial={"segment": seg.code, "title": seg.title} if seg else None)
     if request.method == "POST" and form.is_valid():
         campaign = form.save()
         return redirect("panel:campaign", pk=campaign.pk)
@@ -476,6 +486,7 @@ def campaign_detail(request, pk):
         "panel/campaign_detail.html",
         {
             "campaign": campaign,
+            "segment": __import__("apps.crm.segments", fromlist=["BY_CODE"]).BY_CODE.get(campaign.segment),
             "count": recipients.count(),
             "sample": recipients[:8],
             "can_sms": tenant_can_sms(request.tenant),

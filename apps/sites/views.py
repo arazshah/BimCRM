@@ -15,6 +15,7 @@ from apps.integrations.senders import send_tenant_otp, tenant_can_sms
 from .models import FAQ, SiteSettings, Testimonial
 
 REF_COOKIE = "bc_ref"
+CREF_COOKIE = "bc_cref"
 REF_MAX_AGE = 60 * 60 * 24 * 30
 CUSTOMER_COOKIE = "bc_customer"
 CUSTOMER_MAX_AGE = 60 * 60 * 24 * 30
@@ -72,7 +73,21 @@ def home(request):
     if ref and ref.isalnum():
         # Marketer referral: remembered for 30 days, attached to the visitor's quote request.
         resp.set_cookie(REF_COOKIE, ref, max_age=REF_MAX_AGE, httponly=True, samesite="Lax", secure=request.is_secure())
+    cref = request.GET.get("c", "").strip().upper()[:10]
+    if cref and cref.isalnum():
+        # A customer's own referral code (customer club).
+        resp.set_cookie(
+            CREF_COOKIE, cref, max_age=REF_MAX_AGE, httponly=True, samesite="Lax", secure=request.is_secure()
+        )
     return resp
+
+
+def _referring_customer(request, mobile=""):
+    code = request.COOKIES.get(CREF_COOKIE, "")
+    if not code:
+        return None
+    ref = Customer.objects.filter(referral_code=code).first()
+    return ref if ref and ref.mobile != mobile else None
 
 
 def _referring_marketer(request):
@@ -113,6 +128,10 @@ def submit_quote(request):
             details[field.get("label", name)] = value
     customer = Customer.objects.filter(mobile=form.cleaned_data["mobile"]).first()
     marketer = _referring_marketer(request)
+    referrer = _referring_customer(request, form.cleaned_data["mobile"])
+    if customer and referrer and customer.referred_by_id is None and not customer.policies.exists():
+        customer.referred_by = referrer
+        customer.save(update_fields=["referred_by"])
     if customer and customer.marketer_id is None and marketer:
         customer.marketer = marketer
         customer.save(update_fields=["marketer"])
@@ -131,6 +150,7 @@ def submit_quote(request):
         message=form.cleaned_data["message"],
         details=details,
         customer=customer,
+        referrer=referrer,
     )
     from apps.work.services import on_new_quote
 
@@ -273,6 +293,28 @@ def _portal_data(request, mobile: str) -> dict:
         if k not in (CustomerDocument.Kind.ENDORSEMENT, CustomerDocument.Kind.POLICY_COPY)
     ]
     data["can_upload_docs"] = bool(customer or data["quotes"])
+    from apps.club.models import TIER_LABELS, ClubSettings
+    from apps.club.services import referral_code_for
+
+    club = ClubSettings.for_tenant(request.tenant)
+    if customer and club.enabled:
+        code = referral_code_for(customer)
+        link = f"{request.tenant.site_url()}?c={code}"
+        data["club"] = {
+            "tier": customer.tier,
+            "tier_label": TIER_LABELS.get(customer.tier, ""),
+            "balance": customer.points_balance,
+            "perks": club.perks,
+            "code": code,
+            "link": link,
+            "bonus": club.referral_bonus,
+            "share": f"من بیمه‌هایم را از {request.tenant.name} می‌گیرم؛ با این لینک استعلام بگیر: {link}",
+            "next_tier": ("نقره‌ای", club.silver_at - customer.points_lifetime)
+            if customer.tier == "bronze"
+            else ("طلایی", club.gold_at - customer.points_lifetime)
+            if customer.tier == "silver"
+            else None,
+        }
     if customer and "claims" in features:
         data["claims"] = Claim.objects.filter(policy__customer=customer).prefetch_related("events", "documents")
         data["claimable"] = [p for p in policies if p.status == Policy.Status.ACTIVE]

@@ -144,8 +144,18 @@ class PayoutForm(forms.ModelForm):
 class CampaignForm(forms.ModelForm):
     class Meta:
         model = Campaign
-        fields = ["title", "text", "line", "city"]
+        fields = ["title", "text", "segment", "line", "city"]
         widgets = {"text": forms.Textarea(attrs={"rows": 4, "maxlength": 600})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from apps.crm.segments import SEGMENTS
+
+        self.fields["segment"] = forms.ChoiceField(
+            label="فقط این بخش از مشتریان",
+            required=False,
+            choices=[("", "همه مشتریان")] + [(s.code, s.title) for s in SEGMENTS],
+        )
 
 
 class ReminderSettingsForm(forms.ModelForm):

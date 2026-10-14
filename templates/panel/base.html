@@ -31,6 +31,7 @@
       <a href="{% url 'panel:customers' %}" {% if "customer" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-users"/></svg>مشتریان</a>
       <a href="{% url 'panel:policies' %}" {% if "polic" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-doc"/></svg>بیمه‌نامه‌ها و تمدید</a>
       <a href="{% url 'panel:tasks' %}" {% if "task" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-tasks"/></svg>کارها و پیگیری‌ها{% if request.due_tasks %}<span class="count">{{ request.due_tasks|fa }}</span>{% endif %}</a>
+      {% if request.can.segments %}<a href="{% url 'panel:segments' %}" {% if u == "segments" or u == "club" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-star"/></svg>بخش‌ها و باشگاه مشتریان</a>{% endif %}
       <a href="{% url 'panel:calendar' %}" {% if u == "calendar" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-calendar"/></svg>تقویم</a>
       {% if request.can.reminders %}<a href="{% url 'panel:reminders' %}" {% if u == "reminders" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-bell"/></svg>یادآورهای پیامکی</a>{% endif %}
       <span class="nav-group">افزونه‌ها</span>

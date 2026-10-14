@@ -181,8 +181,20 @@ def customers(request):
         qs = qs.filter(
             Q(full_name__icontains=q) | Q(mobile__contains=normalize_mobile(q) or q) | Q(national_code__contains=q)
         )
+    from apps.crm.segments import BY_CODE, SEGMENTS, customers_in
+
+    seg = BY_CODE.get(request.GET.get("seg", ""))
+    if seg:
+        qs = customers_in(seg.code, qs)
+    tier = request.GET.get("tier", "")
+    if tier in ("bronze", "silver", "gold"):
+        qs = qs.filter(tier=tier)
     page = Paginator(qs, 25).get_page(request.GET.get("page"))
-    return render(request, "panel/customers.html", {"page": page, "q": q, **branch_filter(request)})
+    return render(
+        request,
+        "panel/customers.html",
+        {"page": page, "q": q, "seg": seg, "segments": SEGMENTS, "tier": tier, **branch_filter(request)},
+    )
 
 
 @panel_view()
@@ -376,9 +388,10 @@ def quote_detail(request, pk):
                 mobile=quote.mobile,
                 defaults={
                     "full_name": quote.full_name,
-                    "source": Customer.Source.WEBSITE,
+                    "source": Customer.Source.REFERRAL if quote.referrer_id else Customer.Source.WEBSITE,
                     "marketer": quote.marketer,
                     "branch": quote.branch or request.branch_scope,
+                    "referred_by": quote.referrer,
                 },
             )
             quote.customer = customer

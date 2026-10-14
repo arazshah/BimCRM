@@ -7,7 +7,7 @@
   <section class="panel-box">
     <h2 class="h2">متن</h2>
     <p class="sms-preview">{{ campaign.text|linebreaksbr }}<br>لغو۱۱</p>
-    <p class="muted small">{% if campaign.line %}فقط دارندگان {{ campaign.line }}{% endif %}{% if campaign.city %} · فقط شهر {{ campaign.city }}{% endif %}</p>
+    <p class="muted small">{% if segment %}بخش «{{ segment.title }}» · {% endif %}{% if campaign.line %}فقط دارندگان {{ campaign.line }}{% endif %}{% if campaign.city %} · فقط شهر {{ campaign.city }}{% endif %}</p>
   </section>
   <section class="panel-box">
     {% if campaign.status == "draft" %}

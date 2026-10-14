@@ -1,0 +1,33 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}بخش‌ها و فرصت‌های فروش{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>بخش‌ها و فرصت‌های فروش</h1><p class="page-sub">مشتریان شما، خودکار در گروه‌های آماده؛ برای فروش متقابل، تمدید و وفاداری.</p></div>
+  <div class="head-actions"><a class="btn btn-ghost btn-sm" href="{% url 'panel:club' %}">باشگاه مشتریان</a></div></div>
+{% for group, items in groups %}
+<section class="seg-group">
+  <h2 class="h2">{{ group }}</h2>
+  <div class="seg-grid">
+    {% for it in items %}{% with s=it.seg %}
+    <article class="seg-card card" id="s-{{ s.code }}">
+      <div class="seg-top"><strong class="seg-n num">{{ it.count|fa }}</strong><div><h3>{{ s.title }}</h3><p>{{ s.hint }}</p></div></div>
+      {% if it.count %}
+      <div class="seg-actions">
+        <a class="btn btn-ghost btn-sm" href="{% url 'panel:customers' %}?seg={{ s.code }}">فهرست</a>
+        {% if "sms_campaigns" in request.features and request.can.campaigns %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:campaigns' %}?seg={{ s.code }}">پیامک گروهی</a>{% endif %}
+        <details class="seg-task"><summary class="btn btn-sm">ساخت کار برای همه</summary>
+          <form method="post" action="{% url 'panel:segment_tasks' s.code %}" novalidate>{% csrf_token %}
+            <div class="field"><label for="t-{{ s.code }}">عنوان کار</label><input id="t-{{ s.code }}" name="title" value="{{ s.action }}" required></div>
+            <div class="two-fields"><div class="field"><label for="d-{{ s.code }}">موعد</label><input id="d-{{ s.code }}" type="date" name="due_date" value="{{ task_form.due_date.value|date:'Y-m-d' }}" required></div>
+            <div class="field"><label for="a-{{ s.code }}">مسئول</label><select id="a-{{ s.code }}" name="assigned_to"><option value="">هر کدام از همکاران</option>{% for u in task_form.fields.assigned_to.queryset %}<option value="{{ u.pk }}">{{ u.full_name|default:u.mobile }}</option>{% endfor %}</select></div></div>
+            <button class="btn btn-sm" type="submit">ساخت {{ it.count|fa }} کار</button>
+          </form>
+        </details>
+      </div>
+      {% else %}<p class="muted small">فعلاً کسی در این بخش نیست.</p>{% endif %}
+    </article>
+    {% endwith %}{% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

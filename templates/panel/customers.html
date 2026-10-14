@@ -6,15 +6,18 @@
   <h1>مشتریان</h1>
   <div class="head-actions"><a class="btn btn-sm" href="{% url 'panel:customer_new' %}">مشتری جدید</a><a class="btn btn-ghost btn-sm" href="{% url 'panel:customer_import' %}">ورود از اکسل</a></div>
 </div>
-<div class="toolbar"><form method="get" class="search-form"><input type="search" name="q" value="{{ q }}" placeholder="نام، موبایل یا کد ملی" aria-label="جستجو">{% if b %}<input type="hidden" name="b" value="{{ b }}">{% endif %}<button class="btn btn-ghost btn-sm" type="submit">جستجو</button></form>
+<div class="toolbar"><form method="get" class="search-form"><input type="search" name="q" value="{{ q }}" placeholder="نام، موبایل یا کد ملی" aria-label="جستجو">{% if b %}<input type="hidden" name="b" value="{{ b }}">{% endif %}
+  <select name="seg" aria-label="بخش مشتریان" onchange="this.form.submit()"><option value="">همه مشتریان</option>{% for s in segments %}<option value="{{ s.code }}" {% if seg.code == s.code %}selected{% endif %}>{{ s.title }}</option>{% endfor %}</select>
+  <button class="btn btn-ghost btn-sm" type="submit">جستجو</button></form>
 {% include "panel/_branch_select.html" %}</div>
+{% if seg %}<p class="note">بخش «{{ seg.title }}»: {{ seg.hint }} · <a href="{% url 'panel:segments' %}#s-{{ seg.code }}">ساخت کار برای همه</a>{% if "sms_campaigns" in request.features and request.can.campaigns %} · <a href="{% url 'panel:campaigns' %}?seg={{ seg.code }}">پیامک به این بخش</a>{% endif %}</p>{% endif %}
 {% if page.object_list %}
 <div class="table-wrap">
 <table class="data">
   <thead><tr><th>نام</th><th>موبایل</th><th>شهر</th><th>بیمه‌نامه</th><th>ثبت</th></tr></thead>
   <tbody>
   {% for c in page %}
-    <tr><td><a href="{% url 'panel:customer' c.pk %}">{{ c.full_name }}</a></td><td class="ltr num">{{ c.mobile|fa }}</td><td>{{ c.city }}</td><td class="num">{{ c.n_policies|fa }}</td><td class="muted">{{ c.created_at|jdate }}</td></tr>
+    <tr><td><a href="{% url 'panel:customer' c.pk %}">{{ c.full_name }}</a>{% if c.tier != "bronze" %} <span class="tier tier-{{ c.tier }}" title="سطح باشگاه">{% if c.tier == "gold" %}طلایی{% else %}نقره‌ای{% endif %}</span>{% endif %}</td><td class="ltr num">{{ c.mobile|fa }}</td><td>{{ c.city }}</td><td class="num">{{ c.n_policies|fa }}</td><td class="muted">{{ c.created_at|jdate }}</td></tr>
   {% endfor %}
   </tbody>
 </table>

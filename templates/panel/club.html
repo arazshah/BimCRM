@@ -1,0 +1,31 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}باشگاه مشتریان{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>باشگاه مشتریان</h1><p class="page-sub">امتیاز برای خرید، تمدید، پرداخت به‌موقع و معرفی؛ سطح برنزی، نقره‌ای و طلایی.</p></div>
+  <div class="head-actions"><a class="btn btn-ghost btn-sm" href="{% url 'panel:segments' %}">بخش‌ها و فرصت‌ها</a></div></div>
+{% if not form.instance.enabled %}<p class="note warn-note">باشگاه خاموش است؛ امتیازی داده نمی‌شود و در سایت نمایش داده نمی‌شود.</p>{% endif %}
+<section class="kpis club-kpis">
+  {% for code, label, n in tiers %}<a class="kpi" href="{% url 'panel:customers' %}?tier={{ code }}"><span class="kpi-label"><span class="tier tier-{{ code }}">{{ label }}</span></span><strong class="kpi-value num">{{ n|fa }}</strong><span class="kpi-sub">مشتری</span></a>{% endfor %}
+  <div class="kpi"><span class="kpi-label">امتیاز داده‌شده / خرج‌شده</span><strong class="kpi-value num">{{ issued|fa }}</strong><span class="kpi-sub">{{ redeemed|fa }} خرج‌شده، {{ referrals|fa }} معرفی</span></div>
+</section>
+<div class="two-col">
+  <form method="post" class="panel-box" novalidate>{% csrf_token %}
+    <h2 class="h2">قوانین باشگاه</h2>
+    {% include "includes/form_fields.html" %}
+    <button class="btn" type="submit">ذخیره</button>
+  </form>
+  <div>
+    <section class="panel-box">
+      <h2 class="h2">بیشترین امتیاز</h2>
+      {% if top %}<ol class="plain-list">{% for c in top %}<li><a href="{% url 'panel:customer' c.pk %}">{{ c.full_name }}</a><span><span class="tier tier-{{ c.tier }}">{% if c.tier == "gold" %}طلایی{% elif c.tier == "silver" %}نقره‌ای{% else %}برنزی{% endif %}</span> <span class="num">{{ c.points_balance|fa }}</span></span></li>{% endfor %}</ol>
+      {% else %}<p class="empty">هنوز امتیازی داده نشده؛ با ثبت بیمه‌نامه‌ها خودکار شروع می‌شود.</p>{% endif %}
+    </section>
+    <section class="panel-box">
+      <h2 class="h2">آخرین امتیازها</h2>
+      {% if recent %}<ul class="plain-list">{% for e in recent %}<li><span><a href="{% url 'panel:customer' e.customer_id %}">{{ e.customer.full_name }}</a> · {{ e.get_reason_display }}{% if e.note %} <span class="muted small">{{ e.note }}</span>{% endif %}</span><span class="num {% if e.points < 0 %}neg{% else %}pos{% endif %}">{% if e.points > 0 %}+{% endif %}{{ e.points|fa }}</span></li>{% endfor %}</ul>
+      {% else %}<p class="empty">—</p>{% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

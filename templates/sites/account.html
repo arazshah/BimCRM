@@ -6,6 +6,16 @@
   <p class="muted">وارد شده با <span class="ltr">{{ mobile|fa }}</span> · <a href="/account/logout/">خروج</a></p>
   {% if messages %}<ul class="flash">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
 
+  {% if club %}
+  <section class="club-card club-{{ club.tier }}">
+    <div class="club-head"><span class="club-tier">{{ club.tier_label }}</span><strong>{{ club.balance|fa }}</strong><span>امتیاز باشگاه مشتریان</span></div>
+    {% if club.next_tier %}<p class="small">{{ club.next_tier.1|fa }} امتیاز دیگر تا سطح {{ club.next_tier.0 }}.</p>{% endif %}
+    {% if club.perks %}<p class="small">{{ club.perks }}</p>{% endif %}
+    <p><strong>دوستانتان را معرفی کنید</strong> و با اولین بیمه‌نامه آن‌ها {{ club.bonus|fa }} امتیاز بگیرید. کد شما: <b class="ltr">{{ club.code }}</b></p>
+    <div class="club-share"><input class="ltr" readonly value="{{ club.link }}" onclick="this.select()" aria-label="لینک معرفی"><a class="site-btn" href="https://wa.me/?text={{ club.share|urlencode }}" target="_blank" rel="noopener">ارسال در واتس‌اپ</a></div>
+  </section>
+  {% endif %}
+
   <h2>بیمه‌نامه‌ها</h2>
   {% if policies %}
   <table class="acc-table">
