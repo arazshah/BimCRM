@@ -20,6 +20,7 @@ urlpatterns = [
     path("pay/<str:tenant_slug>/", views.pay, name="pay"),
     path("pay/callback/<int:invoice_id>/", views.pay_callback, name="pay_callback"),
     path("help/", views.help_index, name="help"),
+    path("help/videos/", views.help_videos, name="help_videos"),
     path("help/<slug:slug>/", views.help_article, name="help_article"),
     path("robots.txt", views.robots),
     path("sitemap.xml", views.sitemap, name="sitemap"),

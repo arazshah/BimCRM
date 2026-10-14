@@ -1,0 +1,34 @@
+{% extends "main/base.html" %}
+{% load static fa %}
+{% block title %}آموزش‌های ویدیویی CRM بیمه — ۱۰ ویدیوی کوتاه برای دفتر نمایندگی بیمه{% endblock %}
+{% block og_title %}آموزش‌های ویدیویی CRM بیمه{% endblock %}
+{% block description %}ده ویدیوی کوتاه زیر یک دقیقه: ساخت سایت دفتر بیمه، پنل پیامک، یادآور تمدید، ورود مشتریان از اکسل، استعلام آنلاین، دامنه، اقساط، خسارت و قالب سایت.{% endblock %}
+{% block body_class %}help-page{% endblock %}
+{% block head_extra %}
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[{% for v in videos %}{"@type":"ListItem","position":{{ forloop.counter }},"item":{"@type":"VideoObject","name":"{{ v.title }}","description":"{{ v.summary }}","thumbnailUrl":"{{ PLATFORM_URL }}{% static v.poster %}","contentUrl":"{{ PLATFORM_URL }}{% static v.src %}","uploadDate":"2026-10-14","duration":"{{ v.iso_duration }}","inLanguage":"fa","url":"{{ PLATFORM_URL }}/help/videos/#{{ v.anchor }}"}}{% if not forloop.last %},{% endif %}{% endfor %}]}</script>
+{% endblock %}
+{% block content %}
+<section class="help-hero help-hero-sm">
+  <div class="wrap">
+    <nav class="crumbs crumbs-light" aria-label="مسیر"><a href="{% url 'main:help' %}">راهنما</a><span>›</span><span>ویدیوها</span></nav>
+    <h1>آموزش‌های ویدیویی</h1>
+    <p>هر امکان در کمتر از یک دقیقه، با تصویر واقعی پنل. صدا ندارد؛ با موسیقی ببینید.</p>
+  </div>
+</section>
+<section class="help-index">
+  <div class="wrap">
+    <ol class="vgrid">
+      {% for v in videos %}
+      <li>
+        {% include "help/_video.html" with v=v %}
+        <div class="vmeta">
+          <span class="vnum">{{ v.num|fa }}</span>
+          <div><h2>{{ v.title }}</h2><p>{{ v.summary }} · {{ v.seconds|fa }} ثانیه</p>
+          <a href="{% url 'main:help_article' v.article %}">راهنمای متنی و تصویری ←</a></div>
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+{% endblock %}

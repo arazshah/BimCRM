@@ -323,7 +323,22 @@ def robots(request):
 def help_index(request):
     from . import help as h
 
-    return render(request, "help/index.html", {"sections": h.SECTIONS, "platform": PlatformSettings.load()})
+    return render(
+        request,
+        "help/index.html",
+        {
+            "sections": h.SECTIONS,
+            "videos": h.VIDEOS[:3],
+            "video_count": len(h.VIDEOS),
+            "platform": PlatformSettings.load(),
+        },
+    )
+
+
+def help_videos(request):
+    from . import help as h
+
+    return render(request, "help/videos.html", {"videos": h.VIDEOS, "platform": PlatformSettings.load()})
 
 
 def help_article(request, slug):
@@ -345,6 +360,7 @@ def help_article(request, slug):
             "prev": prev,
             "next": nxt,
             "body_template": f"help/a/{slug}.html",
+            "videos": h.videos_for(slug),
             "platform": PlatformSettings.load(),
         },
     )
@@ -364,6 +380,7 @@ def sitemap(request):
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         f"  <url><loc>{base}/</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>\n"
         f"  <url><loc>{base}/help/</loc><lastmod>{today}</lastmod><priority>0.7</priority></url>\n"
+        f"  <url><loc>{base}/help/videos/</loc><lastmod>{today}</lastmod><priority>0.7</priority></url>\n"
         + "".join(f"  <url><loc>{base}/help/{a.slug}/</loc><priority>0.6</priority></url>\n" for a in help_articles())
         + "</urlset>\n"
     )
