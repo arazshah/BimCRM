@@ -423,3 +423,53 @@
   .hnav { grid-template-columns: 1fr; }
   .hnav .hnext { text-align: right; }
 }
+
+/* ── Promo video (landing) ── */
+.promo { padding: 80px 0 70px; background: linear-gradient(180deg, #fff 0%, var(--paper) 100%); }
+.promo-head { text-align: center; max-width: 760px; margin: 0 auto 30px; }
+.promo-head h2 { font-size: clamp(26px, 3.6vw, 40px); margin: 0 0 .35em; }
+.promo-head p { color: var(--ink-2); margin: 0; font-size: 17px; }
+.promo-frame { position: relative; max-width: 1040px; margin: 0 auto; border-radius: 20px; overflow: hidden; background: var(--night); box-shadow: 0 40px 80px -30px rgba(15, 31, 56, .55), 0 0 0 1px rgba(15, 31, 56, .08); aspect-ratio: 16 / 9; }
+.promo-frame video { display: block; width: 100%; height: 100%; object-fit: cover; background: var(--night); }
+.vwrap { position: relative; }
+.vplay { position: absolute; inset: 0; margin: auto; width: 68px; height: 68px; border-radius: 50%; border: 0; background: var(--seal); color: #fff; cursor: pointer; display: grid; place-items: center; box-shadow: 0 0 0 10px rgba(14, 124, 102, .28), 0 16px 34px -10px rgba(0, 0, 0, .55); transition: transform .15s; }
+.vplay:hover, .vplay:focus-visible { transform: scale(1.08); }
+.vplay svg { width: 30px; height: 30px; fill: currentColor; }
+.vplay-lg { width: 96px; height: 96px; box-shadow: 0 0 0 14px rgba(14, 124, 102, .28), 0 20px 40px -10px rgba(0, 0, 0, .5); }
+.vplay-lg svg { width: 42px; height: 42px; }
+.promo-more { text-align: center; margin: 22px 0 0; font-weight: 700; }
+.promo-more a { color: var(--seal); text-decoration: none; }
+
+/* ── Help videos ── */
+.help-hero-sm { padding: 40px 0 46px; }
+.crumbs-light, .crumbs-light a { color: #c9d5e6; justify-content: center; margin-bottom: 10px; }
+.toc-videos { display: block; font-weight: 700; color: var(--seal); text-decoration: none; margin-bottom: 6px; font-size: 13.5px; }
+.hvid { margin: 0 0 24px; }
+.hvid video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; background: var(--night); box-shadow: var(--shadow); }
+.hvid figcaption { display: flex; gap: 8px; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); margin-top: 8px; justify-content: center; }
+.hvid figcaption strong { color: var(--ink); }
+.vgrid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 28px; }
+.vgrid > li { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 14px; scroll-margin-top: 90px; }
+.vgrid .hvid { margin: 0; }
+.vmeta { display: flex; gap: 14px; align-items: flex-start; padding: 14px 6px 4px; }
+.vmeta h2 { font-size: 18px; margin: 0 0 4px; }
+.vmeta p { margin: 0 0 6px; color: var(--muted); font-size: 14px; }
+.vmeta a { font-size: 14px; font-weight: 700; color: var(--seal); text-decoration: none; }
+.vnum { flex: none; width: 38px; height: 38px; border-radius: 11px; background: var(--mint); color: var(--seal-deep); font-weight: 900; display: grid; place-items: center; }
+.vband { background: #fff; border-bottom: 1px solid var(--line); padding: 34px 0; }
+.vband-inner { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 30px; align-items: center; }
+.vband-text h2 { font-size: 24px; margin: 8px 0 6px; }
+.vband-text p { color: var(--ink-2); margin: 0 0 16px; font-size: 15px; }
+.badge-new { display: inline-block; background: var(--stamp); color: var(--ink); font-weight: 800; font-size: 12.5px; padding: 2px 12px; border-radius: 99px; }
+.vband-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.vband-list a { display: block; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 14px; }
+.vthumb { position: relative; display: block; border-radius: 12px; overflow: hidden; margin-bottom: 8px; box-shadow: var(--shadow); }
+.vthumb img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.vthumb i { position: absolute; inset: 0; margin: auto; width: 46px; height: 46px; border-radius: 50%; background: rgba(14, 124, 102, .92); }
+.vthumb i::after { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-35%, -50%); border-style: solid; border-width: 9px 0 9px 15px; border-color: transparent transparent transparent #fff; }
+@media (max-width: 860px) {
+  .vband-inner { grid-template-columns: 1fr; }
+  .vband-list { grid-template-columns: repeat(3, minmax(140px, 1fr)); overflow-x: auto; }
+  .promo { padding: 56px 0 50px; }
+  .vplay-lg { width: 72px; height: 72px; }
+}

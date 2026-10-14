@@ -1,4 +1,5 @@
 {% extends "main/base.html" %}
+{% load static fa %}
 {% block title %}راهنمای کامل CRM بیمه — آموزش سایت و پنل دفتر نمایندگی{% endblock %}
 {% block og_title %}راهنمای کامل CRM بیمه{% endblock %}
 {% block body_class %}help-page{% endblock %}
@@ -9,6 +10,19 @@
     <h1>راهنمای کامل CRM بیمه</h1>
     <p>از ساخت سایت تا تسویه کارمزد، هر بخش با تصویر و قدم‌به‌قدم. هر جا گیر کردید، از داخل پنل تیکت بزنید.</p>
     <div class="help-search"><svg aria-hidden="true"><use href="#p-search"/></svg><input type="search" id="hq" placeholder="جستجو در راهنما؛ مثلاً تمدید، پیامک، دامنه" aria-label="جستجو در راهنما"></div>
+  </div>
+</section>
+<section class="vband">
+  <div class="wrap vband-inner">
+    <div class="vband-text">
+      <span class="badge-new">جدید</span>
+      <h2>آموزش‌های ویدیویی</h2>
+      <p>{{ video_count|fa }} ویدیوی کوتاه زیر یک دقیقه؛ هر امکان را یک بار ببینید و خیالتان راحت شود.</p>
+      <a class="btn" href="{% url 'main:help_videos' %}">دیدن همه ویدیوها</a>
+    </div>
+    <ul class="vband-list">
+      {% for v in videos %}<li><a href="{% url 'main:help_videos' %}#{{ v.anchor }}"><span class="vthumb"><img src="{% static v.poster %}" alt="" loading="lazy"><i aria-hidden="true"></i></span><span>{{ v.title }}</span></a></li>{% endfor %}
+    </ul>
   </div>
 </section>
 <section class="help-index">

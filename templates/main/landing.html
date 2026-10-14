@@ -5,6 +5,7 @@
 {% block head_extra %}
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@graph": [
+  {"@type": "VideoObject", "name": "CRM بیمه در ۴۵ ثانیه", "description": "معرفی سایت فروش و پنل کامل دفتر نمایندگی بیمه: استعلام آنلاین، داشبورد، تمدید و پیامک خودکار، خسارت، اقساط و دامنه اختصاصی.", "thumbnailUrl": "{{ PLATFORM_URL }}{% static 'video/promo.jpg' %}", "contentUrl": "{{ PLATFORM_URL }}{% static 'video/promo.mp4' %}", "uploadDate": "2026-10-14", "duration": "PT44S", "inLanguage": "fa"},
   {"@type": "Organization", "@id": "{{ PLATFORM_URL }}/#org", "name": "CRM بیمه", "alternateName": ["bimcrm", "سی آر ام بیمه"], "url": "{{ PLATFORM_URL }}/", "logo": "{{ PLATFORM_URL }}{% static 'img/icon-512.png' %}"{% if platform.support_phone %}, "telephone": "{{ platform.support_phone|escapejs }}"{% endif %}},
   {"@type": "WebSite", "@id": "{{ PLATFORM_URL }}/#site", "name": "CRM بیمه", "url": "{{ PLATFORM_URL }}/", "inLanguage": "fa-IR", "publisher": {"@id": "{{ PLATFORM_URL }}/#org"}},
   {"@type": "SoftwareApplication", "name": "CRM بیمه", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "url": "{{ PLATFORM_URL }}/",
@@ -92,6 +93,21 @@
       {% for c in companies %}<li>{{ c.name }}</li>{% endfor %}
     </ul>
     {% endif %}
+  </div>
+</section>
+
+{# ── Promo video ── #}
+<section class="promo" aria-labelledby="promo-title">
+  <div class="wrap">
+    <div class="promo-head">
+      <h2 id="promo-title">CRM بیمه در ۴۵ ثانیه</h2>
+      <p>سایت فروش، داشبورد دفتر، تمدید و پیامک خودکار، خسارت، اقساط و دامنه اختصاصی؛ همه را یک‌جا ببینید.</p>
+    </div>
+    <div class="promo-frame vwrap">
+      <video preload="none" playsinline poster="{% static 'video/promo.jpg' %}"><source src="{% static 'video/promo.mp4' %}" type="video/mp4"></video>
+      <button class="vplay vplay-lg" type="button" data-play aria-label="پخش ویدیوی معرفی"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></button>
+    </div>
+    <p class="promo-more"><a href="{{ PLATFORM_URL }}/help/videos/">۱۰ آموزش ویدیویی کوتاه برای هر امکان ←</a></p>
   </div>
 </section>
 

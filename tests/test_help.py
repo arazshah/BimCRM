@@ -89,3 +89,24 @@ def test_saving_site_content_keeps_template_colour_unless_changed(client, tenant
     assert resp.status_code == 302, resp.content.decode()[:500]
     site.refresh_from_db()
     assert site.hero_title == "دفتر من" and site.primary_color == stored
+
+
+@pytest.mark.django_db
+def test_video_pages_and_embeds(client):
+    from pathlib import Path
+
+    from django.conf import settings
+
+    from apps.main.help import PROMO, VIDEOS
+
+    for v in [PROMO, *VIDEOS]:
+        for rel in (v.src, v.poster):
+            assert (Path(settings.BASE_DIR) / "static" / rel).is_file(), rel
+    page = client.get("/help/videos/", HTTP_HOST=MAIN).content.decode()
+    assert page.count("<video") == len(VIDEOS) and '"@type":"VideoObject"' in page
+    assert "help-02-sms.mp4" in client.get("/help/sms/", HTTP_HOST=MAIN).content.decode()
+    assert "<video" not in client.get("/help/team/", HTTP_HOST=MAIN).content.decode()
+    assert "/help/videos/" in client.get("/help/", HTTP_HOST=MAIN).content.decode()
+    landing = client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert "video/promo.mp4" in landing and "data-play" in landing
+    assert "/help/videos/" in client.get("/sitemap.xml", HTTP_HOST=MAIN).content.decode()

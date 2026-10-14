@@ -81,6 +81,14 @@
     </div>
     <div class="wrap footer-base">© CRM بیمه، {{ PLATFORM_DOMAIN }}</div>
   </footer>
+  <script>
+  // Videos: custom play button first; native controls only after play, and one video at a time.
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-play]"); if (!b) return;
+    const v = b.parentElement.querySelector("video"); v.controls = true; b.remove(); v.play();
+  });
+  document.addEventListener("play", e => { document.querySelectorAll("video").forEach(v => { if (v !== e.target) v.pause(); }); }, true);
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

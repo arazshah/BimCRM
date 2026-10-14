@@ -71,3 +71,52 @@ def neighbours(slug: str):
 
 def section_of(slug: str) -> str:
     return next(name for name, items in SECTIONS for a in items if a.slug == slug)
+
+
+@dataclass(frozen=True)
+class Video:
+    num: int
+    file: str
+    title: str
+    summary: str
+    article: str
+    seconds: int
+
+    @property
+    def src(self) -> str:
+        return f"video/{self.file}.mp4"
+
+    @property
+    def poster(self) -> str:
+        return f"video/{self.file}.jpg"
+
+    @property
+    def anchor(self) -> str:
+        return f"v{self.num:02d}"
+
+    @property
+    def iso_duration(self) -> str:
+        return f"PT{self.seconds}S"
+
+
+PROMO = Video(0, "promo", "CRM بیمه در ۴۵ ثانیه", "سایت فروش و پنل کامل دفتر نمایندگی بیمه", "", 45)
+
+VIDEOS = [
+    Video(1, "help-01-start", "ساخت سایت دفتر در ۵ دقیقه", "از انتخاب آدرس تا سایت و پنل آماده", "start", 47),
+    Video(2, "help-02-sms", "اتصال پنل پیامک sms.ir", "ساخت حساب، کلید API و یادآورها", "sms", 43),
+    Video(
+        3, "help-03-renewals", "هیچ تمدیدی از دست نرود", "داشبورد، فیلتر سررسید، تمدید یک‌کلیکی و پیامک", "policies", 41
+    ),
+    Video(4, "help-04-excel", "ورود مشتریان از اکسل", "چهار ستون، ذخیره به CSV و ورود به پنل", "customers", 34),
+    Video(5, "help-05-policies", "ثبت بیمه‌نامه و فایل آن", "ثبت کامل بیمه‌نامه در پرونده مشتری", "policies", 35),
+    Video(6, "help-06-quotes", "استعلام آنلاین از سایت", "از فرم مشتری تا پیگیری در پنل", "quotes", 40),
+    Video(7, "help-07-domain", "دامنه اختصاصی", "خرید و راه‌اندازی توسط ما، یا اتصال با NS", "domain", 36),
+    Video(8, "help-08-installments", "اقساط و چک‌ها", "تقسیط، وصول و خلاصه مالی ماه", "finance", 35),
+    Video(9, "help-09-claims", "پیگیری پرونده خسارت", "مرحله‌به‌مرحله با پیامک خودکار به مشتری", "claims", 34),
+    Video(10, "help-10-site", "محتوا و قالب سایت", "متن‌ها، انتشار و پنج قالب آماده", "site-content", 35),
+]
+
+
+def videos_for(slug: str):
+    extra = {"templates": "site-content"}
+    return [v for v in VIDEOS if v.article == extra.get(slug, slug)]
