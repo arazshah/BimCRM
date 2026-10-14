@@ -27,31 +27,39 @@
 <section class="hero" id="start">
   <div class="wrap hero-grid">
     <div class="hero-copy">
-      <p class="hero-kicker">برای نماینده‌های همه شرکت‌های بیمه</p>
-      <h1>سایت، پنل و حساب‌وکتاب دفتر بیمه‌تان، یک‌جا و آنلاین</h1>
-      <p class="lead">آدرس سایتتان را بنویسید. چند دقیقه بعد سایت فروش با فرم استعلام، پرونده مشتری‌ها و بیمه‌نامه‌ها، یادآور تمدید و پنل مشتری آماده است. مالی، خسارت، شعبه‌ها و بازاریاب‌ها را هم هر وقت لازم شد اضافه می‌کنید.</p>
+      <p class="hero-kicker">برای نماینده‌های بیمه، از هر شرکتی</p>
+      <h1>دفتر بیمه‌تان را در <span class="hl">۵ دقیقه</span> آنلاین کنید</h1>
+      <p class="lead">یک <strong>سایت</strong> که مشتری از آن استعلام می‌گیرد، و یک <strong>پنل</strong> که شما مشتری‌ها، بیمه‌نامه‌ها و تمدیدها را از آن می‌گردانید. بدون نصب و برنامه‌نویس.</p>
+
+      <ol class="hero-steps" aria-label="سه قدم تا سایت آماده">
+        <li class="on"><b>۱</b>آدرس سایت را بنویسید</li>
+        <li><b>۲</b>با موبایل وارد شوید</li>
+        <li><b>۳</b>سایت و پنل آماده است</li>
+      </ol>
 
       <form class="claim" action="{% url 'main:login' %}" method="get" id="claim-form" novalidate>
-        <label class="claim-label" for="claim-slug">آدرس سایت دفترتان</label>
+        <label class="claim-label" for="claim-slug">آدرس سایت دفترتان؛ یک نام انگلیسی کوتاه</label>
         <div class="claim-row">
           <div class="claim-input" dir="ltr">
             <input id="claim-slug" name="slug" type="text" inputmode="url" autocomplete="off" spellcheck="false"
                    autocapitalize="off" placeholder="alborz1234" maxlength="30" aria-describedby="claim-status">
             <span class="claim-suffix">.{{ PLATFORM_DOMAIN }}</span>
           </div>
-          <button class="btn claim-btn" type="submit">شروع {{ platform.trial_days|fa }} روز رایگان</button>
+          <button class="btn claim-btn" type="submit">ساخت رایگان سایتم</button>
         </div>
-        <p class="claim-status" id="claim-status" aria-live="polite">حروف کوچک انگلیسی، عدد و خط تیره</p>
+        <p class="claim-status" id="claim-status" aria-live="polite">مثلاً نام دفتر یا کد نمایندگی؛ بعداً دامنه ir خودتان را هم وصل می‌کنید.</p>
         <input type="hidden" name="next" id="claim-next" value="/signup/">
       </form>
       <ul class="hero-facts">
-        <li>ثبت‌نام با شماره موبایل</li>
+        <li>{{ platform.trial_days|fa }} روز رایگان</li>
         <li>بدون کارت بانکی</li>
-        <li>اتصال دامنه ir خودتان</li>
+        <li>ثبت‌نام فقط با موبایل</li>
       </ul>
+      <a class="hero-watch" href="#promo-title"><span aria-hidden="true">▶</span>ببینید چطور کار می‌کند؛ کمتر از یک دقیقه</a>
     </div>
 
     <div class="hero-visual" aria-hidden="true">
+      <span class="mock-tag mt-site"><b>۱</b>سایت شما: مشتری‌ها از اینجا استعلام می‌گیرند</span>
       <div class="win win-site">
         <div class="win-bar"><i></i><i></i><i></i><span class="win-url" dir="ltr">https://<b id="mock-slug">alborz1234</b>.{{ PLATFORM_DOMAIN }}</span></div>
         <div class="ms">
@@ -70,6 +78,7 @@
           </div>
         </div>
       </div>
+      <span class="mock-tag mt-panel"><b>۲</b>پنل شما: تمدیدها و پیگیری‌ها</span>
       <div class="win win-panel">
         <div class="mp-head"><strong>تمدیدهای این هفته</strong><span class="mp-count">۷</span></div>
         <ul class="mp-list">
@@ -451,13 +460,16 @@
     mock.textContent = input.value || "alborz1234";
     clearTimeout(timer);
     status.className = "claim-status";
-    if (input.value.length < 3) { status.textContent = "حروف کوچک انگلیسی، عدد و خط تیره"; return; }
+    const steps = document.querySelectorAll(".hero-steps li");
+    steps[0].classList.remove("done"); steps[1].classList.remove("on");
+    if (input.value.length < 3) { status.textContent = "فقط حروف کوچک انگلیسی، عدد و خط تیره؛ حداقل ۳ حرف."; return; }
     timer = setTimeout(async () => {
       try {
         const r = await fetch("{% url 'main:check_slug' %}?slug=" + encodeURIComponent(input.value));
         const d = await r.json();
-        status.textContent = d.ok ? input.value + ".{{ PLATFORM_DOMAIN }} آزاد است." : d.message;
+        status.textContent = d.ok ? "✓ " + input.value + ".{{ PLATFORM_DOMAIN }} آزاد است." : d.message;
         status.className = "claim-status " + (d.ok ? "ok" : "bad");
+        if (d.ok) { steps[0].classList.add("done"); steps[1].classList.add("on"); status.textContent += " حالا «ساخت رایگان سایتم» را بزنید."; }
       } catch (e) { status.textContent = ""; }
     }, 300);
   });
