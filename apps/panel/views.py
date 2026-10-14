@@ -392,13 +392,26 @@ def quote_detail(request, pk):
             quote.save()
             messages.success(request, "درخواست به‌روز شد.")
             return redirect("panel:quotes")
-    return render(request, "panel/quote_detail.html", {"quote": quote, "form": form})
+    from apps.crm.documents import checklist
+
+    from .views_docs import DocumentForm
+
+    return render(
+        request,
+        "panel/quote_detail.html",
+        {
+            "quote": quote,
+            "form": form,
+            "doc_checklist": checklist(quote.customer, [quote.line]),
+            "doc_form": DocumentForm(customer=quote.customer) if quote.customer else None,
+        },
+    )
 
 
 # ---------------- Website ----------------
 
 
-@panel_view()
+@panel_view(perm="site")
 def site_settings(request):
     site = _site(request)
     form = SiteContentForm(request.POST or None, request.FILES or None, instance=site, prefix="s")
@@ -416,7 +429,7 @@ def site_settings(request):
     return render(request, "panel/site.html", {"form": form, "tforms": tforms, "fforms": fforms, "site": site})
 
 
-@panel_view()
+@panel_view(perm="site")
 def site_template(request):
     site = _site(request)
     if request.method == "POST":
@@ -429,7 +442,7 @@ def site_template(request):
     return render(request, "panel/site_template.html", {"site": site, "templates": registry.TEMPLATES})
 
 
-@panel_view(managers_only=True)
+@panel_view(perm="site")
 @require_POST
 def site_publish(request):
     site = _site(request)
@@ -619,6 +632,14 @@ def team(request):
     members = Membership.objects.filter(tenant=request.tenant).select_related("user", "branch")
     sub = request.subscription
     limit = sub.user_limit() if sub else 1
+    if request.method == "POST" and "set_perms" in request.POST:
+        from apps.accounts.models import STAFF_PERMS
+
+        m = get_object_or_404(members, pk=request.POST["set_perms"], role=Membership.Role.STAFF)
+        m.perms = {code: code in request.POST.getlist("perm") for code, _, _ in STAFF_PERMS}
+        m.save(update_fields=["perms"])
+        messages.success(request, f"دسترسی‌های {m.user} ذخیره شد.")
+        return redirect("panel:team")
     if request.method == "POST" and "set_branch" in request.POST:
         m = get_object_or_404(members, pk=request.POST["set_branch"])
         bf = MemberBranchForm(request.POST)
@@ -647,7 +668,13 @@ def team(request):
             messages.success(request, f"{user} اضافه شد؛ با همین موبایل از bimcrm.ir وارد می‌شود.")
         return redirect("panel:team")
     branches = Branch.objects.filter(is_active=True) if "branches" in request.features else None
-    return render(request, "panel/team.html", {"members": members, "form": form, "limit": limit, "branches": branches})
+    from apps.accounts.models import STAFF_PERMS
+
+    return render(
+        request,
+        "panel/team.html",
+        {"members": members, "form": form, "limit": limit, "branches": branches, "staff_perms": STAFF_PERMS},
+    )
 
 
 # ---------------- Branches (add-on) ----------------

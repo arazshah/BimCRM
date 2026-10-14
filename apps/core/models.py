@@ -339,6 +339,14 @@ class LineOfBusiness(models.Model):
         blank=True,
         help_text='فهرست مثل [{"name": "plate", "label": "پلاک", "type": "text"}]',
     )
+    required_docs = models.JSONField(
+        "مدارک لازم",
+        default=list,
+        blank=True,
+        help_text='کد مدارک لازم برای صدور، مثل ["national_card", "car_card", "prev_policy"]. کدها: national_card کارت ملی، '
+        "birth_cert شناسنامه، car_card کارت خودرو، green_sheet برگ سبز، prev_policy بیمه‌نامه قبلی، no_claim تخفیف عدم خسارت، "
+        "car_photos عکس خودرو، property سند ملک، medical مدارک پزشکی، passport گذرنامه، other سایر",
+    )
     is_active = models.BooleanField("فعال", default=True)
     order = models.PositiveIntegerField("ترتیب", default=0)
 

@@ -13,6 +13,7 @@ urlpatterns = [
     path("favicon.ico", views.favicon),
     path("account/", views.account, name="account"),
     path("account/logout/", views.account_logout, name="account_logout"),
+    path("account/documents/", views.account_document_upload, name="account_document_upload"),
     path("account/claims/report/", views.account_claim_report, name="account_claim_report"),
     path("account/claims/<int:claim_id>/upload/", views.account_claim_upload, name="account_claim_upload"),
 ]

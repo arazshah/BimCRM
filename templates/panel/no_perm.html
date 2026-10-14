@@ -1,0 +1,10 @@
+{% extends "panel/base.html" %}
+{% block title %}دسترسی ندارید{% endblock %}
+{% block content %}
+<div class="empty-state card">
+  <svg aria-hidden="true"><use href="#p-shield"/></svg>
+  <h1 class="h2">این بخش برای شما باز نیست</h1>
+  <p>مدیر دفتر می‌تواند از پنل › همکاران › «دسترسی‌های کارمندان» این بخش را برایتان فعال کند.</p>
+  <a class="btn btn-ghost btn-sm" href="{% url 'panel:dashboard' %}">بازگشت به داشبورد</a>
+</div>
+{% endblock %}

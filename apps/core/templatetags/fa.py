@@ -85,3 +85,8 @@ def json_attr(value):
     from django.utils.html import escape
 
     return escape(json.dumps(value or [], ensure_ascii=False))
+
+
+@register.filter
+def perm_on(membership, code):
+    return membership.can(code)

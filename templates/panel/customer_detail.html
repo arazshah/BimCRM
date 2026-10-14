@@ -71,6 +71,29 @@
   </section>
 </div>
 
+
+<section class="panel-box" id="docs">
+  <div class="box-head"><h2 class="h2">مدارک</h2></div>
+  {% if doc_checklist %}
+  <ul class="doc-check" aria-label="مدارک لازم">{% for d in doc_checklist %}<li class="{% if d.ok %}ok{% endif %}" title="لازم برای {{ d.line }}">{% if d.ok %}✓{% else %}○{% endif %} {{ d.label }}</li>{% endfor %}</ul>
+  {% endif %}
+  {% if documents %}
+  <ul class="plain-list doc-list">{% for d in documents %}
+    <li><span><a href="{{ d.file.url }}" target="_blank" rel="noopener"><strong>{{ d.get_kind_display }}</strong></a>{% if d.title %} · {{ d.title }}{% endif %}{% if d.policy %} <span class="tag">{{ d.policy.line }} {{ d.policy.number }}</span>{% endif %}{% if d.by_customer %} <span class="tag ok">فرستاده مشتری</span>{% endif %}
+      <br><span class="muted small">{{ d.created_at|jdate:"time" }}{% if d.uploaded_by %} · {{ d.uploaded_by.full_name|default:d.uploaded_by.mobile }}{% endif %} · {{ d.size|filesizeformat }}</span></span>
+      <form method="post" action="{% url 'panel:document_delete' customer.pk d.pk %}" onsubmit="return confirm('این مدرک حذف شود؟')">{% csrf_token %}<button class="linkish danger" type="submit">حذف</button></form></li>
+  {% endfor %}</ul>
+  {% else %}<p class="empty">مدرکی بارگذاری نشده است.</p>{% endif %}
+  <form method="post" action="{% url 'panel:document_upload' customer.pk %}" enctype="multipart/form-data" class="doc-form" novalidate>
+    {% csrf_token %}
+    <div class="field"><label for="{{ doc_form.kind.id_for_label }}">{{ doc_form.kind.label }}</label>{{ doc_form.kind }}</div>
+    <div class="field"><label for="{{ doc_form.policy.id_for_label }}">{{ doc_form.policy.label }} <span class="optional">(اختیاری)</span></label>{{ doc_form.policy }}</div>
+    <div class="field"><label for="{{ doc_form.title.id_for_label }}">{{ doc_form.title.label }} <span class="optional">(اختیاری)</span></label>{{ doc_form.title }}</div>
+    <div class="field"><label for="{{ doc_form.file.id_for_label }}">{{ doc_form.file.label }}</label><input type="file" name="file" id="{{ doc_form.file.id_for_label }}" accept="image/*,.pdf" required></div>
+    <button class="btn btn-ghost btn-sm" type="submit">بارگذاری مدرک</button>
+  </form>
+</section>
+
 <section class="panel-box">
   <div class="box-head"><h2 class="h2">بیمه‌نامه‌ها</h2><a href="{% url 'panel:policy_new' %}?customer={{ customer.pk }}">ثبت بیمه‌نامه</a></div>
   {% if policies %}

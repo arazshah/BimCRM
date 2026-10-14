@@ -14,6 +14,19 @@
       <td>{% if m.role != "owner" and m.is_active %}<form method="post" action="{% url 'panel:team_remove' m.pk %}">{% csrf_token %}<button class="linkish danger">برداشتن دسترسی</button></form>{% endif %}</td></tr>
   {% endfor %}</tbody>
 </table></div>
+{% with staff=members %}
+<section class="panel-box">
+  <h2 class="h2">دسترسی‌های کارمندان</h2>
+  <p class="muted small">مالک و مدیر به همه بخش‌ها دسترسی دارند. برای هر کارمند تیک بخش‌هایی را که می‌تواند ببیند بزنید.</p>
+  {% for m in staff %}{% if m.role == "staff" and m.is_active %}
+  <form method="post" class="perm-form">{% csrf_token %}<input type="hidden" name="set_perms" value="{{ m.pk }}">
+    <strong>{{ m.user.full_name|default:m.user.mobile }}</strong>
+    <ul class="perm-list">{% for code, label, default in staff_perms %}<li><label><input type="checkbox" name="perm" value="{{ code }}" {% if m|perm_on:code %}checked{% endif %}> {{ label }}</label></li>{% endfor %}</ul>
+    <button class="btn btn-ghost btn-sm" type="submit">ذخیره دسترسی‌ها</button>
+  </form>
+  {% endif %}{% empty %}{% endfor %}
+</section>
+{% endwith %}
 <section class="panel-box">
   <h2 class="h2">افزودن همکار <span class="muted small num">({{ members|length|fa }} از {{ limit|fa }})</span></h2>
   <form method="post" class="inline-form" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">افزودن</button></form>

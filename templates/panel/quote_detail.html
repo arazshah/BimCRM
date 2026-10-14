@@ -17,6 +17,18 @@
     {% else %}
       <form method="post">{% csrf_token %}<button class="btn btn-ghost btn-sm" name="make_customer" value="1">ساخت پرونده مشتری</button></form>
     {% endif %}
+    {% if doc_checklist %}
+    <h3 class="h3">مدارک لازم برای {{ quote.line }}</h3>
+    <ul class="doc-check">{% for d in doc_checklist %}<li class="{% if d.ok %}ok{% endif %}">{% if d.ok %}✓{% else %}○{% endif %} {{ d.label }}</li>{% endfor %}</ul>
+    {% if doc_form %}
+    <form method="post" action="{% url 'panel:document_upload' quote.customer_id %}" enctype="multipart/form-data" class="doc-form doc-form-sm" novalidate>
+      {% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+      <div class="field"><label for="q-kind">نوع مدرک</label><select name="kind" id="q-kind">{% for d in doc_checklist %}{% if not d.ok %}<option value="{{ d.kind }}">{{ d.label }}</option>{% endif %}{% endfor %}<option value="other">سایر</option></select></div>
+      <div class="field"><label for="q-file">فایل</label><input type="file" name="file" id="q-file" accept="image/*,.pdf" required></div>
+      <button class="btn btn-ghost btn-sm" type="submit">بارگذاری</button>
+    </form>
+    {% else %}<p class="muted small">برای بارگذاری مدارک، اول «ساخت پرونده مشتری» را بزنید. مشتری هم می‌تواند از «حساب من» در سایت مدارک را بفرستد.</p>{% endif %}
+    {% endif %}
   </section>
   <section class="panel-box">
     <h2 class="h2">پیگیری</h2>

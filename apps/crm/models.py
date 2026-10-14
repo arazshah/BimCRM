@@ -185,3 +185,51 @@ class QuoteRequest(TenantOwned):
 
     def __str__(self):
         return f"{self.line} — {self.full_name}"
+
+
+class CustomerDocument(TenantOwned):
+    """A customer's paper: ID card, car card, previous policy, endorsement… optionally tied to a policy or a quote."""
+
+    class Kind(models.TextChoices):
+        NATIONAL_CARD = "national_card", "کارت ملی"
+        BIRTH_CERT = "birth_cert", "شناسنامه"
+        CAR_CARD = "car_card", "کارت خودرو"
+        GREEN_SHEET = "green_sheet", "برگ سبز خودرو"
+        PREV_POLICY = "prev_policy", "بیمه‌نامه قبلی"
+        NO_CLAIM = "no_claim", "گواهی تخفیف عدم خسارت"
+        CAR_PHOTOS = "car_photos", "عکس خودرو"
+        PROPERTY = "property", "سند یا اجاره‌نامه ملک"
+        MEDICAL = "medical", "مدارک پزشکی"
+        PASSPORT = "passport", "گذرنامه"
+        ENDORSEMENT = "endorsement", "الحاقیه"
+        POLICY_COPY = "policy_copy", "فایل بیمه‌نامه"
+        OTHER = "other", "سایر"
+
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="documents", verbose_name="مشتری")
+    policy = models.ForeignKey(
+        Policy, null=True, blank=True, on_delete=models.SET_NULL, related_name="documents", verbose_name="بیمه‌نامه"
+    )
+    kind = models.CharField("نوع مدرک", max_length=20, choices=Kind.choices, default=Kind.OTHER)
+    title = models.CharField("توضیح", max_length=120, blank=True)
+    file = models.FileField("فایل", upload_to="documents/%Y/%m/")
+    size = models.PositiveBigIntegerField(default=0, editable=False)
+    by_customer = models.BooleanField("فرستاده مشتری", default=False)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "مدرک مشتری"
+        verbose_name_plural = "مدارک مشتریان"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title or self.get_kind_display()
+
+    def save(self, *args, **kwargs):
+        try:
+            self.size = self.file.size
+        except (OSError, ValueError, AttributeError):
+            pass
+        super().save(*args, **kwargs)

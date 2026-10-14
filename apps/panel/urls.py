@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from . import views_addons as addons
+from . import views_docs as docs
 from . import views_work as work
 
 app_name = "panel"
@@ -15,6 +16,8 @@ urlpatterns = [
     path("customers/<int:pk>/edit/", views.customer_edit, name="customer_edit"),
     path("customers/<int:pk>/activity/", work.activity_add, name="activity_add"),
     path("customers/<int:pk>/sms/", work.customer_sms, name="customer_sms"),
+    path("customers/<int:pk>/documents/", docs.document_upload, name="document_upload"),
+    path("customers/<int:pk>/documents/<int:doc_id>/delete/", docs.document_delete, name="document_delete"),
     path("tasks/", work.tasks, name="tasks"),
     path("tasks/new/", work.task_edit, name="task_new"),
     path("tasks/<int:pk>/edit/", work.task_edit, name="task_edit"),

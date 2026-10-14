@@ -14,6 +14,19 @@
   </table>
   {% else %}<p>بیمه‌نامه‌ای با این موبایل در دفتر ثبت نشده است.</p>{% endif %}
 
+  {% if can_upload_docs %}
+  <h2 id="docs">مدارک</h2>
+  {% if doc_checklist %}<p class="muted">برای صدور سریع‌تر، این مدارک را بفرستید:</p>
+  <ul class="doc-need">{% for d in doc_checklist %}<li class="{% if d.ok %}ok{% endif %}">{% if d.ok %}✓{% else %}○{% endif %} {{ d.label }}</li>{% endfor %}</ul>{% endif %}
+  {% if documents %}<p class="muted small">فرستاده‌شده: {% for d in documents %}{{ d.get_kind_display }}{% if not forloop.last %}، {% endif %}{% endfor %}</p>{% endif %}
+  <form class="upload-row" method="post" action="/account/documents/" enctype="multipart/form-data">
+    {% csrf_token %}
+    <select name="kind" aria-label="نوع مدرک">{% for k, v in doc_kinds %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
+    <input type="file" name="file" accept="image/*,.pdf" required aria-label="فایل">
+    <button class="site-btn" type="submit">فرستادن مدرک</button>
+  </form>
+  {% endif %}
+
   {% if installments %}
   <h2>اقساط پیش رو</h2>
   <table class="acc-table">

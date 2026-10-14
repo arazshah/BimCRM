@@ -219,9 +219,16 @@ def customer_sms(request, pk):
 
 
 def customer_work_context(request, customer):
+    from apps.crm.documents import checklist, customer_lines
+    from apps.crm.models import CustomerDocument
     from apps.integrations.senders import tenant_can_sms
 
+    from .views_docs import DocumentForm
+
     return {
+        "documents": CustomerDocument.objects.filter(customer=customer).select_related("policy__line", "uploaded_by"),
+        "doc_checklist": checklist(customer, customer_lines(customer)),
+        "doc_form": DocumentForm(customer=customer),
         "timeline": customer_timeline(customer),
         "open_tasks": Task.objects.filter(customer=customer, done_at__isnull=True).select_related("assigned_to"),
         "activity_form": ActivityForm(tenant=request.tenant),

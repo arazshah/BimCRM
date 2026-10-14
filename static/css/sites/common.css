@@ -150,3 +150,7 @@ body {
   .s-stats-list > div { border-inline-start: 0; border-top: 1px solid var(--s-line); }
   .s-stats dd { font-size: 28px; }
 }
+.doc-need { list-style: none; padding: 0; margin: .4rem 0 .8rem; display: flex; flex-wrap: wrap; gap: .4rem; }
+.doc-need li { font-size: 13px; border: 1px dashed #c9a24a; color: #7a5a10; background: #fff9ea; border-radius: 99px; padding: .15rem .75rem; }
+.doc-need li.ok { border: 1px solid #9fd8c4; color: #0a5f4f; background: #e3f3ed; }
+.upload-row select { min-width: 0; }
