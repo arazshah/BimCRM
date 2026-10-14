@@ -2,7 +2,6 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from apps.accounts.models import normalize_mobile, validate_mobile
-from apps.billing.models import Package, Period
 from apps.core.models import is_subdomain_available
 from apps.sites import registry
 
@@ -57,19 +56,3 @@ class OfficeForm(forms.Form):
 
 class TemplateForm(forms.Form):
     template = forms.ChoiceField(label="قالب سایت", choices=registry.CHOICES, widget=forms.RadioSelect)
-
-
-class PlanForm(forms.Form):
-    period = forms.ChoiceField(
-        label="دوره پرداخت", choices=Period.choices, widget=forms.RadioSelect, initial=Period.MONTHLY
-    )
-    package = forms.ModelChoiceField(
-        label="پکیج", queryset=Package.objects.none(), widget=forms.RadioSelect, empty_label=None
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["package"].queryset = Package.plans()
-        rec = Package.recommended()
-        if rec and not self.is_bound:
-            self.initial.setdefault("package", rec.pk)

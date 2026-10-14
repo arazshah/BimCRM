@@ -1,5 +1,21 @@
 {% load fa %}{# Plan cards. mode: landing | signup | panel. Prices switch with [data-period] on .prices #}
-<div class="plans-grid">
+<div class="plans-grid{% if mode == "landing" %} with-free{% endif %}">
+  {% if mode == "landing" %}
+  <article class="pcard free">
+    <span class="pc-badge">از اینجا شروع کنید</span>
+    <h3>شروع رایگان</h3>
+    <p class="pc-tag">اول ببینید، بعد تصمیم بگیرید</p>
+    <p class="pc-price pc-free"><b>رایگان</b> <small>{{ platform.trial_days|fa }} روز، بدون پرداخت</small></p>
+    <p class="pc-for"><span>مناسب برای</span>هر نماینده‌ای که می‌خواهد قبل از پرداخت، سایت و پنل خودش را ببیند</p>
+    <ul class="pc-list">
+      <li>سایت واقعی روی آدرس خودتان</li>
+      <li>همه امکانات پکیج پیشنهادی، با مشتری‌های خودتان</li>
+      <li>بدون کارت بانکی و بدون هیچ پرداختی</li>
+      <li>بعد از {{ platform.trial_days|fa }} روز هر پکیجی خواستید؛ <b>اطلاعاتتان می‌ماند</b></li>
+    </ul>
+    <a class="btn btn-block" href="#start">ساخت رایگان سایتم</a>
+  </article>
+  {% endif %}
   {% for c in cards %}{% with p=c.plan %}
   {% if mode == "signup" %}<label class="pcard{% if p.is_recommended %} rec{% endif %}">
     <input type="radio" name="package" value="{{ p.pk }}" {% if form.package.value|stringformat:"s" == p.pk|stringformat:"s" %}checked{% endif %} required>

@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import Membership, normalize_mobile
-from apps.billing.models import Addon, Invoice, Package, Period, StorageTier, SubscriptionItem
+from apps.billing.models import Addon, Invoice, Package, Period, StorageTier, Subscription, SubscriptionItem
 from apps.claims.models import Claim
 from apps.core import jalali
 from apps.core.dns import check_domain
@@ -55,6 +55,18 @@ def _site(request) -> SiteSettings:
 
 
 # ---------------- Dashboard ----------------
+
+
+def _trial_nudge(request):
+    """In the last days of the free trial: how many days are left and which package fits this office."""
+    sub = request.subscription
+    if not sub or sub.status != Subscription.Status.TRIAL or sub.days_left > 5:
+        return None
+    if request.membership.role not in MANAGERS or getattr(request, "live_demo", False):
+        return None
+    from apps.billing import pricing
+
+    return {"days": sub.days_left, **(pricing.suggested_plan(request.tenant) or {})}
 
 
 @panel_view()
@@ -160,6 +172,7 @@ def dashboard(request):
             "trend_peak": peak,
             "pipeline": pipeline,
             "checklist": checklist,
+            "trial_nudge": _trial_nudge(request),
             "alerts": alerts,
             "checklist_done": sum(1 for c in checklist if c[1]),
             "welcome": request.GET.get("welcome"),
@@ -837,6 +850,9 @@ def billing(request):
             "compare": pricing.comparison(plans),
             "current": sub.package if sub else None,
             "cheaper": pricing.cheaper_plan(sub) if sub else None,
+            "suggested": pricing.suggested_plan(request.tenant)
+            if sub and sub.status != Subscription.Status.ACTIVE
+            else None,
             "tiers": [
                 (t, max(0, t.monthly_price - base_price))
                 for t in StorageTier.objects.filter(is_active=True, storage_mb__gte=base_mb).order_by("storage_mb")

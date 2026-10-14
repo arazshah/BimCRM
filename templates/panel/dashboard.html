@@ -38,6 +38,16 @@
 
 {% if alerts %}<ul class="alerts">{% for text, url, q in alerts %}<li><a href="{% url url %}{{ q }}"><svg aria-hidden="true"><use href="#p-bell"/></svg>{{ text|fa }}</a></li>{% endfor %}</ul>{% endif %}
 
+{% if trial_nudge %}
+<section class="trial-nudge" aria-label="دوره رایگان">
+  <div>
+    <strong>{% if trial_nudge.days %}{{ trial_nudge.days|fa }} روز از دورهٔ رایگان مانده{% else %}امروز آخرین روز دورهٔ رایگان است{% endif %}</strong>
+    {% if trial_nudge.plan %}<span>پکیج مناسب دفتر شما: <b>«{{ trial_nudge.plan.name }}»</b>، ماهی {{ trial_nudge.plan.monthly_price|toman }} تومان{% if trial_nudge.reasons %}؛ چون {{ trial_nudge.reasons|join:"، " }}{% endif %}.</span>{% endif %}
+    <span class="muted">اطلاعات و سایتتان پاک نمی‌شود.</span>
+  </div>
+  <a class="btn" href="{% url 'panel:billing' %}">انتخاب پکیج</a>
+</section>
+{% endif %}
 <section class="kpis" aria-label="خلاصه">
   <a class="kpi" href="{% url 'panel:policies' %}">
     <span class="kpi-label"><span class="kpi-ico k-green"><svg aria-hidden="true"><use href="#p-wallet"/></svg></span>حق بیمه این ماه</span>

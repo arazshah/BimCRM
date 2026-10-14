@@ -135,3 +135,38 @@ def cheaper_plan(sub):
     if best is None:
         return None
     return {"plan": best[0], "saving": current - best[1]}
+
+
+# What an office did during its trial, and the add-on each use belongs to.
+USAGE_SIGNS = [
+    ("finance", "finance.Installment", "قسط و چک ثبت کردید"),
+    ("finance", "finance.LedgerEntry", "درآمد و هزینه نوشتید"),
+    ("claims", "claims.Claim", "پرونده خسارت داشتید"),
+    ("sms_campaigns", "messaging.Campaign", "کمپین پیامکی ساختید"),
+    ("branches", "crm.Branch", "شعبه تعریف کردید"),
+    ("marketers", "network.Marketer", "بازاریاب دارید"),
+]
+
+
+def suggested_plan(tenant):
+    """The cheapest plan that covers what this office actually used, with the reasons in plain words."""
+    from django.apps import apps
+
+    from apps.accounts.models import Membership
+    from apps.core.tenancy import tenant_context
+
+    used, reasons = set(), []
+    with tenant_context(tenant):
+        for code, label, why in USAGE_SIGNS:
+            if apps.get_model(label).objects.exists():
+                if code not in used:
+                    reasons.append(why)
+                used.add(code)
+    users = Membership.objects.filter(tenant=tenant, is_active=True).count()
+    if users > 1:
+        reasons.append(f"{users} نفر در پنل کار می‌کنید".translate(str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")))
+    for plan in Package.plans().order_by("monthly_price"):
+        if used <= plan.included_codes() and users <= plan.included_users:
+            return {"plan": plan, "reasons": reasons}
+    plan = Package.plans().order_by("-monthly_price").first()
+    return {"plan": plan, "reasons": reasons} if plan else None

@@ -9,7 +9,8 @@
     <span class="tag {% if sub.status == 'active' %}ok{% elif sub.status == 'trial' %}warm{% else %}hot{% endif %}">{{ sub.get_status_display }}</span>
     <h2>پکیج {{ sub.package.name }}</h2>
     {% if sub.package.tagline %}<p class="plan-tagline">{{ sub.package.tagline }}</p>{% endif %}
-    <p>اعتبار تا <strong>{{ sub.current_period_end|jdate:"long" }}</strong> <span class="plan-days">({{ sub.days_left|fa }} روز مانده)</span></p>
+    <p>{% if sub.status == 'trial' %}دورهٔ رایگان تا{% else %}اعتبار تا{% endif %} <strong>{{ sub.current_period_end|jdate:"long" }}</strong> <span class="plan-days">({{ sub.days_left|fa }} روز مانده)</span></p>
+    {% if sub.status == 'trial' %}<p class="plan-note">الان در دورهٔ رایگان هستید و همه امکانات این پکیج باز است. هر وقت آماده بودید یکی از پکیج‌ها را انتخاب و پرداخت کنید؛ اطلاعات و سایتتان دست نمی‌خورد.</p>{% endif %}
     {% if can_manage %}
       {% if online %}
       <div class="pay-row">
@@ -36,6 +37,17 @@
     <div class="meter" role="progressbar" aria-valuenow="{{ used|percent_of:sub.storage_limit_bytes }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ used|percent_of:sub.storage_limit_bytes }}%"></span></div>
   </div>
 </section>
+
+{% if suggested and suggested.plan and can_manage %}
+<section class="suggest-plan" aria-label="پیشنهاد پکیج">
+  <div>
+    <span class="sp-label">پیشنهاد ما برای دفتر شما</span>
+    <strong>«{{ suggested.plan.name }}»، ماهی {{ suggested.plan.monthly_price|toman }} تومان</strong>
+    {% if suggested.reasons %}<span>چون {{ suggested.reasons|join:"، " }}.</span>{% else %}<span>برای شروع کافی است؛ هر وقت لازم شد بالاتر بروید.</span>{% endif %}
+  </div>
+  {% if current.pk != suggested.plan.pk %}<form method="post">{% csrf_token %}<input type="hidden" name="change_plan" value="{{ suggested.plan.pk }}"><button class="btn" type="submit">انتخاب «{{ suggested.plan.name }}»</button></form>{% else %}<span class="pc-current">همین پکیج فعلی شماست</span>{% endif %}
+</section>
+{% endif %}
 
 {% if can_manage and not online and not open_order %}
 <section class="renew card" id="renew" aria-labelledby="renew-title">
@@ -79,7 +91,7 @@
 <section class="panel-box plans-box" id="plans" aria-labelledby="plans-title">
   <h2 class="h2" id="plans-title">پکیج‌ها</h2>
   <p class="muted small">امکانات اصلی در هر سه هست. با تغییر پکیج هیچ اطلاعاتی از بین نمی‌رود؛ مبلغ جدید از تمدید بعدی حساب می‌شود.</p>
-  {% if cheaper and can_manage %}<div class="saving-tip">
+  {% if cheaper and can_manage and suggested.plan != cheaper.plan %}<div class="saving-tip">
     <div><strong>صرفه‌جویی ماهانه {{ cheaper.saving|toman }} تومان</strong><span>امکاناتی که الان دارید همه در پکیج «{{ cheaper.plan.name }}» هست؛ با تغییر پکیج همین‌ها را ارزان‌تر دارید.</span></div>
     <form method="post">{% csrf_token %}<input type="hidden" name="change_plan" value="{{ cheaper.plan.pk }}"><button class="btn btn-sm" type="submit">تغییر به «{{ cheaper.plan.name }}»</button></form>
   </div>{% endif %}

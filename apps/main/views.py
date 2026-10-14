@@ -20,7 +20,7 @@ from apps.core.models import InsuranceCompany, PlatformSettings, Tenant, is_subd
 from apps.sites import registry
 from apps.sites.demo import demo_context
 
-from .forms import CodeForm, MobileForm, OfficeForm, PlanForm, TemplateForm
+from .forms import CodeForm, MobileForm, OfficeForm, TemplateForm
 
 User = get_user_model()
 WIZARD_KEY = "signup_wizard"
@@ -185,30 +185,15 @@ def signup(request):
 
 @login_required
 def signup_template(request):
+    """Last step: pick a look, and the site and panel are created on the spot.
+
+    No package or price is asked for here. Every office starts a free trial on the recommended package, so the
+    agent sees the whole product working with their own data first and chooses a package in the panel later.
+    """
     data = _wizard(request)
     if "slug" not in data:
         return redirect("main:signup")
     form = TemplateForm(request.POST or None, initial={"template": data.get("template", "modern")})
-    if request.method == "POST" and form.is_valid():
-        data["template"] = form.cleaned_data["template"]
-        request.session.modified = True
-        return redirect("main:signup_plan")
-    return render(
-        request,
-        "main/signup_template.html",
-        {"form": form, "step": 2, "templates": registry.TEMPLATES, "slug": data["slug"]},
-    )
-
-
-@login_required
-def signup_plan(request):
-    data = _wizard(request)
-    if "template" not in data:
-        return redirect("main:signup_template")
-    form = PlanForm(request.POST or None)
-    if not form.fields["package"].queryset.exists():
-        messages.error(request, "پکیج‌ها هنوز تعریف نشده‌اند. با پشتیبانی تماس بگیرید.")
-        return redirect("main:landing")
     if request.method == "POST" and form.is_valid():
         ok, msg = is_subdomain_available(data["slug"])
         if not ok:
@@ -218,22 +203,30 @@ def signup_plan(request):
             owner=request.user,
             name=data["name"],
             slug=data["slug"],
-            template=data["template"],
-            package=form.cleaned_data["package"],
-            period=form.cleaned_data["period"],
+            template=form.cleaned_data["template"],
+            package=Package.recommended(),
+            period="monthly",
         )
         request.session.pop(WIZARD_KEY, None)
         return redirect(tenant.panel_url() + "?welcome=1")
     return render(
         request,
-        "main/signup_plan.html",
+        "main/signup_template.html",
         {
             "form": form,
-            "step": 3,
-            **_pricing(),
+            "step": 2,
+            "templates": registry.TEMPLATES,
+            "slug": data["slug"],
             "platform": PlatformSettings.load(),
+            "trial_plan": Package.recommended(),
         },
     )
+
+
+@login_required
+def signup_plan(request):
+    """Old third step (choosing a package). Packages are now chosen in the panel after the free trial."""
+    return redirect("main:signup_template")
 
 
 # ---------- Paying for a subscription (Zarinpal) ----------
