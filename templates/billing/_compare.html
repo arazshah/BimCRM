@@ -1,0 +1,12 @@
+{% load fa %}<details class="compare"{% if open %} open{% endif %}>
+  <summary>مقایسه کامل پکیج‌ها</summary>
+  <div class="compare-wrap"><table class="compare-table">
+    <thead><tr><th scope="col"></th>{% for p in plans %}<th scope="col"{% if p.is_recommended %} class="rec"{% endif %}>{{ p.name }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      {% for r in compare %}<tr>
+        <th scope="row">{{ r.label }}<small>{{ r.hint }}</small></th>
+        {% for cell in r.cells %}<td>{% if cell.ok %}{% if cell.text %}<b>{{ cell.text|fa }}</b>{% else %}<i class="yes" aria-label="دارد">✓</i>{% endif %}{% else %}<span class="no" aria-label="ندارد">—</span>{% if cell.price %}<small>جداگانه {{ cell.price|toman }} در ماه</small>{% endif %}{% endif %}</td>{% endfor %}
+      </tr>{% endfor %}
+    </tbody>
+  </table></div>
+</details>

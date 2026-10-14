@@ -14,7 +14,7 @@ from django.views.decorators.http import require_GET, require_POST
 from apps.accounts.otp import OTPError, issue_code, verify_code
 from apps.accounts.sms import SmsError, send_platform_otp
 from apps.billing import zarinpal
-from apps.billing.models import Addon, Invoice, Package, Period, StorageTier, Subscription
+from apps.billing.models import Invoice, Package, Period, Subscription
 from apps.billing.services import create_workspace
 from apps.core.models import InsuranceCompany, PlatformSettings, Tenant, is_subdomain_available
 from apps.sites import registry
@@ -36,13 +36,24 @@ def landing(request):
         "main/landing.html",
         {
             "templates": registry.TEMPLATES,
-            "package": Package.default(),
-            "tiers": StorageTier.objects.filter(is_active=True),
-            "addons": Addon.objects.filter(is_active=True),
+            **_pricing(),
             "platform": PlatformSettings.load(),
             "companies": InsuranceCompany.objects.filter(is_active=True),
         },
     )
+
+
+def _pricing():
+    from apps.billing import pricing
+
+    plans = list(Package.plans())
+    return {
+        "plans": plans,
+        "cards": pricing.plan_cards(plans),
+        "compare": pricing.comparison(plans),
+        "extras": pricing.extras(),
+        "price_faq": pricing.FAQ,
+    }
 
 
 @xframe_options_sameorigin
@@ -189,9 +200,8 @@ def signup_plan(request):
     data = _wizard(request)
     if "template" not in data:
         return redirect("main:signup_template")
-    package = Package.default()
     form = PlanForm(request.POST or None)
-    if package is None or not form.fields["storage_tier"].queryset.exists():
+    if not form.fields["package"].queryset.exists():
         messages.error(request, "پکیج‌ها هنوز تعریف نشده‌اند. با پشتیبانی تماس بگیرید.")
         return redirect("main:landing")
     if request.method == "POST" and form.is_valid():
@@ -204,8 +214,7 @@ def signup_plan(request):
             name=data["name"],
             slug=data["slug"],
             template=data["template"],
-            storage_tier=form.cleaned_data["storage_tier"],
-            addons=form.selected_addons(),
+            package=form.cleaned_data["package"],
             period=form.cleaned_data["period"],
         )
         request.session.pop(WIZARD_KEY, None)
@@ -216,7 +225,7 @@ def signup_plan(request):
         {
             "form": form,
             "step": 3,
-            "package": package,
+            **_pricing(),
             "platform": PlatformSettings.load(),
         },
     )

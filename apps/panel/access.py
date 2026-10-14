@@ -9,7 +9,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, render
 
 from apps.accounts.models import Membership
-from apps.billing.models import Addon
+from apps.billing.models import Addon, Package
 from apps.core.models import Tenant
 
 MANAGERS = (Membership.Role.OWNER, Membership.Role.MANAGER)
@@ -50,6 +50,7 @@ def panel_view(*, write_ok_when_expired=False, managers_only=False, feature=None
             )
             request.subscription = getattr(tenant, "subscription", None)
             request.features = request.subscription.active_addon_codes() if request.subscription else set()
+            request.plan_for = _plan_names()
             # Staff assigned to a branch only see that branch's records (branches add-on).
             request.branch_scope = (
                 membership.branch
@@ -65,7 +66,8 @@ def panel_view(*, write_ok_when_expired=False, managers_only=False, feature=None
                 return HttpResponseForbidden("این بخش برای کل دفتر است و کارمندان شعبه به آن دسترسی ندارند.")
             if feature and feature not in request.features:
                 addon = Addon.objects.filter(code=feature).first()
-                return render(request, "panel/feature_locked.html", {"addon": addon}, status=402)
+                plan = Package.cheapest_with(feature)
+                return render(request, "panel/feature_locked.html", {"addon": addon, "plan": plan}, status=402)
             sub = request.subscription
             if request.method == "POST" and sub and not sub.is_writable and not write_ok_when_expired:
                 messages.error(request, "اشتراک منقضی شده و محیط فقط‌خواندنی است. از بخش اشتراک تمدید کنید.")
@@ -116,3 +118,12 @@ def branch_filter(request) -> dict:
     from apps.crm.models import Branch
 
     return {"branches": Branch.objects.filter(is_active=True), "b": request.GET.get("b", "")}
+
+
+def _plan_names() -> dict[str, str]:
+    """For each add-on, the cheapest plan that includes it, so locked menu items can say where to find them."""
+    names: dict[str, str] = {}
+    for plan in Package.plans().order_by("monthly_price"):
+        for code in plan.included_codes():
+            names.setdefault(code, plan.name)
+    return names

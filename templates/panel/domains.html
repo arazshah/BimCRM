@@ -47,7 +47,7 @@
   {% if domains|length < limit %}
   <form method="post" class="inline-form" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">افزودن دامنه</button></form>
   {% else %}
-  <p class="muted">سقف دامنه اشتراک شما ({{ limit|fa }}) پر است. برای دامنه بیشتر، افزونه «دامنه اضافه» را از <a href="{% url 'panel:billing' %}">اشتراک</a> اضافه کنید.</p>
+  <p class="muted">سقف دامنه اشتراک شما ({{ limit|fa }}) پر است. برای دامنه بیشتر، از <a href="{% url 'panel:billing' %}#extras">اشتراک › اضافه بر پکیج</a> «دامنه اضافه» بگیرید.</p>
   {% endif %}
 </section>
 

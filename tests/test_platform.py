@@ -123,20 +123,19 @@ def test_signup_flow_creates_workspace_with_trial(client, monkeypatch):
     resp = client.post("/signup/", {"name": "نمایندگی تست", "full_name": "علی", "slug": "test-agency"}, HTTP_HOST=MAIN)
     assert resp.status_code == 302
     client.post("/signup/template/", {"template": "khodro"}, HTTP_HOST=MAIN)
-    from apps.billing.models import Addon, StorageTier
+    from apps.billing.models import Addon, Package
 
-    tier = StorageTier.objects.order_by("order")[1]
-    resp = client.post(
-        "/signup/plan/",
-        {"period": "yearly", "storage_tier": tier.pk, "addon_finance": "on", "addon_extra_user": "2"},
-        HTTP_HOST=MAIN,
-    )
+    page = client.get("/signup/plan/", HTTP_HOST=MAIN).content.decode()
+    pro = Package.objects.get(name="حرفه‌ای")
+    assert page.count('name="package"') == 3 and "پیشنهاد ما" in page
+    resp = client.post("/signup/plan/", {"period": "yearly", "package": pro.pk}, HTTP_HOST=MAIN)
     tenant = Tenant.objects.get(slug="test-agency")
     assert resp.status_code == 302 and resp["Location"].startswith(f"http://test-agency.{MAIN}/panel/")
     sub = tenant.subscription
-    assert sub.status == Subscription.Status.TRIAL and sub.storage_tier == tier and sub.period == "yearly"
-    assert sub.active_addon_codes() == {"finance", "extra_user"}
-    assert sub.user_limit() == 1 + 2
+    assert sub.status == Subscription.Status.TRIAL and sub.package == pro and sub.period == "yearly"
+    assert sub.storage_tier == pro.storage_tier
+    assert sub.active_addon_codes() == {"finance", "claims", "sms_campaigns", "advanced_reports"}
+    assert sub.user_limit() == 3 and sub.renewal_amount("yearly") == pro.yearly_price
     assert SiteSettings.all_objects.get(tenant=tenant).template == "khodro"
     assert Membership.objects.get(tenant=tenant).role == "owner"
     assert User.objects.get(mobile="09121112233").full_name == "علی"

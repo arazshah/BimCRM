@@ -18,13 +18,14 @@ from .models import Invoice, Period, Subscription
 def order_lines(sub: Subscription, period: str) -> list[dict]:
     """The pre-invoice rows, frozen at order time so later price changes don't rewrite it."""
     label = Period(period).label
-    rows = [{"title": f"{sub.package.name} ({label})", "qty": 1, "amount": sub.package.price_for(period)}]
-    tier_price = sub.storage_tier.price_for(period)
-    rows.append({"title": f"فضای ذخیره: {sub.storage_tier.name}", "qty": 1, "amount": tier_price})
-    for item in sub.items.select_related("addon").order_by("addon__order"):
+    rows = [{"title": f"پکیج {sub.package.name} ({label})", "qty": 1, "amount": sub.package.price_for(period)}]
+    storage = sub.storage_extra_price(period)
+    if storage:
+        rows.append({"title": f"فضای بیشتر: {sub.storage_tier.storage_label}", "qty": 1, "amount": storage})
+    for item in sub.extra_items():
         rows.append(
             {
-                "title": f"افزونه {item.addon.name}",
+                "title": item.addon.name,
                 "qty": item.quantity,
                 "amount": item.addon.price_for(period) * item.quantity,
             }
