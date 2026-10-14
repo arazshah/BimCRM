@@ -144,3 +144,47 @@ def test_notifications_page_marks_read(client, tenant, owner):
     assert client.get(f"/panel/notifications/{n.pk}/", HTTP_HOST=host(tenant)).url == "/panel/tasks/"
     n.refresh_from_db()
     assert n.read_at
+
+
+def test_team_report_and_first_response(client, tenant, owner, staff):
+    from apps.billing.models import Addon, SubscriptionItem
+
+    for code in ("advanced_reports", "claims"):
+        SubscriptionItem.objects.get_or_create(subscription=tenant.subscription, addon=Addon.objects.get(code=code))
+    site = SiteSettings.all_objects.get(tenant=tenant)
+    site.is_published = True
+    site.save()
+    site.lines.set(LineOfBusiness.objects.filter(slug="third-party"))
+    client.post(
+        "/quote/", {"line": "third-party", "full_name": "سارا", "mobile": "09127778888"}, HTTP_HOST=host(tenant)
+    )
+    q = QuoteRequest.all_objects.get(tenant=tenant)
+    client.force_login(owner)
+    client.post(f"/panel/quotes/{q.pk}/", {"status": "contacted", "assigned_to": staff.pk}, HTTP_HOST=host(tenant))
+    q.refresh_from_db()
+    assert q.first_contact_at is not None
+    assert Task.all_objects.get(tenant=tenant, auto_key=f"quote:{q.pk}").done_at is not None
+    from apps.crm.models import Customer as C
+
+    with tenant_context(tenant):
+        c = C.objects.create(full_name="x", mobile="09121112233")
+    resp = client.post(
+        "/panel/policies/new/",
+        {
+            "customer": c.pk,
+            "line": LineOfBusiness.objects.get(slug="third-party").pk,
+            "company": 1,
+            "number": "N1",
+            "start_date": "2026-01-01",
+            "end_date": "2027-01-01",
+            "premium": 5000000,
+            "status": "active",
+        },
+        HTTP_HOST=host(tenant),
+    )
+    assert resp.status_code == 302
+    from apps.crm.models import Policy
+
+    assert Policy.all_objects.get(number="N1").created_by == owner
+    page = client.get("/panel/reports/team/", HTTP_HOST=host(tenant)).content.decode()
+    assert "عملکرد همکاران" in page and "مینا همکار" in page

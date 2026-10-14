@@ -589,3 +589,80 @@ def reports_export(request):
             ]
         )
     return resp
+
+
+@panel_view(feature="advanced_reports", office_wide=True, perm="reports")
+def reports_team(request):
+    """Colleague performance and service quality for one Jalali month."""
+    from django.db.models import Avg
+
+    from apps.accounts.models import Membership
+    from apps.crm.models import QuoteRequest
+    from apps.work.models import Activity, Task
+
+    offset, start, end, label = _month(request)
+    today = timezone.localdate()
+    members = Membership.objects.filter(tenant=request.tenant, is_active=True).select_related("user")
+    rows = []
+    for m in members:
+        u = m.user
+        pol = Policy.objects.filter(created_by=u, created_at__date__gte=start, created_at__date__lt=end)
+        agg = pol.aggregate(n=Count("id"), s=Sum("premium"))
+        q = QuoteRequest.objects.filter(assigned_to=u, created_at__date__gte=start, created_at__date__lt=end)
+        rows.append(
+            {
+                "user": u,
+                "role": m.get_role_display(),
+                "policies": agg["n"] or 0,
+                "premium": agg["s"] or 0,
+                "activities": Activity.objects.filter(
+                    created_by=u, created_at__date__gte=start, created_at__date__lt=end
+                ).count(),
+                "tasks_done": Task.objects.filter(done_by=u, done_at__date__gte=start, done_at__date__lt=end).count(),
+                "tasks_late": Task.objects.filter(assigned_to=u, done_at__isnull=True, due_date__lt=today).count(),
+                "quotes": q.count(),
+                "quotes_issued": q.filter(status="issued").count(),
+            }
+        )
+    rows.sort(key=lambda r: (r["premium"], r["policies"], r["tasks_done"]), reverse=True)
+    peak = max((r["premium"] for r in rows), default=0) or 1
+
+    # Service quality (last 90 days for site requests, last 365 days for claims)
+    since90 = today - timedelta(days=90)
+    answered = QuoteRequest.objects.filter(created_at__date__gte=since90, first_contact_at__isnull=False)
+    avg_first = answered.aggregate(a=Avg(F("first_contact_at") - F("created_at")))["a"]
+    within_day = sum(
+        1
+        for qr in answered.only("created_at", "first_contact_at")
+        if qr.first_contact_at - qr.created_at <= timedelta(hours=24)
+    )
+    total_q = QuoteRequest.objects.filter(created_at__date__gte=since90).count()
+    unanswered = QuoteRequest.objects.filter(status="new", created_at__date__lt=today - timedelta(days=1)).count()
+    durations = []
+    open_old = 0
+    if "claims" in request.features:
+        for c in Claim.objects.filter(status=Claim.Status.PAID, updated_at__date__gte=today - timedelta(days=365)):
+            ev = ClaimEvent.objects.filter(claim=c, status=Claim.Status.PAID).order_by("created_at").first()
+            if ev:
+                durations.append((ev.created_at - c.created_at).days)
+        open_old = (
+            Claim.objects.exclude(status__in=[Claim.Status.PAID, Claim.Status.REJECTED])
+            .filter(created_at__date__lt=today - timedelta(days=30))
+            .count()
+        )
+    service = {
+        "avg_first_hours": (f"{avg_first.total_seconds() / 3600:.1f}".rstrip("0").rstrip(".").replace(".", "٫"))
+        if avg_first
+        else None,
+        "within_day_pct": round(100 * within_day / len(answered)) if len(answered) else None,
+        "quotes_90": total_q,
+        "unanswered": unanswered,
+        "claim_days": round(sum(durations) / len(durations)) if durations else None,
+        "claims_open_old": open_old,
+        "late_tasks": Task.objects.filter(done_at__isnull=True, due_date__lt=today).count(),
+    }
+    return render(
+        request,
+        "panel/reports_team.html",
+        {"rows": rows, "peak": peak, "label": label, "offset": offset, "service": service},
+    )

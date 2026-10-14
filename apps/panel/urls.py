@@ -84,5 +84,6 @@ urlpatterns = [
     path("campaigns/<int:pk>/", addons.campaign_detail, name="campaign"),
     # Advanced reports add-on
     path("reports/", addons.reports, name="reports"),
+    path("reports/team/", addons.reports_team, name="reports_team"),
     path("reports/policies.csv", addons.reports_export, name="reports_export"),
 ]
