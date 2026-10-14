@@ -32,25 +32,25 @@
       <a href="{% url 'panel:policies' %}" {% if "polic" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-doc"/></svg>بیمه‌نامه‌ها و تمدید</a>
       <a href="{% url 'panel:tasks' %}" {% if "task" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-tasks"/></svg>کارها و پیگیری‌ها{% if request.due_tasks %}<span class="count">{{ request.due_tasks|fa }}</span>{% endif %}</a>
       <a href="{% url 'panel:calendar' %}" {% if u == "calendar" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-calendar"/></svg>تقویم</a>
-      <a href="{% url 'panel:reminders' %}" {% if u == "reminders" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-bell"/></svg>یادآورهای پیامکی</a>
+      {% if request.can.reminders %}<a href="{% url 'panel:reminders' %}" {% if u == "reminders" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-bell"/></svg>یادآورهای پیامکی</a>{% endif %}
       <span class="nav-group">افزونه‌ها</span>
       {% with f=request.features %}
-      <a href="{% if request.branch_scope %}{% url 'panel:installments' %}{% else %}{% url 'panel:finance' %}{% endif %}" {% if u in "finance installments installment_plan installment_edit commissions ledger" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-wallet"/></svg>مالی و حسابداری{% if "finance" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
-      <a href="{% url 'panel:claims' %}" {% if "claim" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-shield"/></svg>خسارت{% if "claims" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      {% if request.can.finance or request.can.books %}<a href="{% if request.branch_scope or not request.can.books %}{% url 'panel:installments' %}{% else %}{% url 'panel:finance' %}{% endif %}" {% if u in "finance installments installment_plan installment_edit commissions ledger" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-wallet"/></svg>مالی و حسابداری{% if "finance" not in f %}<span class="lock">افزونه</span>{% endif %}</a>{% endif %}
+      {% if request.can.claims %}<a href="{% url 'panel:claims' %}" {% if "claim" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-shield"/></svg>خسارت{% if "claims" not in f %}<span class="lock">افزونه</span>{% endif %}</a>{% endif %}
       {% if not request.branch_scope %}
-      <a href="{% url 'panel:marketers' %}" {% if "marketer" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-network"/></svg>بازاریابان{% if "marketers" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
-      <a href="{% url 'panel:campaigns' %}" {% if "campaign" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-megaphone"/></svg>کمپین پیامکی{% if "sms_campaigns" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
-      <a href="{% url 'panel:reports' %}" {% if "report" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-chart"/></svg>گزارش‌ها{% if "advanced_reports" not in f %}<span class="lock">افزونه</span>{% endif %}</a>
+      {% if request.can.marketers %}<a href="{% url 'panel:marketers' %}" {% if "marketer" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-network"/></svg>بازاریابان{% if "marketers" not in f %}<span class="lock">افزونه</span>{% endif %}</a>{% endif %}
+      {% if request.can.campaigns %}<a href="{% url 'panel:campaigns' %}" {% if "campaign" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-megaphone"/></svg>کمپین پیامکی{% if "sms_campaigns" not in f %}<span class="lock">افزونه</span>{% endif %}</a>{% endif %}
+      {% if request.can.reports %}<a href="{% url 'panel:reports' %}" {% if "report" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-chart"/></svg>گزارش‌ها{% if "advanced_reports" not in f %}<span class="lock">افزونه</span>{% endif %}</a>{% endif %}
       {% endif %}
       {% if request.membership.role != "staff" %}<a href="{% url 'panel:branches' %}" {% if "branch" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-building"/></svg>شعبه‌ها{% if "branches" not in f %}<span class="lock">افزونه</span>{% endif %}</a>{% endif %}
       {% endwith %}
       <span class="nav-group">سایت</span>
-      <a href="{% url 'panel:site' %}" {% if u == "site" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-globe"/></svg>محتوای سایت</a>
-      <a href="{% url 'panel:site_template' %}" {% if u == "site_template" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-palette"/></svg>قالب</a>
-      <a href="{% url 'panel:domains' %}" {% if u == "domains" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-link"/></svg>دامنه</a>
+      {% if request.can.site %}<a href="{% url 'panel:site' %}" {% if u == "site" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-globe"/></svg>محتوای سایت</a>
+      <a href="{% url 'panel:site_template' %}" {% if u == "site_template" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-palette"/></svg>قالب</a>{% endif %}
+      {% if request.membership.role != "staff" %}<a href="{% url 'panel:domains' %}" {% if u == "domains" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-link"/></svg>دامنه</a>{% endif %}
       <span class="nav-group">دفتر</span>
-      <a href="{% url 'panel:integrations' %}" {% if "integration" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-plug"/></svg>اتصالات</a>
-      <a href="{% url 'panel:team' %}" {% if u == "team" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-team"/></svg>همکاران</a>
+      {% if request.membership.role != "staff" %}<a href="{% url 'panel:integrations' %}" {% if "integration" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-plug"/></svg>اتصالات</a>
+      <a href="{% url 'panel:team' %}" {% if u == "team" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-team"/></svg>همکاران</a>{% endif %}
       <a href="{% url 'panel:billing' %}" {% if u == "billing" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-card"/></svg>اشتراک</a>
       <a href="{% url 'panel:tickets' %}" {% if "ticket" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-help"/></svg>پشتیبانی</a>
       <a href="{{ PLATFORM_URL }}/help/" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#p-book"/></svg>راهنمای کامل</a>

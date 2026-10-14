@@ -87,6 +87,12 @@ class Membership(models.Model):
     )
     is_active = models.BooleanField("فعال", default=True)
     calendar_token = models.CharField(max_length=64, blank=True, db_index=True, editable=False)
+    perms = models.JSONField(
+        "دسترسی‌های کارمند",
+        default=dict,
+        blank=True,
+        help_text='Overrides of STAFF_PERMS defaults, e.g. {"campaigns": true}',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -96,6 +102,30 @@ class Membership(models.Model):
 
     def __str__(self):
         return f"{self.user} @ {self.tenant.slug} ({self.get_role_display()})"
+
+    def can(self, code: str) -> bool:
+        """Owners and managers can do everything; staff get STAFF_PERMS defaults unless the office changed them."""
+        if self.role != self.Role.STAFF:
+            return True
+        default = next((d for c, _, d in STAFF_PERMS if c == code), False)
+        return bool((self.perms or {}).get(code, default))
+
+    def can_map(self) -> dict:
+        return {c: self.can(c) for c, _, _ in STAFF_PERMS}
+
+
+# (code, label, default for staff)
+STAFF_PERMS = [
+    ("finance", "اقساط و چک‌ها", True),
+    ("books", "خلاصه مالی، کارمزد و دفتر درآمد و هزینه", True),
+    ("claims", "پرونده‌های خسارت", True),
+    ("reports", "گزارش‌ها و خروجی اکسل", True),
+    ("marketers", "بازاریاب‌ها و تسویه", True),
+    ("site", "محتوای سایت و قالب", True),
+    ("campaigns", "کمپین پیامکی", False),
+    ("reminders", "تنظیم یادآورهای پیامکی", False),
+    ("segments", "بخش‌های مشتری و باشگاه مشتریان", True),
+]
 
 
 class OTPCode(models.Model):

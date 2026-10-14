@@ -152,6 +152,20 @@ def customer_timeline(customer, limit: int = 60) -> list[dict]:
                 "url": reverse("panel:claim", args=[e.claim_id]),
             }
         )
+    from apps.crm.models import CustomerDocument
+
+    for d in CustomerDocument.objects.filter(customer=customer).select_related("uploaded_by"):
+        who = "فرستاده مشتری از سایت" if d.by_customer else ""
+        items.append(
+            {
+                "at": d.created_at,
+                "kind": "doc",
+                "title": f"مدرک: {d.get_kind_display()}",
+                "body": d.title or who,
+                "by": d.uploaded_by,
+                "url": d.file.url,
+            }
+        )
     for t in Task.objects.filter(customer=customer, done_at__isnull=False).select_related("done_by"):
         items.append(
             {"at": t.done_at, "kind": "task", "title": f"انجام شد: {t.title}", "body": t.note, "by": t.done_by}

@@ -67,7 +67,7 @@ def _month(request):
 # ======================= Reminders (base package) =======================
 
 
-@panel_view(managers_only=True)
+@panel_view(perm="reminders")
 def reminders(request):
     cfg = reminder_settings(request.tenant)
     form = ReminderSettingsForm(request.POST or None, instance=cfg)
@@ -93,7 +93,7 @@ def reminders(request):
 # ======================= Finance =======================
 
 
-@panel_view(feature="finance", office_wide=True)
+@panel_view(feature="finance", office_wide=True, perm="books")
 def finance(request):
     today = timezone.localdate()
     offset, start, end, label = _month(request)
@@ -124,7 +124,7 @@ def finance(request):
     )
 
 
-@panel_view(feature="finance")
+@panel_view(feature="finance", perm="finance")
 def installments(request):
     qs = scoped(request, Installment.objects.select_related("policy__customer", "policy__line"), "policy__branch")
     today = timezone.localdate()
@@ -141,7 +141,7 @@ def installments(request):
     return render(request, "panel/installments.html", {"page": page, "f": flt, "today": today})
 
 
-@panel_view(feature="finance")
+@panel_view(feature="finance", perm="finance")
 def installment_plan(request):
     initial = {"first_due": timezone.localdate() + timedelta(days=30)}
     if request.GET.get("policy"):
@@ -165,7 +165,7 @@ def installment_plan(request):
     return render(request, "panel/form.html", {"form": form, "title": "تقسیط بیمه‌نامه", "back": "panel:installments"})
 
 
-@panel_view(feature="finance")
+@panel_view(feature="finance", perm="finance")
 def installment_edit(request, pk):
     obj = get_object_or_404(scoped(request, Installment.objects.all(), "policy__branch"), pk=pk)
     form = InstallmentForm(request.POST or None, instance=obj)
@@ -183,7 +183,7 @@ def installment_edit(request, pk):
     )
 
 
-@panel_view(feature="finance")
+@panel_view(feature="finance", perm="finance")
 @require_POST
 def installment_paid(request, pk):
     inst = get_object_or_404(scoped(request, Installment.objects.all(), "policy__branch"), pk=pk)
@@ -194,7 +194,7 @@ def installment_paid(request, pk):
     return _next(request, "panel:installments")
 
 
-@panel_view(feature="finance", office_wide=True)
+@panel_view(feature="finance", office_wide=True, perm="books")
 def commissions(request):
     rules = CommissionRule.objects.select_related("company", "line")
     form = CommissionRuleForm(request.POST or None, tenant=request.tenant)
@@ -215,7 +215,7 @@ def commissions(request):
     )
 
 
-@panel_view(feature="finance", office_wide=True)
+@panel_view(feature="finance", office_wide=True, perm="books")
 @require_POST
 def commission_rule_delete(request, pk):
     get_object_or_404(CommissionRule, pk=pk).delete()
@@ -223,7 +223,7 @@ def commission_rule_delete(request, pk):
     return redirect("panel:commissions")
 
 
-@panel_view(feature="finance", office_wide=True)
+@panel_view(feature="finance", office_wide=True, perm="books")
 @require_POST
 def commission_receive(request, pk):
     policy = get_object_or_404(Policy, pk=pk)
@@ -245,7 +245,7 @@ def commission_receive(request, pk):
     return _next(request, "panel:commissions")
 
 
-@panel_view(feature="finance", office_wide=True)
+@panel_view(feature="finance", office_wide=True, perm="books")
 def ledger(request):
     offset, start, end, label = _month(request)
     form = LedgerForm(request.POST or None, initial={"date": timezone.localdate()})
@@ -269,7 +269,7 @@ def ledger(request):
     )
 
 
-@panel_view(feature="finance", office_wide=True)
+@panel_view(feature="finance", office_wide=True, perm="books")
 @require_POST
 def ledger_delete(request, pk):
     get_object_or_404(LedgerEntry, pk=pk).delete()
@@ -280,7 +280,7 @@ def ledger_delete(request, pk):
 # ======================= Claims =======================
 
 
-@panel_view(feature="claims")
+@panel_view(feature="claims", perm="claims")
 def claims(request):
     qs = scoped(
         request, Claim.objects.select_related("policy__customer", "policy__line", "policy__company"), "policy__branch"
@@ -294,7 +294,7 @@ def claims(request):
     return render(request, "panel/claims.html", {"page": page, "s": status, "statuses": Claim.Status.choices})
 
 
-@panel_view(feature="claims")
+@panel_view(feature="claims", perm="claims")
 def claim_new(request):
     initial = {"incident_date": timezone.localdate()}
     if request.GET.get("policy"):
@@ -310,7 +310,7 @@ def claim_new(request):
     return render(request, "panel/form.html", {"form": form, "title": "ثبت خسارت", "back": "panel:claims"})
 
 
-@panel_view(feature="claims")
+@panel_view(feature="claims", perm="claims")
 def claim_detail(request, pk):
     claim = get_object_or_404(
         scoped(request, Claim.objects.select_related("policy__customer", "policy__line"), "policy__branch"), pk=pk
@@ -356,7 +356,7 @@ def claim_detail(request, pk):
     )
 
 
-@panel_view(feature="claims")
+@panel_view(feature="claims", perm="claims")
 def claim_edit(request, pk):
     claim = get_object_or_404(scoped(request, Claim.objects.all(), "policy__branch"), pk=pk)
     form = ClaimForm(
@@ -377,7 +377,7 @@ def _ref_url(request, marketer):
     return f"{request.tenant.site_url()}?ref={marketer.code}"
 
 
-@panel_view(feature="marketers", office_wide=True)
+@panel_view(feature="marketers", office_wide=True, perm="marketers")
 def marketers(request):
     rows = []
     for m in Marketer.objects.select_related("parent").annotate(n_customers=Count("customers", distinct=True)):
@@ -387,7 +387,7 @@ def marketers(request):
     return render(request, "panel/marketers.html", {"rows": rows})
 
 
-@panel_view(feature="marketers", managers_only=True, office_wide=True)
+@panel_view(feature="marketers", office_wide=True, perm="marketers")
 def marketer_edit(request, pk=None):
     obj = get_object_or_404(Marketer, pk=pk) if pk else None
     form = MarketerForm(request.POST or None, instance=obj)
@@ -402,7 +402,7 @@ def marketer_edit(request, pk=None):
     )
 
 
-@panel_view(feature="marketers", office_wide=True)
+@panel_view(feature="marketers", office_wide=True, perm="marketers")
 def marketer_detail(request, pk):
     m = get_object_or_404(Marketer, pk=pk)
     form = PayoutForm(
@@ -445,7 +445,7 @@ def marketer_detail(request, pk):
 # ======================= SMS campaigns =======================
 
 
-@panel_view(feature="sms_campaigns", managers_only=True)
+@panel_view(feature="sms_campaigns", perm="campaigns")
 def campaigns(request):
     form = CampaignForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -458,7 +458,7 @@ def campaigns(request):
     )
 
 
-@panel_view(feature="sms_campaigns", managers_only=True)
+@panel_view(feature="sms_campaigns", perm="campaigns")
 def campaign_detail(request, pk):
     campaign = get_object_or_404(Campaign, pk=pk)
     if request.method == "POST" and campaign.status == Campaign.Status.DRAFT:
@@ -486,7 +486,7 @@ def campaign_detail(request, pk):
 # ======================= Advanced reports =======================
 
 
-@panel_view(feature="advanced_reports", office_wide=True)
+@panel_view(feature="advanced_reports", office_wide=True, perm="reports")
 def reports(request):
     today = timezone.localdate()
     policies = scoped(request, Policy.objects.all())
@@ -530,7 +530,7 @@ def reports(request):
     )
 
 
-@panel_view(feature="advanced_reports", office_wide=True)
+@panel_view(feature="advanced_reports", office_wide=True, perm="reports")
 def reports_export(request):
     resp = HttpResponse(content_type="text/csv; charset=utf-8")
     resp["Content-Disposition"] = f'attachment; filename="policies-{request.tenant.slug}.csv"'

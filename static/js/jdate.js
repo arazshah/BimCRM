@@ -1,6 +1,21 @@
 /* Jalali (شمسی) date picker for <input type="date">. The real input keeps the Gregorian value the server expects;
    a visible text field shows and accepts Jalali dates (typed with Persian or Latin digits, or picked from a popup). */
 (() => {
+  if (!document.getElementById('jd-css')) { const st = document.createElement('style'); st.id = 'jd-css'; st.textContent = `/* ── Jalali date picker ── */
+.jd-input { width: 100%; }
+.jd-pop { position: absolute; z-index: 40; margin-top: 4px; background: #fff; border: 1px solid #e5e9ee; border-radius: 14px; box-shadow: 0 18px 40px -12px rgba(16, 32, 56, .35); padding: 10px; width: 272px; direction: rtl; }
+.jd-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.jd-head b { font-size: 14px; }
+.jd-head button { width: 32px; height: 32px; border: 0; border-radius: 8px; background: #f2f5f8; font-size: 18px; cursor: pointer; }
+.jd-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.jd-wd { text-align: center; font-size: 11.5px; color: #66738a; padding: 4px 0; }
+.jd-grid button { height: 34px; border: 0; border-radius: 8px; background: none; cursor: pointer; font: inherit; font-size: 13.5px; }
+.jd-grid button:hover { background: #e3f3ed; }
+.jd-grid button.today { box-shadow: inset 0 0 0 1.5px var(--brand, #0e7c66); }
+.jd-grid button.sel { background: var(--brand, #0e7c66); color: #fff; }
+.jd-foot { display: flex; gap: 8px; justify-content: flex-start; margin-top: 6px; }
+.jd-foot button { border: 0; background: none; color: var(--brand, #0e7c66); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 6px; }
+.jd-wrap { position: relative; }`; document.head.appendChild(st); }
   const div = (a, b) => ~~(a / b);
   function g2j(gy, gm, gd) {
     const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -78,6 +93,7 @@
     if (real.id) { vis.id = real.id + '-jd'; const lab = document.querySelector(`label[for="${real.id}"]`); if (lab) lab.htmlFor = vis.id; }
     real.type = 'hidden';
     real.parentNode.insertBefore(vis, real);
+    if (getComputedStyle(real.parentNode).position === 'static') real.parentNode.classList.add('jd-wrap');
     vis.addEventListener('focus', () => popup(real, vis));
     vis.addEventListener('click', () => { if (!open) popup(real, vis); });
     vis.addEventListener('change', () => {

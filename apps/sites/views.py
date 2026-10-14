@@ -256,6 +256,23 @@ def _portal_data(request, mobile: str) -> dict:
             .exclude(status=Installment.Status.PAID)
             .select_related("policy__line")
         )
+    from apps.crm.documents import checklist, customer_lines
+    from apps.crm.models import CustomerDocument
+
+    if customer:
+        data["documents"] = CustomerDocument.objects.filter(customer=customer)
+        data["doc_checklist"] = checklist(customer, customer_lines(customer))
+    else:
+        lines = [
+            q.line for q in data["quotes"] if q.status not in (QuoteRequest.Status.ISSUED, QuoteRequest.Status.LOST)
+        ]
+        data["doc_checklist"] = checklist(None, lines) if lines else []
+    data["doc_kinds"] = [
+        (k, v)
+        for k, v in CustomerDocument.Kind.choices
+        if k not in (CustomerDocument.Kind.ENDORSEMENT, CustomerDocument.Kind.POLICY_COPY)
+    ]
+    data["can_upload_docs"] = bool(customer or data["quotes"])
     if customer and "claims" in features:
         data["claims"] = Claim.objects.filter(policy__customer=customer).prefetch_related("events", "documents")
         data["claimable"] = [p for p in policies if p.status == Policy.Status.ACTIVE]
@@ -265,6 +282,51 @@ def _portal_data(request, mobile: str) -> dict:
 def _portal_customer(request):
     mobile = _customer_mobile(request)
     return Customer.objects.filter(mobile=mobile).first() if mobile else None
+
+
+@require_POST
+def account_document_upload(request):
+    from apps.crm.documents import validate_upload
+    from apps.crm.models import CustomerDocument
+    from apps.panel.access import storage_used_bytes
+    from apps.work.services import notify, office_members
+
+    mobile = _customer_mobile(request)
+    if not mobile:
+        return redirect("sites:account")
+    customer = Customer.objects.filter(mobile=mobile).first()
+    if customer is None:
+        quote = QuoteRequest.objects.filter(mobile=mobile).order_by("-created_at").first()
+        if quote is None:
+            return redirect("sites:account")
+        customer = Customer.objects.create(
+            full_name=quote.full_name,
+            mobile=mobile,
+            source=Customer.Source.WEBSITE,
+            branch=quote.branch,
+            marketer=quote.marketer,
+        )
+        QuoteRequest.objects.filter(mobile=mobile, customer__isnull=True).update(customer=customer)
+    f = request.FILES.get("file")
+    kind = request.POST.get("kind", "other")
+    if kind not in CustomerDocument.Kind.values:
+        kind = CustomerDocument.Kind.OTHER
+    err = validate_upload(f) if f else "فایل را انتخاب کنید."
+    sub = getattr(request.tenant, "subscription", None)
+    if not err and sub and f.size > sub.storage_limit_bytes() - storage_used_bytes(request.tenant):
+        err = "در حال حاضر امکان بارگذاری نیست؛ لطفاً با دفتر تماس بگیرید."
+    if err:
+        messages.error(request, err)
+        return redirect("/account/#docs")
+    doc = CustomerDocument.objects.create(customer=customer, kind=kind, file=f, by_customer=True)
+    notify(
+        request.tenant,
+        office_members(request.tenant, customer.branch),
+        f"{customer.full_name} مدرک فرستاد: {doc.get_kind_display()}",
+        f"/panel/customers/{customer.pk}/#docs",
+    )
+    messages.success(request, f"{doc.get_kind_display()} رسید؛ ممنون. دفتر بررسی می‌کند.")
+    return redirect("/account/#docs")
 
 
 @require_POST

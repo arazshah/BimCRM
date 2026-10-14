@@ -21,8 +21,9 @@ def _login_redirect(request):
     return redirect(f"{scheme}://{settings.PLATFORM_DOMAIN}/login/?next={nxt}")
 
 
-def panel_view(*, write_ok_when_expired=False, managers_only=False, feature=None, office_wide=False):
-    """office_wide: whole-office pages (books, commissions, reports) closed to branch-limited staff."""
+def panel_view(*, write_ok_when_expired=False, managers_only=False, feature=None, office_wide=False, perm=None):
+    """office_wide: whole-office pages (books, commissions, reports) closed to branch-limited staff.
+    perm: a STAFF_PERMS code; staff without it get a friendly "ask your manager" page."""
 
     def decorator(view):
         @wraps(view)
@@ -55,8 +56,11 @@ def panel_view(*, write_ok_when_expired=False, managers_only=False, feature=None
                 if membership.branch_id and membership.role not in MANAGERS and "branches" in request.features
                 else None
             )
+            request.can = membership.can_map()
             if managers_only and membership.role not in MANAGERS:
                 return HttpResponseForbidden("این بخش فقط برای مالک و مدیر دفتر است.")
+            if perm and not membership.can(perm):
+                return render(request, "panel/no_perm.html", status=403)
             if office_wide and request.branch_scope is not None:
                 return HttpResponseForbidden("این بخش برای کل دفتر است و کارمندان شعبه به آن دسترسی ندارند.")
             if feature and feature not in request.features:
@@ -77,11 +81,12 @@ def storage_used_bytes(tenant) -> int:
     from django.db.models import Sum
 
     from apps.claims.models import ClaimDocument
-    from apps.crm.models import Policy
+    from apps.crm.models import CustomerDocument, Policy
 
     policies = Policy.all_objects.filter(tenant=tenant).aggregate(s=Sum("file_size"))["s"] or 0
     claims = ClaimDocument.objects.filter(claim__tenant=tenant).aggregate(s=Sum("size"))["s"] or 0
-    return policies + claims
+    docs = CustomerDocument.all_objects.filter(tenant=tenant).aggregate(s=Sum("size"))["s"] or 0
+    return policies + claims + docs
 
 
 def scoped(request, qs, path: str = "branch", include_unassigned: bool = False):
