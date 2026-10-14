@@ -86,3 +86,20 @@ def test_billing_suggests_cheaper_plan_for_many_addons(client, tenant, owner, pl
     assert tip["saving"] == sub.renewal_amount("monthly") - plans["دفتر بزرگ"].monthly_price
     client.force_login(owner)
     assert "صرفه‌جویی ماهانه" in client.get("/panel/billing/", HTTP_HOST=host(tenant)).content.decode()
+
+
+@pytest.mark.django_db
+def test_feature_explorer_badges_follow_the_packages(client, plans):
+    from apps.main import features
+
+    cats, total = features.explorer(list(plans.values()))
+    items = {it["f"].title: it for c in cats for it in c["items"]}
+    assert total == len(items) >= 30
+    assert items["پرونده کامل مشتری"]["badge"] == "همه پکیج‌ها"
+    assert items["اقساط و چک"]["badge"] == "حرفه‌ای و بالاتر"
+    assert items["چند شعبه"]["badge"] == "دفتر بزرگ"
+    page = client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert "همه امکانات، به زبان ساده" in page and page.count('class="fx-card"') == total
+    for c in cats:
+        for it in c["items"]:
+            assert client.get(f"/help/{it['f'].help}/", HTTP_HOST=MAIN).status_code == 200

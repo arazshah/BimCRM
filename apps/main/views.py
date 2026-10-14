@@ -46,8 +46,13 @@ def landing(request):
 def _pricing():
     from apps.billing import pricing
 
+    from . import features
+
     plans = list(Package.plans())
+    explorer, feature_total = features.explorer(plans)
     return {
+        "explorer": explorer,
+        "feature_total": feature_total,
         "plans": plans,
         "cards": pricing.plan_cards(plans),
         "compare": pricing.comparison(plans),
