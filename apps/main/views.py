@@ -349,6 +349,24 @@ def help_index(request):
     )
 
 
+def demo(request):
+    """Public demo office: its website, management panel and customer portal, open to everyone, nothing saved."""
+    from .demo import ensure_demo
+
+    tenant = ensure_demo()
+    return render(
+        request,
+        "main/demo.html",
+        {
+            "site_url": f"{settings.PLATFORM_SCHEME}://{tenant.subdomain_host}/",
+            "panel_url": tenant.panel_url(),
+            "portal_url": f"{settings.PLATFORM_SCHEME}://{tenant.subdomain_host}/account/",
+            "host": tenant.subdomain_host,
+            "platform": PlatformSettings.load(),
+        },
+    )
+
+
 def help_videos(request):
     from . import help as h
 

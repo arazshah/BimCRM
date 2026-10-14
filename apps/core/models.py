@@ -242,6 +242,8 @@ class Tenant(models.Model):
     phone = models.CharField("تلفن دفتر", max_length=20, blank=True)
     address = models.CharField("نشانی", max_length=255, blank=True)
     created_at = models.DateTimeField("ایجاد", auto_now_add=True)
+    # Set only on the public read-only demo office; its dates are shifted forward to this day.
+    demo_built_on = models.DateField("دموی عمومی (تاریخ داده‌ها)", null=True, blank=True, editable=False)
 
     class Meta:
         verbose_name = "محیط نماینده"

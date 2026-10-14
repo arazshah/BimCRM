@@ -687,3 +687,8 @@ h1 .tier { font-size: 13px; vertical-align: 6px; }
 .saving-tip { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: #fff8e6; border: 1px solid #f3d58f; border-radius: 14px; padding: 14px 16px; margin: 12px 0 4px; }
 .saving-tip strong { display: block; color: #6b4700; }
 .saving-tip span { font-size: 14px; color: var(--ink-2); }
+
+/* Public demo office */
+.demo-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; background: #fff7e0; border: 1px solid #f1d58a; color: #5c4300; border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; font-size: 14px; }
+.demo-strip b { background: #f0b429; color: #12233f; border-radius: 99px; padding: 0 10px; }
+.demo-strip .btn { margin-inline-start: auto; }
