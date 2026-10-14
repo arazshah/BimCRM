@@ -105,7 +105,8 @@ def test_video_pages_and_embeds(client):
     page = client.get("/help/videos/", HTTP_HOST=MAIN).content.decode()
     assert page.count("<video") == len(VIDEOS) and '"@type":"VideoObject"' in page
     assert "help-02-sms.mp4" in client.get("/help/sms/", HTTP_HOST=MAIN).content.decode()
-    assert "<video" not in client.get("/help/team/", HTTP_HOST=MAIN).content.decode()
+    assert "<video" not in client.get("/help/faq/", HTTP_HOST=MAIN).content.decode()
+    assert "help-15-team.mp4" in client.get("/help/team/", HTTP_HOST=MAIN).content.decode()
     assert "/help/videos/" in client.get("/help/", HTTP_HOST=MAIN).content.decode()
     landing = client.get("/", HTTP_HOST=MAIN).content.decode()
     assert "video/promo.mp4" in landing and "data-play" in landing

@@ -1,8 +1,8 @@
 {% extends "main/base.html" %}
 {% load static fa %}
-{% block title %}آموزش‌های ویدیویی CRM بیمه — ۱۰ ویدیوی کوتاه برای دفتر نمایندگی بیمه{% endblock %}
+{% block title %}آموزش‌های ویدیویی CRM بیمه — {{ videos|length|fa }} ویدیوی کوتاه برای دفتر نمایندگی بیمه{% endblock %}
 {% block og_title %}آموزش‌های ویدیویی CRM بیمه{% endblock %}
-{% block description %}ده ویدیوی کوتاه زیر یک دقیقه: ساخت سایت دفتر بیمه، پنل پیامک، یادآور تمدید، ورود مشتریان از اکسل، استعلام آنلاین، دامنه، اقساط، خسارت و قالب سایت.{% endblock %}
+{% block description %}ویدیوهای کوتاه زیر یک دقیقه: ساخت سایت دفتر بیمه، پنل پیامک، یادآور تمدید، ورود مشتریان از اکسل، استعلام آنلاین، دامنه رایگان، اقساط، خسارت، قالب سایت، کارها و تقویم، پرونده مشتری، باشگاه مشتریان، فروش متقابل و همکاران.{% endblock %}
 {% block body_class %}help-page{% endblock %}
 {% block head_extra %}
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[{% for v in videos %}{"@type":"ListItem","position":{{ forloop.counter }},"item":{"@type":"VideoObject","name":"{{ v.title }}","description":"{{ v.summary }}","thumbnailUrl":"{{ PLATFORM_URL }}{% static v.poster %}","contentUrl":"{{ PLATFORM_URL }}{% static v.src %}","uploadDate":"2026-10-14","duration":"{{ v.iso_duration }}","inLanguage":"fa","url":"{{ PLATFORM_URL }}/help/videos/#{{ v.anchor }}"}}{% if not forloop.last %},{% endif %}{% endfor %}]}</script>
