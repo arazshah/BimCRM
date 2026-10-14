@@ -2,7 +2,7 @@
 {% load fa %}
 {% block title %}گزارش‌ها{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>گزارش‌ها</h1><p class="page-sub">۱۲ ماه اخیر، بر اساس تاریخ شروع بیمه‌نامه‌ها</p></div><div class="head-actions">{% include "panel/_branch_select.html" %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:reports_export' %}{% if b %}?b={{ b }}{% endif %}">خروجی اکسل بیمه‌نامه‌ها</a></div></div>
+<div class="page-head"><div><h1>گزارش‌ها</h1><p class="page-sub">۱۲ ماه اخیر، بر اساس تاریخ شروع بیمه‌نامه‌ها</p></div><div class="head-actions"><a class="btn btn-sm" href="{% url 'panel:reports_team' %}">عملکرد همکاران و خدمات</a>{% include "panel/_branch_select.html" %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:reports_export' %}{% if b %}?b={{ b }}{% endif %}">خروجی اکسل بیمه‌نامه‌ها</a></div></div>
 <dl class="stats">
   <div><dt>حق بیمه صادره ۱۲ ماه اخیر</dt><dd class="num">{{ year_total|toman }} <small>تومان</small></dd></div>
   <div><dt>نرخ تمدید</dt><dd class="num">{% if renewal_rate is not None %}{{ renewal_rate|fa }}٪{% else %}—{% endif %}</dd>{% if renewal_rate is not None %}<span class="meter"><span style="width: {{ renewal_rate }}%"></span></span>{% endif %}</div>

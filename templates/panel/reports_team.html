@@ -1,0 +1,31 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}عملکرد همکاران و خدمات{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>عملکرد همکاران و کیفیت خدمات</h1><p class="page-sub">{{ label }}</p></div>
+  <div class="head-actions"><a class="btn btn-ghost btn-sm" href="{% url 'panel:reports' %}">گزارش فروش</a>{% include "panel/_month_nav.html" %}</div></div>
+<dl class="stats">
+  <div><dt>میانگین زمان اولین پیگیری درخواست سایت</dt><dd class="num">{% if service.avg_first_hours is not None %}{{ service.avg_first_hours|fa }} <small>ساعت</small>{% else %}—{% endif %}</dd></div>
+  <div><dt>درخواست‌های پیگیری‌شده در ۲۴ ساعت</dt><dd class="num">{% if service.within_day_pct is not None %}{{ service.within_day_pct|fa }}٪{% else %}—{% endif %}</dd>{% if service.within_day_pct is not None %}<span class="meter"><span style="width: {{ service.within_day_pct }}%"></span></span>{% endif %}</div>
+  <div><dt>درخواست بی‌پاسخ بیش از یک روز</dt><dd class="num {% if service.unanswered %}late{% endif %}">{{ service.unanswered|fa }}</dd></div>
+  {% if "claims" in request.features %}<div><dt>میانگین مدت پرونده خسارت تا پرداخت</dt><dd class="num">{% if service.claim_days is not None %}{{ service.claim_days|fa }} <small>روز</small>{% else %}—{% endif %}</dd></div>
+  <div><dt>خسارت باز بیش از ۳۰ روز</dt><dd class="num {% if service.claims_open_old %}late{% endif %}">{{ service.claims_open_old|fa }}</dd></div>{% endif %}
+  <div><dt>کارهای عقب‌افتاده کل دفتر</dt><dd class="num {% if service.late_tasks %}late{% endif %}">{{ service.late_tasks|fa }}</dd></div>
+</dl>
+<section class="panel-box">
+  <h2 class="h2">همکاران در {{ label }}</h2>
+  <div class="table-wrap"><table class="data team-perf">
+    <thead><tr><th>همکار</th><th>بیمه‌نامه ثبت‌شده</th><th>حق بیمه</th><th>تعامل ثبت‌شده</th><th>کار انجام‌شده</th><th>کار عقب‌افتاده</th><th>درخواست سایت (صادرشده)</th></tr></thead>
+    <tbody>{% for r in rows %}<tr>
+      <td><strong>{{ r.user.full_name|default:r.user.mobile }}</strong><br><span class="muted small">{{ r.role }}</span></td>
+      <td class="num">{{ r.policies|fa }}</td>
+      <td class="num"><span class="perf-bar"><span style="width: {{ r.premium|percent_of:peak }}%"></span></span>{{ r.premium|toman }}</td>
+      <td class="num">{{ r.activities|fa }}</td>
+      <td class="num">{{ r.tasks_done|fa }}</td>
+      <td class="num {% if r.tasks_late %}late{% endif %}">{{ r.tasks_late|fa }}</td>
+      <td class="num">{{ r.quotes|fa }} ({{ r.quotes_issued|fa }})</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="muted small">بیمه‌نامه‌ها بر اساس کسی که ثبتشان کرده؛ درخواست‌ها بر اساس «مسئول» درخواست. بیمه‌نامه‌هایی که پیش از این گزارش ثبت شده‌اند ثبت‌کننده ندارند.</p>
+</section>
+{% endblock %}

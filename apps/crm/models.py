@@ -119,6 +119,14 @@ class Policy(TenantOwned):
         verbose_name="بازاریاب",
     )
     branch = _branch_field("policies")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="ثبت‌کننده",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -182,6 +190,7 @@ class QuoteRequest(TenantOwned):
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="مسئول"
     )
     staff_note = models.TextField("یادداشت داخلی", blank=True)
+    first_contact_at = models.DateTimeField("اولین پیگیری", null=True, blank=True, editable=False)
     marketer = models.ForeignKey(
         "network.Marketer",
         null=True,

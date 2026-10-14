@@ -172,7 +172,7 @@
 
 /* Inventory */
 .inventory { background: #fff; border-block: 1px solid var(--line); }
-.inv-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-top: 3px solid var(--ink); }
+.inv-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border-top: 3px solid var(--ink); }
 .inv-col { padding: 22px 22px 6px; border-inline-start: 1px solid var(--line); }
 .inv-col:first-child { border-inline-start: 0; padding-inline-start: 0; }
 .inv-col h3 { font-size: 17px; font-weight: 850; margin-bottom: .8rem; }

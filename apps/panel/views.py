@@ -338,6 +338,8 @@ def policy_edit(request, pk=None):
             policy.branch = request.branch_scope
         if renew_from:
             policy.renewed_from = renew_from
+        if not obj:
+            policy.created_by = request.user
         policy.save()
         messages.success(request, "بیمه‌نامه ذخیره شد.")
         return redirect("panel:customer", pk=policy.customer_id)
@@ -400,6 +402,14 @@ def quote_detail(request, pk):
             return redirect("panel:quote", pk=quote.pk)
         if form.is_valid():
             quote = form.save(commit=False)
+            if quote.status != QuoteRequest.Status.NEW and quote.first_contact_at is None:
+                quote.first_contact_at = timezone.now()
+                from apps.work.models import Task
+
+                # The automatic "call this lead" task is done once someone followed the request up.
+                Task.objects.filter(auto_key=f"quote:{quote.pk}", done_at__isnull=True).update(
+                    done_at=timezone.now(), done_by=request.user
+                )
             if request.branch_scope is not None and quote.branch_id is None:
                 quote.branch = request.branch_scope  # staff who pick up an unrouted lead take it into their branch
             quote.save()

@@ -676,3 +676,7 @@ h1 .tier { font-size: 13px; vertical-align: 6px; }
 .xsell li { align-items: center; }
 @media (max-width: 960px) { .club-kpis { grid-template-columns: 1fr 1fr; } .club-grid { grid-template-columns: 1fr; } }
 .pos, .neg { direction: ltr; unicode-bidi: isolate; }
+.late { color: #c8323a; font-weight: 800; }
+.team-perf td { vertical-align: middle; }
+.perf-bar { display: block; height: 6px; border-radius: 9px; background: var(--line-soft); margin-bottom: 4px; overflow: hidden; min-width: 80px; }
+.perf-bar span { display: block; height: 100%; background: var(--seal); border-radius: 9px; }
