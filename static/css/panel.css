@@ -692,3 +692,11 @@ h1 .tier { font-size: 13px; vertical-align: 6px; }
 .demo-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; background: #fff7e0; border: 1px solid #f1d58a; color: #5c4300; border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; font-size: 14px; }
 .demo-strip b { background: #f0b429; color: #12233f; border-radius: 99px; padding: 0 10px; }
 .demo-strip .btn { margin-inline-start: auto; }
+
+/* Free trial: nudge on the dashboard and the suggested plan on billing */
+.trial-nudge, .suggest-plan { display: flex; align-items: center; gap: 12px 20px; flex-wrap: wrap; background: #fff8e6; border: 1px solid #f1d58a; border-radius: 14px; padding: 14px 18px; margin-bottom: 18px; }
+.trial-nudge > div, .suggest-plan > div { flex: 1 1 320px; display: flex; flex-direction: column; gap: 2px; }
+.trial-nudge strong { font-size: 16px; }
+.suggest-plan { background: #eef8f4; border-color: #bfe0d3; margin-top: 18px; }
+.suggest-plan .sp-label { font-size: 12.5px; font-weight: 800; color: #0e7c66; }
+.suggest-plan strong { font-size: 17px; }

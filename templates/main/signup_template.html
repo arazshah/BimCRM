@@ -1,6 +1,7 @@
 {% extends "main/base.html" %}
 {% block robots %}<meta name="robots" content="noindex">{% endblock %}
 {% block title %}انتخاب قالب — CRM بیمه{% endblock %}
+{% load fa %}
 {% block content %}
 <section class="narrow wide">
   {% include "main/_steps.html" %}
@@ -19,7 +20,12 @@
       </label>
       {% endfor %}
     </fieldset>
-    <div class="actions"><a class="btn btn-ghost" href="{% url 'main:signup' %}">قبلی</a><button class="btn" type="submit">ادامه</button></div>
+    <div class="actions"><a class="btn btn-ghost" href="{% url 'main:signup' %}">قبلی</a><button class="btn" type="submit">ساخت سایتم؛ {{ platform.trial_days|fa }} روز رایگان</button></div>
+    <ul class="free-promise" aria-label="شرایط دوره رایگان">
+      <li><b>الان هیچ پولی نمی‌دهید</b>؛ کارت بانکی هم لازم نیست.</li>
+      <li>{{ platform.trial_days|fa }} روز همه امکانات{% if trial_plan %} پکیج «{{ trial_plan.name }}»{% endif %} را با مشتری‌های خودتان امتحان کنید.</li>
+      <li>بعد خودتان تصمیم می‌گیرید؛ اطلاعات و سایتتان <b>پاک نمی‌شود</b>.</li>
+    </ul>
   </form>
 </section>
 {% endblock %}

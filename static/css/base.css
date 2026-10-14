@@ -147,3 +147,15 @@ label.pcard:has(input:checked) .pc-pick::before { content: "✓ "; }
   .price-faq { grid-template-columns: 1fr; }
   .pc-tag { min-height: 0; }
 }
+
+/* Free start card beside the paid plans (landing) */
+.plans-grid.with-free { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.pcard.free { background: linear-gradient(180deg, #fff8e6, #fff 55%); border: 2px dashed #e6b43c; }
+.pcard.free .pc-badge { background: #f0b429; color: #12233f; }
+.pcard.free .pc-price b { color: #0e7c66; }
+@media (max-width: 1180px) { .plans-grid.with-free { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .plans-grid.with-free { grid-template-columns: 1fr; } }
+.free-promise { list-style: none; margin: 18px 0 0; padding: 14px 16px; background: #f0f8f5; border: 1px solid #cfe7de; border-radius: 12px; font-size: 14.5px; }
+.free-promise li { padding: .2rem 1.6rem .2rem 0; position: relative; }
+.free-promise li::before { content: "✓"; position: absolute; right: 2px; color: #0e7c66; font-weight: 900; }
+.pc-price.pc-free b { color: #0e7c66; } .pc-price.pc-free small { display: block; }

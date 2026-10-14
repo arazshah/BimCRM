@@ -103,3 +103,53 @@ def test_feature_explorer_badges_follow_the_packages(client, plans):
     for c in cats:
         for it in c["items"]:
             assert client.get(f"/help/{it['f'].help}/", HTTP_HOST=MAIN).status_code == 200
+
+
+@pytest.mark.django_db
+def test_landing_offers_a_free_start_before_the_paid_plans(client, plans):
+    page = client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert "<h3>شروع رایگان</h3>" in page and "اطلاعاتتان می‌ماند" in page
+    assert page.index("<h3>شروع رایگان</h3>") < page.index("<h3>شروع</h3>")
+
+
+@pytest.mark.django_db
+def test_suggested_plan_follows_what_the_office_used(tenant, plans):
+    from datetime import date
+
+    from apps.billing.pricing import suggested_plan
+    from apps.claims.models import Claim
+    from apps.core.models import InsuranceCompany, LineOfBusiness
+    from apps.core.tenancy import tenant_context
+    from apps.crm.models import Customer, Policy
+
+    assert suggested_plan(tenant)["plan"] == plans["شروع"]
+    with tenant_context(tenant):
+        c = Customer.objects.create(full_name="مشتری", mobile="09121112233")
+        p = Policy.objects.create(
+            customer=c,
+            line=LineOfBusiness.objects.first(),
+            company=InsuranceCompany.objects.first(),
+            number="1",
+            start_date=date(2026, 1, 1),
+            end_date=date(2027, 1, 1),
+        )
+        Claim.objects.create(policy=p, incident_date=date(2026, 5, 1), description="تصادف")
+    got = suggested_plan(tenant)
+    assert got["plan"] == plans["حرفه‌ای"] and "پرونده خسارت داشتید" in got["reasons"]
+
+
+@pytest.mark.django_db
+def test_dashboard_nudges_in_the_last_trial_days(client, tenant, owner, plans):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    sub = tenant.subscription
+    client.force_login(owner)
+    assert "از دورهٔ رایگان مانده" not in client.get("/panel/", HTTP_HOST=host(tenant)).content.decode()
+    sub.current_period_end = timezone.now() + timedelta(days=3, hours=1)
+    sub.save()
+    page = client.get("/panel/", HTTP_HOST=host(tenant)).content.decode()
+    assert "۳ روز از دورهٔ رایگان مانده" in page and "«شروع»" in page
+    billing = client.get("/panel/billing/", HTTP_HOST=host(tenant)).content.decode()
+    assert "پیشنهاد ما برای دفتر شما" in billing and "دورهٔ رایگان تا" in billing

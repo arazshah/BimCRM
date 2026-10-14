@@ -122,20 +122,21 @@ def test_signup_flow_creates_workspace_with_trial(client, monkeypatch):
     assert resp.status_code == 302 and resp["Location"].endswith("/signup/")
     resp = client.post("/signup/", {"name": "نمایندگی تست", "full_name": "علی", "slug": "test-agency"}, HTTP_HOST=MAIN)
     assert resp.status_code == 302
-    client.post("/signup/template/", {"template": "khodro"}, HTTP_HOST=MAIN)
     from apps.billing.models import Addon, Package
 
-    page = client.get("/signup/plan/", HTTP_HOST=MAIN).content.decode()
+    page = client.get("/signup/template/", HTTP_HOST=MAIN).content.decode()
+    assert 'name="package"' not in page and "روز رایگان" in page and "پاک نمی‌شود" in page
+    resp = client.post("/signup/template/", {"template": "khodro"}, HTTP_HOST=MAIN)
     pro = Package.objects.get(name="حرفه‌ای")
-    assert page.count('name="package"') == 3 and "پیشنهاد ما" in page
-    resp = client.post("/signup/plan/", {"period": "yearly", "package": pro.pk}, HTTP_HOST=MAIN)
     tenant = Tenant.objects.get(slug="test-agency")
     assert resp.status_code == 302 and resp["Location"].startswith(f"http://test-agency.{MAIN}/panel/")
     sub = tenant.subscription
-    assert sub.status == Subscription.Status.TRIAL and sub.package == pro and sub.period == "yearly"
+    # Everyone starts the free trial on the recommended package; the package is chosen later in the panel.
+    assert sub.status == Subscription.Status.TRIAL and sub.package == pro and sub.period == "monthly"
+    assert client.get("/signup/plan/", HTTP_HOST=MAIN).status_code == 302
     assert sub.storage_tier == pro.storage_tier
     assert sub.active_addon_codes() == {"finance", "claims", "sms_campaigns", "advanced_reports"}
-    assert sub.user_limit() == 3 and sub.renewal_amount("yearly") == pro.yearly_price
+    assert sub.user_limit() == 3 and sub.renewal_amount("monthly") == pro.monthly_price
     assert SiteSettings.all_objects.get(tenant=tenant).template == "khodro"
     assert Membership.objects.get(tenant=tenant).role == "owner"
     assert User.objects.get(mobile="09121112233").full_name == "علی"
