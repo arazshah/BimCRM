@@ -473,3 +473,12 @@
   .promo { padding: 56px 0 50px; }
   .vplay-lg { width: 72px; height: 72px; }
 }
+
+/* ── Free-domain promo ── */
+.promo-ribbon { display: block; text-align: center; background: linear-gradient(90deg, #0a5f4f, #0e7c66 50%, #0a5f4f); color: #fff; font-size: 14px; padding: 9px 16px; text-decoration: none; line-height: 1.7; }
+.promo-ribbon b { display: inline-block; background: var(--stamp); color: var(--ink); border-radius: 99px; padding: 0 10px; margin-inline-end: 8px; font-size: 12.5px; }
+.promo-ribbon strong { color: #ffe08a; }
+.promo-ribbon:hover { background: #0a5f4f; }
+.dc-free { background: #1fc497; color: #06221b; }
+.dc-offer { background: rgba(31, 196, 151, .14); border: 1px solid rgba(31, 196, 151, .45); border-radius: 12px; padding: 10px 14px; }
+.dc-offer strong { color: #8ff0d0; }

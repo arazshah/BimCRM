@@ -1,3 +1,4 @@
+import datetime
 import re
 
 from django.conf import settings
@@ -119,6 +120,19 @@ class PlatformSettings(models.Model):
         default=True,
         help_text="بخش «دامنه را برایتان می‌خریم و راه می‌اندازیم» در سایت اصلی و پنل دفترها.",
     )
+    free_domain_until = models.DateField(
+        "طرح دامنه رایگان تا تاریخ",
+        null=True,
+        blank=True,
+        default=datetime.date(2026, 12, 20),
+        help_text="تا این تاریخ (میلادی) ثبت دامنه ir و راه‌اندازی رایگان اعلام می‌شود. خالی یعنی طرحی در کار نیست.",
+    )
+
+    @property
+    def free_domain_active(self) -> bool:
+        return bool(
+            self.domain_service_enabled and self.free_domain_until and timezone.localdate() <= self.free_domain_until
+        )
 
     # --- How agents pay for their subscription ---
     class PaymentMode(models.TextChoices):

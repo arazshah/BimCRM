@@ -36,6 +36,7 @@ class PlatformSettingsForm(forms.ModelForm):
             "google_site_verification",
             "smsir_signup_url",
             "domain_service_enabled",
+            "free_domain_until",
             "payment_mode",
             "order_grace_days",
             "order_payment_info",
@@ -93,7 +94,7 @@ class PlatformSettingsAdmin(admin.ModelAdmin):
         ),
         (
             "خدمات همکار",
-            {"fields": ("smsir_signup_url", "domain_service_enabled")},
+            {"fields": ("smsir_signup_url", "domain_service_enabled", "free_domain_until")},
         ),
         (
             "روش پرداخت اشتراک",
