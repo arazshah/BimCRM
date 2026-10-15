@@ -314,7 +314,9 @@ class Domain(models.Model):
 class InsuranceCompany(models.Model):
     name = models.CharField("نام شرکت", max_length=80, unique=True)
     logo = models.ImageField("لوگو", upload_to="companies/", blank=True)
-    website = models.URLField("سایت رسمی", blank=True, help_text="اگر پر شود، کلیک روی شرکت در صفحهٔ اصلی به این آدرس می‌رود.")
+    website = models.URLField(
+        "سایت رسمی", blank=True, help_text="اگر پر شود، کلیک روی شرکت در صفحهٔ اصلی به این آدرس می‌رود."
+    )
     is_active = models.BooleanField("فعال", default=True)
     order = models.PositiveIntegerField("ترتیب", default=0)
 
