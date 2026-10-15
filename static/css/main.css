@@ -562,3 +562,5 @@
 .hero-links { margin: 0; display: flex; flex-wrap: wrap; gap: 0 10px; }
 .topnav .nav-demo { color: var(--seal); font-weight: 700; }
 .topnav .nav-demo::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #e0484d; margin-inline-end: 6px; vertical-align: middle; }
+.insurers-more { grid-column: 1 / -1; margin: 8px 0 0; }
+.insurers-more a { color: #9fe9d2; font-weight: 700; }

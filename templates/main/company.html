@@ -1,0 +1,47 @@
+{% extends "main/base.html" %}
+{% block title %}نرم‌افزار دفتر نمایندگی {{ company.name }} — سایت و CRM برای نمایندگان {{ company.name }}{% endblock %}
+{% block og_title %}نرم‌افزار و سایت دفتر نمایندگی {{ company.name }}{% endblock %}
+{% block description %}نمایندهٔ {{ company.name }} هستید؟ سایت فروش آنلاین، پنل مشتری، یادآور تمدید، اقساط و گزارش کارمزد دفترتان را در ۵ دقیقه بسازید. {{ platform.trial_days }} روز رایگان.{% endblock %}
+{% block body_class %}help-page{% endblock %}
+{% block head_extra %}
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"بیمه‌نامه‌های {{ company.name|escapejs }} را چطور در پنل ثبت کنم؟","acceptedAnswer":{"@type":"Answer","text":"در پنل بخش بیمه‌نامه‌ها، شرکت را {{ company.name|escapejs }} انتخاب می‌کنید و شمارهٔ بیمه‌نامه، تاریخ شروع و پایان و حق بیمه را می‌نویسید. یا فهرست را از اکسل وارد می‌کنید."}},
+{"@type":"Question","name":"آیا CRM بیمه از طرف {{ company.name|escapejs }} است؟","acceptedAnswer":{"@type":"Answer","text":"خیر. CRM بیمه نرم‌افزار مستقل دفتر نمایندگی است و وابسته به هیچ شرکت بیمه‌ای نیست. نام شرکت فقط برای معرفی استفاده شده است."}},
+{"@type":"Question","name":"اگر علاوه بر {{ company.name|escapejs }} نمایندهٔ شرکت دیگری هم باشم؟","acceptedAnswer":{"@type":"Answer","text":"می‌توانید بیمه‌نامه‌های چند شرکت را در یک فهرست نگه دارید و بر حسب شرکت فیلتر و گزارش بگیرید."}}]}</script>
+{% endblock %}
+{% block content %}
+<div class="wrap" style="max-width:820px;padding:48px 0 72px">
+  <article class="help-article">
+    <nav class="crumbs" aria-label="مسیر"><a href="{% url 'main:company_hub' %}">شرکت‌های بیمه</a><span>›</span><span>{{ company.name }}</span></nav>
+    <h1>نرم‌افزار و سایت دفتر نمایندگی {{ company.name }}</h1>
+    <p class="lede">نمایندهٔ {{ company.name }} هستید؟ سایت فروش، پنل مشتری و حساب‌وکتاب دفترتان را یک‌جا و آنلاین داشته باشید؛ در ۵ دقیقه و {{ platform.trial_days }} روز رایگان.</p>
+    <div class="hbody">
+      <h2>کار روزانهٔ نمایندهٔ {{ company.name }} در پنل</h2>
+      <ol class="hsteps">
+        <li><strong>استعلام و صدور:</strong> مشتری از سایت دفتر شما برای هر رشته استعلام می‌گذارد و با کد پیگیری وضعیتش را می‌بیند.</li>
+        <li><strong>ثبت بیمه‌نامه:</strong> شمارهٔ بیمه‌نامه، تاریخ‌ها و حق بیمه ثبت می‌شود و پرونده‌اش کنار مشتری می‌ماند.</li>
+        <li><strong>تمدید:</strong> ۳۰، ۱۵ و ۳ روز مانده به پایان، پیامک یادآور می‌رود و برای همکار «تماس برای تمدید» ساخته می‌شود.</li>
+        <li><strong>اقساط و چک:</strong> سررسیدها و چک‌ها ثبت می‌شود و یادآور قسط می‌رود.</li>
+        <li><strong>خسارت:</strong> مشتری با عکس مدارک اعلام می‌کند و شما مرحله‌به‌مرحله پیگیری می‌کنید.</li>
+        <li><strong>گزارش:</strong> حق بیمهٔ صادرشده و کارمزد را بر حسب شرکت، رشته و همکار می‌بینید.</li>
+      </ol>
+      {% if lines %}<h2>رشته‌هایی که سایت دفتر شما نشان می‌دهد</h2>
+      <p>{% for l in lines %}{{ l.name }}{% if not forloop.last %}، {% endif %}{% endfor %}. هر رشته فرم استعلام مخصوص خودش را دارد و شما فقط رشته‌هایی را که می‌فروشید فعال می‌کنید.</p>{% endif %}
+      <h2>سؤال‌های رایج</h2>
+      <dl class="hdefs">
+        <div><dt>بیمه‌نامه‌های {{ company.name }} را چطور ثبت کنم؟</dt><dd>در بخش بیمه‌نامه‌ها، شرکت را «{{ company.name }}» انتخاب می‌کنید. اگر فهرست قدیمی در اکسل دارید، یک‌جا وارد می‌شود.</dd></div>
+        <div><dt>آیا از طرف {{ company.name }} است؟</dt><dd>خیر. CRM بیمه نرم‌افزار مستقل دفتر شماست و وابسته به هیچ شرکت بیمه‌ای نیست. نام شرکت فقط برای معرفی آمده است.</dd></div>
+        <div><dt>نمایندهٔ شرکت دیگری هم هستم.</dt><dd>مشکلی نیست؛ همهٔ شرکت‌ها در یک فهرست‌اند و بر حسب شرکت فیلتر و گزارش می‌گیرید. <a href="{% url 'main:guide' 'multi-company-agent' %}">بیشتر بخوانید</a>.</dd></div>
+      </dl>
+      <p><a class="btn" href="{{ PLATFORM_URL }}/#start">ساخت رایگان سایت و پنل</a> <a class="btn btn-ghost" href="{% url 'main:demo' %}">دموی زنده</a></p>
+      {% if company.website %}<p>سایت رسمی شرکت: <a href="{{ company.website }}" target="_blank" rel="noopener nofollow">{{ company.name }}</a></p>{% endif %}
+      <h2>مطالب مرتبط</h2>
+      <ul>
+        <li><a href="{% url 'main:guide' 'renewal-checklist' %}">چطور هیچ تمدیدی را از دست ندهیم؟</a></li>
+        <li><a href="{% url 'main:guide' 'agency-website' %}">سایت دفتر نمایندگی چه چیزهایی باید داشته باشد؟</a></li>
+      </ul>
+      <p style="font-size:13px;color:#6b7a90">نام و علامت شرکت‌ها متعلق به صاحبان آن‌هاست و برای معرفی سازگاری ذکر شده؛ CRM بیمه وابسته به آن‌ها نیست.</p>
+    </div>
+  </article>
+</div>
+{% endblock %}

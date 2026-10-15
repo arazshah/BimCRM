@@ -397,6 +397,18 @@ def help_articles():
     return h.ORDER
 
 
+def guide_list():
+    from . import guides as g
+
+    return g.GUIDES
+
+
+def company_list():
+    from apps.core.models import InsuranceCompany
+
+    return InsuranceCompany.objects.filter(is_active=True).exclude(slug="")
+
+
 def sitemap(request):
     base = f"{settings.PLATFORM_SCHEME}://{settings.PLATFORM_DOMAIN}"
     today = timezone.localdate().isoformat()
@@ -407,6 +419,64 @@ def sitemap(request):
         f"  <url><loc>{base}/help/</loc><lastmod>{today}</lastmod><priority>0.7</priority></url>\n"
         f"  <url><loc>{base}/help/videos/</loc><lastmod>{today}</lastmod><priority>0.7</priority></url>\n"
         + "".join(f"  <url><loc>{base}/help/{a.slug}/</loc><priority>0.6</priority></url>\n" for a in help_articles())
+        + f"  <url><loc>{base}/guides/</loc><lastmod>{today}</lastmod><priority>0.8</priority></url>\n"
+        + "".join(f"  <url><loc>{base}/guides/{x.slug}/</loc><priority>0.8</priority></url>\n" for x in guide_list())
+        + f"  <url><loc>{base}/bime/</loc><lastmod>{today}</lastmod><priority>0.7</priority></url>\n"
+        + "".join(f"  <url><loc>{base}/bime/{c.slug}/</loc><priority>0.6</priority></url>\n" for c in company_list())
         + "</urlset>\n"
     )
     return HttpResponse(xml, content_type="application/xml")
+
+
+def company_hub(request):
+    from apps.core.models import InsuranceCompany
+
+    companies = InsuranceCompany.objects.filter(is_active=True).exclude(slug="")
+    return render(request, "main/company_hub.html", {"companies": companies, "platform": PlatformSettings.load()})
+
+
+def company_page(request, slug):
+    from django.http import Http404
+
+    from apps.core.models import InsuranceCompany, LineOfBusiness
+
+    company = InsuranceCompany.objects.filter(is_active=True, slug=slug).first()
+    if company is None:
+        raise Http404
+    others = InsuranceCompany.objects.filter(is_active=True).exclude(slug="").exclude(pk=company.pk)[:8]
+    return render(
+        request,
+        "main/company.html",
+        {
+            "company": company,
+            "lines": LineOfBusiness.objects.filter(is_active=True),
+            "others": others,
+            "platform": PlatformSettings.load(),
+        },
+    )
+
+
+def guides_index(request):
+    from . import guides as g
+
+    return render(request, "main/guides_index.html", {"guides": g.GUIDES, "platform": PlatformSettings.load()})
+
+
+def guide_page(request, slug):
+    from django.http import Http404
+
+    from . import guides as g
+
+    guide = g.BY_SLUG.get(slug)
+    if guide is None:
+        raise Http404
+    return render(
+        request,
+        "main/guide.html",
+        {
+            "guide": guide,
+            "body_template": f"main/guides/{slug}.html",
+            "others": [x for x in g.GUIDES if x.slug != slug][:3],
+            "platform": PlatformSettings.load(),
+        },
+    )
