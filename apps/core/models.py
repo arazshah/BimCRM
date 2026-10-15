@@ -314,6 +314,7 @@ class Domain(models.Model):
 class InsuranceCompany(models.Model):
     name = models.CharField("نام شرکت", max_length=80, unique=True)
     logo = models.ImageField("لوگو", upload_to="companies/", blank=True)
+    slug = models.SlugField("شناسه صفحه", max_length=40, blank=True, help_text="برای آدرس صفحهٔ اختصاصی شرکت؛ مثل iran")
     website = models.URLField(
         "سایت رسمی", blank=True, help_text="اگر پر شود، کلیک روی شرکت در صفحهٔ اصلی به این آدرس می‌رود."
     )

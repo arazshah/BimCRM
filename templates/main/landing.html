@@ -100,6 +100,7 @@
       {% for c in companies %}<li>{% if c.website %}<a href="{{ c.website }}" target="_blank" rel="noopener nofollow ugc" title="سایت {{ c.name }}">{% endif %}{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}" loading="lazy" height="36">{% else %}<span>{{ c.name }}</span>{% endif %}{% if c.website %}</a>{% endif %}</li>{% endfor %}
     </ul>
     {% endif %}
+    <p class="insurers-more"><a href="{% url 'main:company_hub' %}">صفحهٔ اختصاصی نمایندگان هر شرکت ←</a></p>
   </div>
 </section>
 

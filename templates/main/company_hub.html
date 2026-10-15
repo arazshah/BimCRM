@@ -1,0 +1,16 @@
+{% extends "main/base.html" %}
+{% block title %}نرم‌افزار دفتر نمایندگی برای نمایندگان همهٔ شرکت‌های بیمه — CRM بیمه{% endblock %}
+{% block og_title %}نرم‌افزار دفتر نمایندگی برای نمایندگان همهٔ شرکت‌های بیمه{% endblock %}
+{% block description %}نمایندهٔ هر شرکت بیمه‌ای که هستید، سایت و پنل دفتر شما یکی است. شرکت خود را انتخاب کنید و ببینید CRM بیمه چطور کار دفتر را ساده می‌کند.{% endblock %}
+{% block body_class %}help-page{% endblock %}
+{% block content %}
+<div class="wrap" style="max-width:860px;padding:48px 0 72px">
+  <h1>نمایندهٔ کدام شرکت بیمه هستید؟</h1>
+  <p class="lede">CRM بیمه مال خود دفتر شماست، نه یک شرکت خاص؛ بیمه‌نامه‌های همهٔ شرکت‌ها در یک فهرست می‌آید.</p>
+  <ul class="insurer-grid" style="list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:10px;margin:28px 0">
+    {% for c in companies %}<li><a class="btn btn-ghost" href="{% url 'main:company' c.slug %}">{{ c.name }}</a></li>{% endfor %}
+  </ul>
+  <p>اگر نمایندهٔ چند شرکت هستید، <a href="{% url 'main:guide' 'multi-company-agent' %}">این مقاله</a> را ببینید.</p>
+  <p class="hhelp" style="margin-top:24px">نام شرکت‌ها فقط برای معرفی سازگاری ذکر شده است؛ CRM بیمه وابسته به هیچ شرکت بیمه‌ای نیست.</p>
+</div>
+{% endblock %}
