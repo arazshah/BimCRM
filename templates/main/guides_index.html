@@ -1,0 +1,18 @@
+{% extends "main/base.html" %}
+{% block title %}مقاله‌های آموزشی برای نمایندگان بیمه — CRM بیمه{% endblock %}
+{% block og_title %}مقاله‌های آموزشی برای نمایندگان بیمه{% endblock %}
+{% block description %}راهنمای عملی مدیریت دفتر نمایندگی بیمه: تمدید، اقساط و چک، سایت دفتر، انتخاب CRM و کار با چند شرکت بیمه.{% endblock %}
+{% block body_class %}help-page{% endblock %}
+{% block content %}
+<div class="wrap" style="max-width:860px;padding:48px 0 72px">
+  <h1>مقاله‌های آموزشی برای نمایندگان بیمه</h1>
+  <p class="lede">نکته‌های کوتاه و عملی برای گرداندن بهتر دفتر نمایندگی؛ چه از CRM بیمه استفاده کنید چه نه.</p>
+  <div class="hbody">
+  {% for g in guides %}
+    <h2><a href="{% url 'main:guide' g.slug %}">{{ g.title }}</a></h2>
+    <p>{{ g.summary }}</p>
+  {% endfor %}
+  <p><a href="{% url 'main:company_hub' %}">صفحهٔ نمایندگان هر شرکت بیمه ←</a></p>
+  </div>
+</div>
+{% endblock %}

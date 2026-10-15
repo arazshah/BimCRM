@@ -1,0 +1,21 @@
+{% extends "main/base.html" %}
+{% block title %}{{ guide.title }} — CRM بیمه{% endblock %}
+{% block og_title %}{{ guide.title }}{% endblock %}
+{% block description %}{{ guide.summary }}{% endblock %}
+{% block body_class %}help-page{% endblock %}
+{% block head_extra %}
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"{{ guide.title|escapejs }}","description":"{{ guide.summary|escapejs }}","inLanguage":"fa-IR","mainEntityOfPage":"{{ PLATFORM_URL }}{{ request.path }}","author":{"@type":"Organization","name":"CRM بیمه"},"publisher":{"@type":"Organization","name":"CRM بیمه","url":"{{ PLATFORM_URL }}/"}}</script>
+{% endblock %}
+{% block content %}
+<div class="wrap" style="max-width:820px;padding:48px 0 72px">
+  <article class="help-article">
+    <nav class="crumbs" aria-label="مسیر"><a href="{% url 'main:guides' %}">مقاله‌ها</a></nav>
+    <h1>{{ guide.title }}</h1>
+    <p class="lede">{{ guide.summary }}</p>
+    <div class="hbody">{% include body_template %}</div>
+    <div class="hhelp"><strong>خودتان امتحان کنید:</strong> سایت و پنل دفتر را {{ platform.trial_days }} روز رایگان بسازید یا اول <a href="{% url 'main:demo' %}">دموی زنده</a> را ببینید.</div>
+    <h2>مقاله‌های دیگر</h2>
+    <ul>{% for g in others %}<li><a href="{% url 'main:guide' g.slug %}">{{ g.title }}</a></li>{% endfor %}</ul>
+  </article>
+</div>
+{% endblock %}
