@@ -67,16 +67,17 @@ services:
       - traefik.http.services.bimcrm-wild.loadbalancer.server.port=8000
       # Catch-all router for agents' own domains (e.g. alborz8351.ir): anything that isn't
       # *.bimcrm.ir. Priority 0 (below the wildcard above) so it only matches when nothing more
-      # specific did. Needs the `letsencrypt-http` resolver in the Coolify proxy config
-      # (DEPLOY.md, section 4b) — a plain HTTP-01 resolver with no domains listed, so Traefik
-      # requests a certificate on demand for whatever hostname it sees, the first time someone
-      # visits it. That first visit only succeeds once the domain's own A record points here,
-      # which PDNS_API_URL (above) sets up automatically when the agent's NS is confirmed.
+      # specific did. Uses Coolify's own default `letsencrypt` resolver — it's already a plain
+      # HTTP-01 challenge with no fixed domain list, so Traefik requests a certificate on demand
+      # for whatever hostname it sees, the first time someone visits it. Nothing to add in the
+      # Coolify proxy config for this. That first visit only succeeds once the domain's own A
+      # record points here, which PDNS_API_URL (above) sets up automatically when the agent's NS
+      # is confirmed.
       - traefik.http.routers.bimcrm-custom.rule=HostRegexp(`^.+$$`)
       - traefik.http.routers.bimcrm-custom.priority=0
       - traefik.http.routers.bimcrm-custom.entrypoints=https
       - traefik.http.routers.bimcrm-custom.tls=true
-      - traefik.http.routers.bimcrm-custom.tls.certresolver=letsencrypt-http
+      - traefik.http.routers.bimcrm-custom.tls.certresolver=letsencrypt
       - traefik.http.routers.bimcrm-custom.service=bimcrm-wild
       - traefik.http.routers.bimcrm-custom-http.rule=HostRegexp(`^.+$$`)
       - traefik.http.routers.bimcrm-custom-http.priority=0

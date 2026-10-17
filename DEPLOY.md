@@ -115,15 +115,9 @@ Docker Hub درخواست‌های IP ایران را رد می‌کند، پس 
 
 با این سه متغیر، به‌محض اینکه NS یک دامنه تأیید شود، برنامه خودش در PowerDNS یک zone برای آن می‌سازد و رکورد A آن را به همین سرور می‌زند (هر ۵ دقیقه، با همان کاری که NS را چک می‌کند). برای دامنه‌هایی که از قبل «فعال» شده‌اند ولی این قبل از اضافه‌شدن این سه متغیر بوده (مثل همین `alborz8351.ir`)، از `admin.bimcrm.ir` → دامنه‌ها، آن را تیک بزن و عمل «ساخت/اصلاح zone در PowerDNS همین حالا» را بزن.
 
-برای گواهی TLS، یک certresolver دوم لازم است (HTTP-01 ساده، بدون دامنه‌ی ثابت؛ Traefik اولین باری که کسی از آن دامنه بازدید کند، گواهی را خودش می‌گیرد). در Coolify → Servers → سرور → Proxy → Configuration، کنار `letsencrypt-dns` از گام ۴، این را هم زیر `command:` اضافه کن:
+برای گواهی TLS نیازی به هیچ تنظیم اضافه‌ای در Proxy نیست؛ Coolify از قبل یک certresolver به اسم `letsencrypt` دارد که همان HTTP-01 ساده و بدون دامنه‌ی ثابت است (همان‌جایی که `--certificatesresolvers.letsencrypt.acme.httpchallenge=true` است) — همین الان هم در فایل خودت هست. اولین باری که کسی آن دامنه را باز کند، Traefik خودش از همین مسیر گواهی می‌گیرد؛ فقط باید دامنه از قبل به این سرور برسد (همان کاری که `PDNS_API_URL` بالا خودکار انجام می‌دهد).
 
-```yaml
-      - '--certificatesresolvers.letsencrypt-http.acme.email=YOUR_EMAIL'
-      - '--certificatesresolvers.letsencrypt-http.acme.storage=/traefik/acme-http.json'
-      - '--certificatesresolvers.letsencrypt-http.acme.httpchallenge.entrypoint=http'
-```
-
-Save و Restart Proxy. این ریپو را دوباره دیپلوی کن (روترهای `bimcrm-custom*` در `docker-compose.yml` هستند). چند دقیقه صبر کن تا تسک ۵دقیقه‌ای zone را بسازد، بعد دامنه را باز کن؛ اولین بازدید کمی طول می‌کشد چون Traefik دارد گواهی می‌گیرد.
+این ریپو را دیپلوی کن (روترهای `bimcrm-custom*` در `docker-compose.yml` هستند). چند دقیقه صبر کن تا تسک ۵دقیقه‌ای zone را بسازد، بعد دامنه را باز کن؛ اولین بازدید کمی طول می‌کشد چون Traefik دارد گواهی می‌گیرد.
 
 ### مانده
 - اگر `PDNS_API_URL` خالی بماند، همهٔ این بخش غیرفعال است و رفتار قبلی (فقط ثبت NS، بدون ساخت zone) ادامه پیدا می‌کند — مشکلی نیست برای پلتفرمی که فقط زیردامنه می‌فروشد.
