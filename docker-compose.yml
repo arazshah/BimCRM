@@ -64,6 +64,7 @@ services:
       - traefik.http.routers.bimcrm-wild-http.priority=1
       - traefik.http.routers.bimcrm-wild-http.entrypoints=http
       - traefik.http.routers.bimcrm-wild-http.middlewares=redirect-to-https
+      - traefik.http.routers.bimcrm-wild-http.service=bimcrm-wild
       - traefik.http.services.bimcrm-wild.loadbalancer.server.port=8000
       # Catch-all router for agents' own domains (e.g. alborz8351.ir): anything that isn't
       # *.bimcrm.ir. Priority 0 (below the wildcard above) so it only matches when nothing more
@@ -83,6 +84,7 @@ services:
       - traefik.http.routers.bimcrm-custom-http.priority=0
       - traefik.http.routers.bimcrm-custom-http.entrypoints=http
       - traefik.http.routers.bimcrm-custom-http.middlewares=redirect-to-https
+      - traefik.http.routers.bimcrm-custom-http.service=bimcrm-wild
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
       interval: 30s
