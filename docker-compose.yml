@@ -89,6 +89,12 @@ services:
       timeout: 5s
       retries: 3
       start_period: 40s
+    # Also join the shared `coolify` network (same one Traefik and the PowerDNS stack use) so
+    # the admin "rebuild zone" action can reach bimcrm-pdns:8081. `default` keeps talking to
+    # db/redis as before — Compose drops it once a service lists `networks:` explicitly.
+    networks:
+      default: {}
+      coolify: {}
 
   worker:
     build: .
@@ -100,6 +106,11 @@ services:
     depends_on:
       web:
         condition: service_healthy
+    # Runs check_pending_domains, which is what actually calls the PowerDNS API — needs the
+    # same network access as `web` above.
+    networks:
+      default: {}
+      coolify: {}
 
   beat:
     build: .
@@ -135,3 +146,8 @@ volumes:
   pgdata:
   redisdata:
   media:
+
+networks:
+  default: {}
+  coolify:
+    external: true
