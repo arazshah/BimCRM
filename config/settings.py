@@ -22,6 +22,13 @@ SECRET_KEY = env("SECRET_KEY", default="dev-insecure-key-change-me" if DEBUG els
 ALLOWED_HOSTS = ["*"]
 
 PLATFORM_DOMAIN = env("PLATFORM_DOMAIN", default="bimcrm.localhost")
+
+# PowerDNS API: used to create a DNS zone (with an A record to this server) for an agent's own
+# domain once its NS records point here. Empty PDNS_API_URL disables this (nothing happens; the
+# domain just stays "active" in our DB without a working zone, as before this was built).
+PDNS_API_URL = env("PDNS_API_URL", default="")
+PDNS_API_KEY = env("PDNS_API_KEY", default="")
+SERVER_PUBLIC_IP = env("SERVER_PUBLIC_IP", default="")
 PLATFORM_SCHEME = env("PLATFORM_SCHEME", default="http" if DEBUG else "https")
 PLATFORM_NAMESERVERS = env.list("PLATFORM_NAMESERVERS", default=["ns1.bimcrm.ir", "ns2.bimcrm.ir"])
 ADMIN_SUBDOMAIN = "admin"

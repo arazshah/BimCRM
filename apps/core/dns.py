@@ -36,8 +36,15 @@ def nameservers_match(found: list[str], expected: list[str]) -> bool:
 
 
 def check_domain(domain: Domain, resolver=lookup_nameservers) -> bool:
+    from . import pdns
+
     expected = PlatformSettings.load().get_nameservers()
     found = resolver(domain.hostname)
     ok = nameservers_match(found, expected)
+    was_active = domain.status == Domain.Status.ACTIVE
     domain.mark_checked(found, ok)
+    if ok and not was_active:
+        # First time this domain's NS pointed here: without a zone, PowerDNS has nothing to
+        # answer and the domain never actually resolves, even though our status says "active".
+        pdns.ensure_zone(domain.hostname, expected)
     return ok
