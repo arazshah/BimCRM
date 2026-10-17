@@ -37,3 +37,36 @@ def test_company_logo_chip_links_out_only_with_website(client, db):
 @pytest.mark.parametrize("path", ["/guides/renewal-checklist/", "/bime/saman/"])
 def test_in_sitemap(client, db, path):
     assert path in client.get("/sitemap.xml", HTTP_HOST=MAIN).content.decode()
+
+
+def test_landing_shows_active_showcases_only(client, db, tenant):
+    from apps.core.models import Showcase
+
+    shown = Showcase.objects.create(tenant=tenant, name="دفتر نمونه", url="https://alborz8351.ir/", order=0)
+    Showcase.objects.create(name="غیرفعال", url="https://x.example/", is_active=False)
+    html = client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert shown.name in html and "alborz8351.ir" in html
+    assert "غیرفعال" not in html
+
+
+def test_seed_first_showcase_links_alborz_domain_when_present(db, tenant):
+    from django.apps import apps as django_apps
+
+    from apps.core.migrations._0014_support import seed_first_showcase
+    from apps.core.models import Domain, Showcase
+
+    Domain.objects.create(tenant=tenant, hostname="alborz8351.ir")
+    seed_first_showcase(django_apps, None)
+    assert Showcase.objects.filter(url="https://alborz8351.ir/", tenant=tenant).exists()
+    seed_first_showcase(django_apps, None)  # idempotent
+    assert Showcase.objects.filter(url="https://alborz8351.ir/").count() == 1
+
+
+def test_seed_first_showcase_is_noop_without_the_domain(db):
+    from django.apps import apps as django_apps
+
+    from apps.core.migrations._0014_support import seed_first_showcase
+    from apps.core.models import Showcase
+
+    seed_first_showcase(django_apps, None)
+    assert not Showcase.objects.exists()

@@ -5,7 +5,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from .crypto import fernet
 from .dns import check_domain
-from .models import Domain, InsuranceCompany, LineOfBusiness, PlatformSettings, ReservedSubdomain, Tenant
+from .models import Domain, InsuranceCompany, LineOfBusiness, PlatformSettings, ReservedSubdomain, Showcase, Tenant
 
 
 class PlatformSettingsForm(forms.ModelForm):
@@ -199,6 +199,14 @@ class ReservedSubdomainAdmin(admin.ModelAdmin):
 class InsuranceCompanyAdmin(admin.ModelAdmin):
     list_display = ("name", "is_active", "order")
     list_editable = ("is_active", "order")
+
+
+@admin.register(Showcase)
+class ShowcaseAdmin(admin.ModelAdmin):
+    list_display = ("name", "url", "tenant", "is_active", "order", "created_at")
+    list_editable = ("is_active", "order")
+    list_filter = ("is_active",)
+    search_fields = ("name", "url")
 
 
 @admin.register(LineOfBusiness)

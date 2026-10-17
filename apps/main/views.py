@@ -16,7 +16,7 @@ from apps.accounts.sms import SmsError, send_platform_otp
 from apps.billing import zarinpal
 from apps.billing.models import Invoice, Package, Period, Subscription
 from apps.billing.services import create_workspace
-from apps.core.models import InsuranceCompany, PlatformSettings, Tenant, is_subdomain_available
+from apps.core.models import InsuranceCompany, PlatformSettings, Showcase, Tenant, is_subdomain_available
 from apps.sites import registry
 from apps.sites.demo import demo_context
 
@@ -39,6 +39,7 @@ def landing(request):
             **_pricing(),
             "platform": PlatformSettings.load(),
             "companies": InsuranceCompany.objects.filter(is_active=True),
+            "showcases": Showcase.objects.filter(is_active=True).select_related("tenant"),
         },
     )
 
