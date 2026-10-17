@@ -13,6 +13,13 @@ services:
       FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY}     # set in Coolify
       PLATFORM_DOMAIN: ${PLATFORM_DOMAIN:-bimcrm.ir}
       PLATFORM_NAMESERVERS: ${PLATFORM_NAMESERVERS:-ns1.bimcrm.ir,ns2.bimcrm.ir}
+      # Lets the app create a PowerDNS zone (+ A record to this server) for an agent's own domain
+      # once its NS points here. Leave empty to keep agent-domain connecting as "NS only, no site
+      # yet" (see DEPLOY.md section 4). PDNS_API_URL is the same PowerDNS used for the wildcard
+      # cert, e.g. http://bimcrm-pdns:8081.
+      PDNS_API_URL: ${PDNS_API_URL:-}
+      PDNS_API_KEY: ${PDNS_API_KEY:-}
+      SERVER_PUBLIC_IP: ${SERVER_PUBLIC_IP:-}
       SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-.bimcrm.ir}
       CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://bimcrm.ir,https://*.bimcrm.ir}
       SECURE_SSL: "True"
@@ -58,6 +65,23 @@ services:
       - traefik.http.routers.bimcrm-wild-http.entrypoints=http
       - traefik.http.routers.bimcrm-wild-http.middlewares=redirect-to-https
       - traefik.http.services.bimcrm-wild.loadbalancer.server.port=8000
+      # Catch-all router for agents' own domains (e.g. alborz8351.ir): anything that isn't
+      # *.bimcrm.ir. Priority 0 (below the wildcard above) so it only matches when nothing more
+      # specific did. Needs the `letsencrypt-http` resolver in the Coolify proxy config
+      # (DEPLOY.md, section 4b) — a plain HTTP-01 resolver with no domains listed, so Traefik
+      # requests a certificate on demand for whatever hostname it sees, the first time someone
+      # visits it. That first visit only succeeds once the domain's own A record points here,
+      # which PDNS_API_URL (above) sets up automatically when the agent's NS is confirmed.
+      - traefik.http.routers.bimcrm-custom.rule=HostRegexp(`^.+$$`)
+      - traefik.http.routers.bimcrm-custom.priority=0
+      - traefik.http.routers.bimcrm-custom.entrypoints=https
+      - traefik.http.routers.bimcrm-custom.tls=true
+      - traefik.http.routers.bimcrm-custom.tls.certresolver=letsencrypt-http
+      - traefik.http.routers.bimcrm-custom.service=bimcrm-wild
+      - traefik.http.routers.bimcrm-custom-http.rule=HostRegexp(`^.+$$`)
+      - traefik.http.routers.bimcrm-custom-http.priority=0
+      - traefik.http.routers.bimcrm-custom-http.entrypoints=http
+      - traefik.http.routers.bimcrm-custom-http.middlewares=redirect-to-https
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
       interval: 30s

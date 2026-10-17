@@ -170,12 +170,23 @@ class DomainAdmin(admin.ModelAdmin):
     list_display = ("hostname", "tenant", "status", "is_primary", "last_checked_at", "last_seen_ns")
     list_filter = ("status",)
     search_fields = ("hostname", "tenant__slug")
-    actions = ["check_now"]
+    actions = ["check_now", "rebuild_dns_zone"]
 
     @admin.action(description="بررسی NS همین حالا")
     def check_now(self, request, queryset):
         ok = sum(check_domain(d) for d in queryset)
         self.message_user(request, f"{ok} دامنه از {queryset.count()} فعال است.", messages.INFO)
+
+    @admin.action(description="ساخت/اصلاح zone در PowerDNS همین حالا")
+    def rebuild_dns_zone(self, request, queryset):
+        from . import pdns
+
+        nameservers = PlatformSettings.load().get_nameservers()
+        done = sum(pdns.ensure_zone(d.hostname, nameservers) for d in queryset)
+        if not settings.PDNS_API_URL:
+            self.message_user(request, "PDNS_API_URL تنظیم نشده؛ این بخش روی این سرور فعال نیست.", messages.WARNING)
+        else:
+            self.message_user(request, f"zone {done} دامنه از {queryset.count()} ساخته/اصلاح شد.", messages.INFO)
 
 
 @admin.register(ReservedSubdomain)
