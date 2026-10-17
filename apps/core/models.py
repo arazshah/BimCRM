@@ -311,6 +311,29 @@ class Domain(models.Model):
         self.save(update_fields=["last_checked_at", "last_seen_ns", "status", "activated_at"])
 
 
+class Showcase(models.Model):
+    """A real agent's live site, shown on the landing page as social proof ("نمایندگانی که به ما
+    اعتماد کرده‌اند"). Add more any time from admin; tenant is optional (a site can be listed even
+    after its workspace is gone, or before one exists for it)."""
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, blank=True, related_name="showcases")
+    name = models.CharField("نام دفتر", max_length=80)
+    url = models.URLField("آدرس سایت")
+    logo = models.ImageField("لوگو یا عکس (اختیاری)", upload_to="showcases/", blank=True)
+    note = models.CharField("یک جمله نظر دفتر (اختیاری)", max_length=160, blank=True)
+    is_active = models.BooleanField("فعال", default=True)
+    order = models.PositiveIntegerField("ترتیب", default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "دفتر نمونه (اعتماد مشتریان)"
+        verbose_name_plural = "دفترهای نمونه (اعتماد مشتریان)"
+        ordering = ["order", "-created_at"]
+
+    def __str__(self):
+        return self.name
+
+
 class InsuranceCompany(models.Model):
     name = models.CharField("نام شرکت", max_length=80, unique=True)
     logo = models.ImageField("لوگو", upload_to="companies/", blank=True)

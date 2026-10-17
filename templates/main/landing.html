@@ -90,6 +90,27 @@
   </div>
 </section>
 
+{% if showcases %}
+{# ───────── Showcase: real agent sites ───────── #}
+<section class="showcase" aria-labelledby="showcase-title">
+  <div class="wrap">
+    <h2 id="showcase-title">دفترهایی که با CRM بیمه سایت و پنلشان را راه انداختند</h2>
+    <ul class="showcase-list">
+      {% for s in showcases %}
+      <li class="showcase-card">
+        <a href="{{ s.url }}" target="_blank" rel="noopener">
+          {% if s.logo %}<img src="{{ s.logo.url }}" alt="{{ s.name }}" loading="lazy">{% else %}<span class="showcase-mark" aria-hidden="true">{{ s.name|slice:":1" }}</span>{% endif %}
+          <span class="showcase-name">{{ s.name }}</span>
+          <span class="showcase-url" dir="ltr">{{ s.url|cut:"https://"|cut:"http://"|cut:"/" }}</span>
+        </a>
+        {% if s.note %}<p class="showcase-note">«{{ s.note }}»</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
 {# ───────── Insurers ───────── #}
 <section class="insurers" aria-labelledby="insurers-title">
   <div class="wrap insurers-inner">
