@@ -49,6 +49,16 @@ def test_landing_shows_active_showcases_only(client, db, tenant):
     assert "غیرفعال" not in html
 
 
+def test_showcase_logo_is_servable_from_main_site(client, db, settings):
+    import os
+
+    os.makedirs(os.path.join(settings.MEDIA_ROOT, "showcases"), exist_ok=True)
+    with open(os.path.join(settings.MEDIA_ROOT, "showcases", "8351.jpg"), "wb") as fh:
+        fh.write(b"\xff\xd8\xff")
+    resp = client.get("/media/showcases/8351.jpg", HTTP_HOST=MAIN)
+    assert resp.status_code == 200
+
+
 def test_seed_first_showcase_links_alborz_domain_when_present(db, tenant):
     from django.apps import apps as django_apps
 
