@@ -440,6 +440,16 @@ def test_payment_callback_extends_subscription(client, tenant, owner, monkeypatc
     assert sub.current_period_end == end
 
 
+def test_subscription_payment_redirect_sends_only_site_origin_as_referrer(client, tenant, owner, monkeypatch):
+    online_payments()
+    monkeypatch.setattr("apps.billing.zarinpal.request_payment", lambda *a, **k: ("A123", "https://pay/StartPay/A123"))
+    client.force_login(owner)
+
+    response = client.post(f"/pay/{tenant.slug}/", {"period": "yearly"}, HTTP_HOST=MAIN)
+
+    assert response["Referrer-Policy"] == "strict-origin-when-cross-origin"
+
+
 def test_payment_by_non_member_is_404(client, tenant, other_tenant):
     client.force_login(other_tenant.owner)
     assert client.post(f"/pay/{tenant.slug}/", {"period": "monthly"}, HTTP_HOST=MAIN).status_code == 404
