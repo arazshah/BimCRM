@@ -26,7 +26,7 @@
 {% if companies %}
 <section class="e-companies" aria-label="شرکت‌های همکار"><div class="site-wrap">
   <p class="e-co-label">همکاری با</p>
-  <ul>{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}">{% else %}{{ c.name }}{% endif %}</li>{% endfor %}</ul>
+  <ul>{% for c in companies %}<li>{% if c.logo and c.logo.url %}<img src="{{ c.logo.url }}" alt="" loading="lazy">{% endif %}<span>{{ c.name }}</span></li>{% endfor %}</ul>
 </div></section>
 {% endif %}
 

@@ -9,7 +9,7 @@
       <a class="m-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% else %}<span class="m-mark" aria-hidden="true"><svg><use href="#i-shield"/></svg></span>{% endif %}<span>{{ tenant.name }}</span></a>
       <nav class="m-nav" aria-label="منو">
         <a href="/#lines">بیمه‌ها</a>
-        <a href="/#faq">سؤالات</a>
+        {% if faqs %}<a href="/#faq">سؤالات</a>{% endif %}
         <a href="/track/">پیگیری درخواست</a>
         {% if can_portal %}<a href="/account/">ورود مشتریان</a>{% endif %}
         <a class="m-cta" href="/#quote">استعلام آنلاین</a>

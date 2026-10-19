@@ -108,9 +108,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 760px) {
   body { padding-bottom: 68px; }
   .s-mbar { display: flex; position: fixed; inset-inline: 10px; bottom: 10px; z-index: 30; gap: 6px; padding: 6px; background: rgba(255, 255, 255, .96); backdrop-filter: blur(8px); border-radius: 16px; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .35); border: 1px solid rgba(0, 0, 0, .06); }
-  .s-mbar a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 12px; font-weight: 700; color: #2a3340; text-decoration: none; padding: 6px 4px; border-radius: 11px; }
-  .s-mbar svg { width: 20px; height: 20px; }
-.s-mbar .s-mbar-main { flex: 1.6; flex-direction: row; justify-content: center; gap: .4rem; font-size: 15px; background: var(--brand); color: var(--s-on-brand); }
+  .s-mbar a { flex: 1; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 5px; min-height: 42px; font-size: 12px; font-weight: 700; color: #2a3340; text-decoration: none; padding: 6px 8px; border-radius: 11px; }
+  .s-mbar svg { width: 18px; height: 18px; flex: none; }
+  .s-mbar .s-mbar-main { flex: 1.6; gap: .4rem; font-size: 14px; background: var(--brand); color: var(--s-on-brand); }
 }
 
 /* Sub-pages: quote done, tracking, customer portal */
@@ -190,3 +190,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .club-tier { font-size: 12.5px; font-weight: 800; background: #1d2a3b; color: #fff; border-radius: 99px; padding: .1rem .7rem; }
 .club-share { display: grid; grid-template-columns: 1fr auto; gap: .5rem; }
 .club-share input { min-width: 0; }
+
+/* Shared finishing: content-led columns and no empty contact/partner slots. */
+.s-footer-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); align-items: start; }
+.s-co-list li { gap: .6rem; }
+.s-co-list .s-co-name { line-height: 1.7; }
+.s-co-list img { max-width: 100%; object-fit: contain; }

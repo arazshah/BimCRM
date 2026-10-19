@@ -67,3 +67,28 @@
   .k-brand { font-size: 18px; }
   .t-khanevadeh .s-contact { border-radius: 36px 36px 0 0; }
 }
+
+/* Visual refresh: a calm family-office identity with a clear service entry point. */
+.t-khanevadeh { --soft: #fbf2f5; --s-alt: #f7f1ed; --s-line: #eadde2; --s-r: 18px; background: #fffdfc; }
+.k-header { background: #fffdfc; border-bottom: 1px solid var(--s-line); }
+.k-hero { padding: 54px 0 72px; border-radius: 0; border-bottom: 1px solid var(--s-line); background: #fbf2f5; }
+.k-hero::before { width: 360px; height: 360px; inset-inline-end: -110px; top: -120px; background: transparent; border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent); box-shadow: 0 0 0 28px rgba(163,33,79,.035), 0 0 0 58px rgba(163,33,79,.025); }
+.k-hero-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(28px, 5vw, 68px); }
+.k-roof { width: 148px; margin-bottom: .6rem; }
+.k-hero h1 { max-width: 13em; font-size: clamp(36px, 4.3vw, 56px); line-height: 1.45; }
+.k-form { border: 1px solid var(--s-line); border-bottom: 5px solid var(--brand); border-radius: 18px 4px 18px 4px; box-shadow: 0 20px 48px -38px rgba(70,42,53,.45); }
+.k-protect { background: #fffdfc; }
+.k-tiles a { border: 1px solid var(--s-line); border-radius: 18px 4px 18px 4px; background: #fff; }
+.k-tile-icon { border-radius: 14px 4px 14px 4px; box-shadow: none; background: var(--soft); }
+.t-khanevadeh .s-stats-list { border-radius: 4px 18px 4px 18px; }
+.t-khanevadeh .s-steps-list li { border-radius: 4px 18px 4px 18px; }
+.t-khanevadeh .s-contact { border-radius: 0; }
+
+@media (max-width: 900px) {
+  .k-hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  .k-hero { padding: 36px 0 48px; }
+}
+@media (max-width: 560px) {
+  .k-hero { padding: 26px 0 36px; }
+  .k-form { border-radius: 14px 4px 14px 4px; }
+}
