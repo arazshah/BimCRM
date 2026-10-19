@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from unittest.mock import patch
 
 import pytest
 from django.utils import timezone
@@ -311,6 +312,19 @@ def test_domain_validation(client, tenant, owner):
     resp = client.post("/panel/domains/", {"hostname": f"x.{MAIN}"}, HTTP_HOST=host(tenant))
     assert "زیردامنه" in resp.content.decode()
     assert normalize_hostname("HTTP://www.Test.ir/path") == "test.ir"
+
+
+def test_domain_check_queues_traefik_route_sync(client, tenant, owner):
+    client.force_login(owner)
+    domain = Domain.objects.create(tenant=tenant, hostname="alborz8351.ir")
+    with (
+        patch("apps.panel.views.check_domain", return_value=True),
+        patch("apps.core.tasks.sync_custom_domain_routes.delay") as queue_sync,
+    ):
+        response = client.post(f"/panel/domains/{domain.pk}/", {"action": "check"}, HTTP_HOST=host(tenant))
+
+    assert response.status_code == 302
+    queue_sync.assert_called_once_with()
 
 
 # ---------- Public site ----------

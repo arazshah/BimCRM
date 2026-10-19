@@ -29,6 +29,8 @@ PLATFORM_DOMAIN = env("PLATFORM_DOMAIN", default="bimcrm.localhost")
 PDNS_API_URL = env("PDNS_API_URL", default="")
 PDNS_API_KEY = env("PDNS_API_KEY", default="")
 SERVER_PUBLIC_IP = env("SERVER_PUBLIC_IP", default="")
+# Worker writes the single BimCRM-owned dynamic config file watched by the Coolify Traefik proxy.
+TRAEFIK_DYNAMIC_CONFIG_FILE = env("TRAEFIK_DYNAMIC_CONFIG_FILE", default="")
 PLATFORM_SCHEME = env("PLATFORM_SCHEME", default="http" if DEBUG else "https")
 PLATFORM_NAMESERVERS = env.list("PLATFORM_NAMESERVERS", default=["ns1.bimcrm.ir", "ns2.bimcrm.ir"])
 ADMIN_SUBDOMAIN = "admin"

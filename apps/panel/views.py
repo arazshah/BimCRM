@@ -1,5 +1,6 @@
 import csv
 import io
+import logging
 from datetime import timedelta
 
 from django import forms
@@ -47,6 +48,17 @@ from .forms import (
 from .views_work import customer_work_context
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
+
+
+def _queue_custom_domain_route_sync():
+    from apps.core.tasks import sync_custom_domain_routes
+
+    try:
+        sync_custom_domain_routes.delay()
+    except Exception:
+        # The periodic reconciliation retries if Redis is temporarily unavailable.
+        logger.exception("Unable to queue BimCRM custom-domain route synchronization")
 
 
 def _site(request) -> SiteSettings:
@@ -572,6 +584,7 @@ def domain_action(request, pk):
     action = request.POST.get("action")
     if action == "check":
         ok = check_domain(domain)
+        _queue_custom_domain_route_sync()
         if ok:
             messages.success(request, f"{domain.hostname} فعال شد. گواهی SSL ظرف چند دقیقه صادر می‌شود.")
         else:
@@ -586,6 +599,7 @@ def domain_action(request, pk):
         messages.success(request, f"{domain.hostname} دامنه اصلی سایت شد.")
     elif action == "delete":
         domain.delete()
+        _queue_custom_domain_route_sync()
         messages.success(request, "دامنه حذف شد.")
     return redirect("panel:domains")
 
