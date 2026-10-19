@@ -1,7 +1,7 @@
 import pytest
 from django.db import IntegrityError, transaction
 
-from apps.core.models import LineOfBusiness
+from apps.core.models import InsuranceCompany, LineOfBusiness
 from apps.core.tenancy import tenant_context
 from apps.crm.models import QuoteRequest
 from apps.sites.models import SiteLineContent, SiteSettings
@@ -68,6 +68,43 @@ def test_line_detail_renders_in_every_existing_template(client, tenant, template
     assert response.status_code == 200
     assert "شخص ثالث" in html and 'rel="canonical"' in html
     assert "<title>شخص ثالث | نمایندگی البرز ۱۲۳۴</title>" in html
+
+
+@pytest.mark.parametrize("template", ["modern", "etemad", "khanevadeh", "khodro", "chandsherkati"])
+def test_homepage_navigation_does_not_point_to_missing_optional_sections(client, tenant, template):
+    site = publishable_site(tenant)
+    site.template = template
+    site.about = ""
+    site.save(update_fields=["template", "about"])
+
+    html = client.get("/", HTTP_HOST=host(tenant)).content.decode()
+
+    assert 'href="/#faq"' not in html
+    assert 'href="/#about"' not in html
+
+
+def test_homepage_keeps_company_name_visible_when_logo_is_empty(client, tenant):
+    site = publishable_site(tenant)
+    company = InsuranceCompany.objects.create(name="شرکت نمونهٔ همکار")
+    site.companies.set([company])
+
+    html = client.get("/", HTTP_HOST=host(tenant)).content.decode()
+
+    assert "شرکت نمونهٔ همکار" in html
+    assert 'src=""' not in html
+
+
+def test_footer_hides_empty_contact_column(client, tenant):
+    site = publishable_site(tenant)
+    site.phone = ""
+    site.address = ""
+    site.working_hours = ""
+    site.email = ""
+    site.save(update_fields=["phone", "address", "working_hours", "email"])
+
+    html = client.get("/", HTTP_HOST=host(tenant)).content.decode()
+
+    assert 'class="s-footer-contact"' not in html
 
 
 def test_quote_post_redirects_and_refresh_does_not_duplicate(client, tenant, monkeypatch):

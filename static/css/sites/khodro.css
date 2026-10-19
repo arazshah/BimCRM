@@ -94,3 +94,29 @@
   .d-form { padding: 20px; }
 }
 .t-khodro .s-footer h2 { font-family: var(--font); font-weight: 700; font-size: 15px; margin-bottom: .7rem; }
+
+/* Visual refresh: confident motor cover, with the request form as the primary action. */
+.t-khodro { --s-line: #373c45; --s-surface: #20242a; background: #15181d; }
+.d-header { background: #15181d; border-bottom: 1px solid #373c45; }
+.d-hero { padding-block: 66px 82px; background: #15181d; border-bottom: 1px solid #373c45; }
+.d-hero::before { content: ""; position: absolute; inset-inline-start: 0; top: 0; width: min(28vw, 340px); height: 100%; background: repeating-linear-gradient(135deg, transparent 0 26px, rgba(245,158,11,.045) 26px 28px); pointer-events: none; }
+.d-hero-grid { position: relative; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(28px, 5vw, 64px); }
+.d-hero h1 { max-width: 12em; font-weight: 400; }
+.d-form { border: 1px solid #3d434d; border-top: 5px solid var(--brand); border-radius: 4px 18px 4px 18px; background: #20242a; box-shadow: none; }
+.d-quick a { border-radius: 4px; }
+.plate { transform: none; box-shadow: 0 0 0 3px #e9ecf1; }
+.d-lines { background: #191c21; }
+.d-lines a { border-radius: 4px; }
+.d-checks li { border-radius: 4px; border-inline-start: 2px solid var(--brand); }
+.d-numbers { color: #17191d; }
+.d-numbers strong { color: #17191d; }
+.t-khodro .s-steps-list li { background: #20242a; border-color: #373c45; }
+
+@media (max-width: 960px) {
+  .d-hero { padding-block: 40px 58px; }
+  .d-hero-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .d-form { border-radius: 4px 14px 4px 14px; }
+  .d-hero::before { width: 100%; }
+}

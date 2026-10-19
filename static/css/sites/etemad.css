@@ -98,3 +98,26 @@
   .e-phone span { display: none; }
   .e-form-frame { padding: 22px; outline-offset: 5px; }
 }
+
+/* Visual refresh: formal, paper-and-brass presentation without the dark wall. */
+.t-etemad { --s-bg: #fbf8f0; --s-alt: #f1ede3; --s-line: #e2d8c5; background: #fbf8f0; }
+.e-hero { padding-block: 58px 64px; background-color: #f1ede3; background-image: linear-gradient(90deg, transparent 0 96%, rgba(176,141,87,.12) 96%); color: #1d3557; border-bottom: 4px solid var(--gold); }
+.e-hero h1 { color: #1d3557; font-size: clamp(42px, 5.2vw, 68px); }
+.e-sub { color: #46536a; }
+.e-seal { color: #8a6a35; border-color: var(--gold); box-shadow: inset 0 0 0 5px #f1ede3, inset 0 0 0 6px color-mix(in srgb, var(--gold) 60%, transparent); }
+.e-seal strong { color: #1d3557; }
+.e-record { border-color: #d5c8ae; }
+.e-record > div { border-color: #d5c8ae; }
+.e-record dt { color: #806435; }
+.e-record dd { color: #1d3557; }
+.e-form-frame { border: 1px solid #c5a96c; outline: 0; box-shadow: 0 18px 48px -34px rgba(29,53,87,.38); }
+.e-title::after { background: linear-gradient(to left, var(--gold), #d9c8a4 58%, transparent); }
+.e-lines { background: #fff; }
+
+@media (max-width: 900px) {
+  .e-hero { padding-block: 42px 50px; }
+}
+@media (max-width: 560px) {
+  .e-hero { padding-block: 30px 38px; }
+  .e-form-frame { outline: 0; border-top: 4px solid var(--gold); }
+}

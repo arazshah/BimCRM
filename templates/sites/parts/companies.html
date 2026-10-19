@@ -2,7 +2,7 @@
 <section class="s-companies" id="partners" aria-labelledby="s-co-title">
   <div class="site-wrap">
     <h2 class="s-title" id="s-co-title">{{ title|default:"شرکت‌های بیمه همکار" }}</h2>
-    <ul class="s-co-list">{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}" loading="lazy">{% else %}<span>{{ c.name }}</span>{% endif %}</li>{% endfor %}</ul>
+    <ul class="s-co-list">{% for c in companies %}<li>{% if c.logo and c.logo.url %}<img src="{{ c.logo.url }}" alt="" loading="lazy">{% endif %}<span class="s-co-name">{{ c.name }}</span></li>{% endfor %}</ul>
   </div>
 </section>
 {% endif %}

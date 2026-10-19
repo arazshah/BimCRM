@@ -37,7 +37,7 @@
 {% if companies %}
 <section class="c-partners" id="partners" aria-labelledby="c-partners-title"><div class="site-wrap">
   <div class="c-sec-head"><h2 id="c-partners-title">شرکت‌های همکار</h2><p>فهرست شرکت‌هایی که این دفتر در تنظیمات خود معرفی کرده است.</p></div>
-  <ul class="c-logos">{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}" loading="lazy">{% else %}{{ c.name }}{% endif %}</li>{% endfor %}</ul>
+  <ul class="c-logos">{% for c in companies %}<li>{% if c.logo and c.logo.url %}<img src="{{ c.logo.url }}" alt="" loading="lazy">{% endif %}<span>{{ c.name }}</span></li>{% endfor %}</ul>
 </div></section>
 {% endif %}
 

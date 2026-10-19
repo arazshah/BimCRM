@@ -15,12 +15,13 @@
       <a href="/privacy/">حریم خصوصی</a>
       {% if faqs %}<a href="/#faq">سؤالات متداول</a>{% endif %}
     </nav>
-    <div>
+    {% if site.phone or site.address or site.working_hours or site.email %}<div class="s-footer-contact">
       <h2>تماس</h2>
       {% if site.phone %}<p><a class="ltr" href="tel:{{ site.phone }}">{{ site.phone }}</a></p>{% endif %}
       {% if site.address %}<p>{{ site.address }}</p>{% endif %}
       {% if site.working_hours %}<p>{{ site.working_hours }}</p>{% endif %}
-    </div>
-    <div class="trust-badges">{% for b in trust_badges %}{{ b }}{% endfor %}</div>
+      {% if site.email %}<p><a class="ltr" href="mailto:{{ site.email }}">{{ site.email }}</a></p>{% endif %}
+    </div>{% endif %}
+    {% if trust_badges %}<div class="trust-badges">{% for b in trust_badges %}{{ b }}{% endfor %}</div>{% endif %}
   </div>
 </footer>
