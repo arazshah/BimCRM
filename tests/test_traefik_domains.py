@@ -26,7 +26,7 @@ def test_write_config_updates_only_bimcrm_file_and_skips_identical_content(tenan
     domain = Domain.objects.create(tenant=tenant, hostname="alborz8351.ir", status=Domain.Status.ACTIVE)
     config_path = tmp_path / "bimcrm-domains.toml"
     other_file = tmp_path / "other-site.toml"
-    other_file.write_text("[http.routers.other]\nrule = \"Host(`other.example`)\"\n")
+    other_file.write_text('[http.routers.other]\nrule = "Host(`other.example`)"\n')
     other_content = other_file.read_bytes()
 
     assert write_custom_domain_config([domain], config_path) is True
