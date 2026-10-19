@@ -1,13 +1,13 @@
 {% load static %}<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}{{ site.hero_title|default:tenant.name }}{% endblock %}</title>
-{% with desc=site.seo_description|default:site.hero_subtitle %}{% if desc %}<meta name="description" content="{{ desc }}">{% endif %}
-{% if is_demo or is_preview %}<meta name="robots" content="noindex">{% else %}<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">{% endif %}
+<title>{% block title %}{{ page_title|default:site.hero_title|default:tenant.name }}{% endblock %}</title>
+{% with desc=page_description|default:site.seo_description|default:site.hero_subtitle %}{% if desc %}<meta name="description" content="{{ desc|truncatechars:160 }}">{% endif %}
+{% if is_demo or is_preview or is_noindex %}<meta name="robots" content="noindex,follow">{% else %}<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">{% endif %}
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fa_IR">
 <meta property="og:site_name" content="{{ tenant.name }}">
-<meta property="og:title" content="{{ site.hero_title|default:tenant.name }}">
-{% if desc %}<meta property="og:description" content="{{ desc }}">{% endif %}
+<meta property="og:title" content="{{ page_title|default:site.hero_title|default:tenant.name }}">
+{% if desc %}<meta property="og:description" content="{{ desc|truncatechars:160 }}">{% endif %}
 {% if site.logo %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site.logo.url }}"><link rel="icon" href="{{ site.logo.url }}">{% endif %}{% endwith %}
 <link rel="stylesheet" href="{% static 'css/base.css' %}">
 <link rel="stylesheet" href="{% static 'css/sites/common.css' %}">

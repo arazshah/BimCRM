@@ -3,10 +3,10 @@
 {% block main %}
 <section class="subpage">
   <h1>درخواستتان ثبت شد</h1>
-  <p>{{ quote.full_name }} عزیز، درخواست {{ quote.line }} به دفتر رسید و به‌زودی با شماره <span class="ltr">{{ quote.mobile|fa }}</span> تماس می‌گیریم.</p>
+  <p>{{ quote.full_name }} عزیز، درخواست {{ quote.line }} به دفتر رسید. شماره‌ای که برای پیگیری درخواست ثبت شده: <span class="ltr">{{ quote.mobile|fa }}</span></p>
   <p>کد پیگیری:</p>
   <p><span class="big-code num">{{ quote.tracking_code|fa }}</span></p>
-  <p>با این کد و موبایلتان از صفحه <a href="/track/?code={{ quote.tracking_code }}&mobile={{ quote.mobile }}">پیگیری</a> وضعیت را ببینید.</p>
+  <p>کد را نگه دارید و برای مشاهدهٔ وضعیت، همراه با شمارهٔ موبایل ثبت‌شده در <a href="/track/">صفحهٔ پیگیری</a> وارد کنید.</p>
   <a class="site-btn" href="/">بازگشت به صفحه اصلی</a>
 </section>
 {% endblock %}

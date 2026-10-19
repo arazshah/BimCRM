@@ -17,7 +17,7 @@
     </div>
     <div class="e-form-frame" id="quote">
       <h2>درخواست مشاوره و استعلام</h2>
-      <p class="e-form-note">کارشناس دفتر در اولین فرصت با شما تماس می‌گیرد.</p>
+      <p class="e-form-note">پس از دریافت درخواست، دفتر برای هماهنگی ادامهٔ کار با شما تماس می‌گیرد.</p>
       {% include "sites/_quote_form.html" with submit_label="ثبت درخواست" %}
     </div>
   </div>
@@ -35,7 +35,7 @@
   <div class="site-wrap">
     <h2 class="e-title" id="e-lines-title">رشته‌های بیمه</h2>
     <ul class="e-line-list">
-      {% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}">
+      {% for l in lines %}<li><a href="/insurance/{{ l.slug }}/" data-line="{{ l.slug }}">
         <span class="e-line-icon"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg></span>
         <span class="e-line-body"><span class="e-line-name">{{ l.name }}</span><span class="e-line-sum">{{ l.summary }}</span></span>
         <span class="e-line-go">درخواست</span>
@@ -52,8 +52,8 @@
       <h2 class="e-title" id="e-about-title">درباره دفتر</h2>
       <ul class="e-principles">
         <li><strong>پیش از خرید</strong>پوشش‌ها و استثناها را با شما مرور می‌کنیم.</li>
-        <li><strong>هنگام تمدید</strong>پیش از سررسید یادآوری می‌کنیم.</li>
-        <li><strong>هنگام خسارت</strong>پرونده را تا پرداخت پیگیری می‌کنیم.</li>
+        <li><strong>هنگام تمدید</strong>برای بررسی مدارک و شرایط جدید با دفتر تماس بگیرید.</li>
+        <li><strong>هنگام خسارت</strong>برای آگاهی از مدارک و مراحل مربوط به بیمه‌نامه راهنمایی بگیرید.</li>
       </ul>
     </div>
     <div class="e-about-text">{{ site.about|linebreaks }}</div>

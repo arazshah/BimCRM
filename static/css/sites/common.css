@@ -22,6 +22,10 @@ body {
 .qf-submit:hover { filter: brightness(1.08); }
 .qf-submit[disabled] { opacity: .7; cursor: not-allowed; }
 .qf-note { font-size: 13px; opacity: .75; margin: 0; }
+.qf-errors { border: 1px solid #b42318; background: #fff1f0; color: #7a1d17; padding: .7rem 1rem; border-radius: 10px; font-size: 14px; }
+.qf-errors p { margin: 0 0 .3rem; font-weight: 800; }
+.qf-errors ul { margin: 0; padding-inline-start: 1.2rem; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid #155eef; outline-offset: 3px; }
 
 /* Buttons used by shared sections */
 .s-btn, .site-btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; font: inherit; font-weight: 800; border: 1.5px solid var(--brand); border-radius: calc(var(--s-r) * .7); padding: .7em 1.4em; cursor: pointer; background: var(--brand); color: var(--s-on-brand); text-decoration: none; }
@@ -106,7 +110,7 @@ body {
   .s-mbar { display: flex; position: fixed; inset-inline: 10px; bottom: 10px; z-index: 30; gap: 6px; padding: 6px; background: rgba(255, 255, 255, .96); backdrop-filter: blur(8px); border-radius: 16px; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .35); border: 1px solid rgba(0, 0, 0, .06); }
   .s-mbar a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 12px; font-weight: 700; color: #2a3340; text-decoration: none; padding: 6px 4px; border-radius: 11px; }
   .s-mbar svg { width: 20px; height: 20px; }
-  .s-mbar .s-mbar-main { flex: 1.6; flex-direction: row; justify-content: center; gap: .4rem; font-size: 15px; background: var(--brand); color: var(--s-on-brand); }
+.s-mbar .s-mbar-main { flex: 1.6; flex-direction: row; justify-content: center; gap: .4rem; font-size: 15px; background: var(--brand); color: var(--s-on-brand); }
 }
 
 /* Sub-pages: quote done, tracking, customer portal */
@@ -137,6 +141,29 @@ body {
 .sb-item a { color: inherit; font-weight: 700; text-decoration: none; }
 .sb-city { font-size: .85em; opacity: .7; }
 
+/* Public line and service guide pages */
+.line-hero { padding: clamp(40px, 7vw, 82px) 0; background: var(--s-alt); border-bottom: 1px solid var(--s-line); }
+.line-hero-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); gap: clamp(24px, 5vw, 64px); align-items: start; }
+.line-hero h1, .guide-page h1 { font-family: var(--s-head); font-weight: var(--s-head-w); font-size: clamp(30px, 4vw, 46px); line-height: 1.4; margin: .5rem 0; }
+.line-eyebrow { color: var(--s-muted); font-size: 14px; }
+.line-eyebrow a { color: inherit; }
+.line-lead { font-size: clamp(18px, 2vw, 22px); line-height: 1.9; max-width: 680px; }
+.line-disclaimer, .line-contact-note { color: var(--s-muted); font-size: 14px; line-height: 1.9; }
+.line-quote { padding: clamp(18px, 3vw, 30px); border: 1px solid var(--s-line); border-radius: var(--s-r); background: var(--s-surface); box-shadow: 0 14px 36px -28px rgba(0,0,0,.35); }
+.line-quote h2 { font-size: 20px; margin: 0 0 1rem; }
+.line-information { padding: 54px 0 72px; }
+.line-information article { max-width: 900px; padding: 20px 0; border-bottom: 1px solid var(--s-line); line-height: 2; }
+.line-information h2 { font-size: 22px; }
+.line-information li { margin: .35rem 0; }
+.line-contact-note { margin-top: 24px; }
+.line-contact-note a { color: var(--brand); font-weight: 700; }
+.guide-page { max-width: 820px; padding-top: 24px; padding-bottom: 64px; line-height: 2; }
+.guide-page ol { padding-inline-start: 1.5rem; }
+.guide-page li { padding: .35rem 0; }
+.guide-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 24px; }
+.line-information .line-disclaimer { margin-top: .8rem; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+
 @media (max-width: 900px) {
   .s-steps-list { grid-template-columns: 1fr 1fr; }
   .s-faq-grid, .s-contact-grid { grid-template-columns: 1fr; gap: 28px; }
@@ -144,6 +171,7 @@ body {
   .s-steps, .s-voices, .s-faq { padding: 56px 0; }
 }
 @media (max-width: 640px) {
+  .line-hero-grid { grid-template-columns: 1fr; }
   .qf-row, .qf-extra, .track-form, .upload-row { grid-template-columns: 1fr; }
   .s-steps-list, .s-footer-grid { grid-template-columns: 1fr; }
   .s-stats-list { grid-template-columns: 1fr 1fr; }

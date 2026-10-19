@@ -12,23 +12,23 @@
         {% if site.customers_count %}<div><dd>{{ site.customers_count|toman }}</dd><dt>بیمه‌گذار</dt></div>{% endif %}
         {% if site.years_active %}<div><dd>{{ site.years_active|fa }}</dd><dt>سال سابقه</dt></div>{% endif %}
       </dl>
-      {% if companies %}<p class="c-count">پوشش و قیمت شرکت‌های مختلف را کنار هم می‌بینید و با خیال راحت انتخاب می‌کنید.</p>{% endif %}
+      {% if companies %}<p class="c-count">درخواست شما با توجه به شرکت‌های همکار این دفتر بررسی می‌شود؛ کارشناس شرایط قابل ارائه را توضیح می‌دهد.</p>{% endif %}
     </div>
     <div class="c-form" id="quote">
-      <h2>درخواست مقایسه و استعلام</h2>
-      <p class="c-form-note">قیمت چند شرکت را برایتان مقایسه می‌کنیم.</p>
-      {% include "sites/_quote_form.html" with submit_label="ثبت درخواست مقایسه" %}
+      <h2>درخواست استعلام</h2>
+      <p class="c-form-note">کارشناس دفتر اطلاعات و گزینه‌های قابل ارائه را بررسی می‌کند.</p>
+      {% include "sites/_quote_form.html" with submit_label="ثبت درخواست استعلام" %}
     </div>
   </div>
 </section>
 
 {% if lines %}
 <section class="c-compare" id="compare" aria-labelledby="c-compare-title"><div class="site-wrap">
-  <div class="c-sec-head"><h2 id="c-compare-title">رشته‌ها و پوشش‌ها</h2><p>برای هر رشته، از همه شرکت‌های همکار استعلام می‌گیریم.</p></div>
-  <div class="c-table-wrap">
+  <div class="c-sec-head"><h2 id="c-compare-title">رشته‌های بیمه</h2><p>رشته‌های قابل استعلام در این دفتر را ببینید و جزئیات هر کدام را بخوانید.</p></div>
+  <div class="c-table-wrap" tabindex="0" role="region" aria-label="جدول رشته‌های بیمه؛ برای دیدن ستون‌های بیشتر افقی پیمایش کنید">
   <table class="c-table">
     <thead><tr><th scope="col">رشته</th><th scope="col">پوشش اصلی</th>{% if companies %}<th scope="col">شرکت‌ها</th>{% endif %}<th scope="col"><span class="visually-hidden">استعلام</span></th></tr></thead>
-    <tbody>{% for l in lines %}<tr><th scope="row"><span class="c-ico"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg></span>{{ l.name }}</th><td>{{ l.summary }}</td>{% if companies %}<td class="c-n">{{ companies|length|fa }} شرکت</td>{% endif %}<td><a class="c-go" href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}">استعلام و مقایسه</a></td></tr>{% endfor %}</tbody>
+    <tbody>{% for l in lines %}<tr><th scope="row"><span class="c-ico"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg></span>{{ l.name }}</th><td>{{ l.summary }}</td>{% if companies %}<td class="c-n">{{ companies|length|fa }} شرکت همکار</td>{% endif %}<td><a class="c-go" href="/insurance/{{ l.slug }}/" data-line="{{ l.slug }}">جزئیات و درخواست</a></td></tr>{% endfor %}</tbody>
   </table>
   </div>
 </div></section>
@@ -36,7 +36,7 @@
 
 {% if companies %}
 <section class="c-partners" id="partners" aria-labelledby="c-partners-title"><div class="site-wrap">
-  <div class="c-sec-head"><h2 id="c-partners-title">شرکت‌های همکار</h2><p>نماینده رسمی چند شرکت هستیم؛ انتخاب با شماست.</p></div>
+  <div class="c-sec-head"><h2 id="c-partners-title">شرکت‌های همکار</h2><p>فهرست شرکت‌هایی که این دفتر در تنظیمات خود معرفی کرده است.</p></div>
   <ul class="c-logos">{% for c in companies %}<li>{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}" loading="lazy">{% else %}{{ c.name }}{% endif %}</li>{% endfor %}</ul>
 </div></section>
 {% endif %}
@@ -44,10 +44,10 @@
 <section class="c-why" aria-labelledby="c-why-title"><div class="site-wrap">
   <h2 id="c-why-title">چرا از یک دفتر چندشرکتی بخرید؟</h2>
   <ul class="c-why-grid">
-    <li><svg aria-hidden="true"><use href="#i-search"/></svg><strong>مقایسه واقعی</strong><span>قیمت و تعهدات چند شرکت را کنار هم می‌بینید، نه فقط یک پیشنهاد.</span></li>
-    <li><svg aria-hidden="true"><use href="#i-shield"/></svg><strong>پوشش متناسب</strong><span>پوشش‌های اضافه‌ای را که لازم ندارید نمی‌خرید.</span></li>
-    <li><svg aria-hidden="true"><use href="#i-briefcase"/></svg><strong>یک پرونده برای همه</strong><span>بیمه‌نامه‌های همه شرکت‌ها در یک دفتر و یک پنل.</span></li>
-    <li><svg aria-hidden="true"><use href="#i-clock"/></svg><strong>یادآور تمدید</strong><span>پیش از سررسید هر بیمه‌نامه خبرتان می‌کنیم.</span></li>
+    <li><svg aria-hidden="true"><use href="#i-search"/></svg><strong>بررسی درخواست</strong><span>کارشناس اطلاعات و شرایط گزینه‌های قابل ارائه را با شما مرور می‌کند.</span></li>
+    <li><svg aria-hidden="true"><use href="#i-shield"/></svg><strong>انتخاب آگاهانه</strong><span>پیش از تصمیم، دربارهٔ جزئیات و استثناهای پیشنهاد سؤال کنید.</span></li>
+    <li><svg aria-hidden="true"><use href="#i-briefcase"/></svg><strong>ارتباط با دفتر</strong><span>برای درخواست‌های خود از راه‌های تماس این صفحه پیگیری بگیرید.</span></li>
+    <li><svg aria-hidden="true"><use href="#i-clock"/></svg><strong>پیگیری درخواست</strong><span>پس از ثبت، با کد پیگیری و موبایل وضعیت درخواست را ببینید.</span></li>
   </ul>
 </div></section>
 
@@ -59,5 +59,5 @@
 </div></section>
 
 {% include "sites/parts/faq.html" %}
-{% include "sites/parts/contact.html" with title="برای مقایسه قیمت، همین حالا درخواست بدهید" %}
+{% include "sites/parts/contact.html" with title="برای استعلام و بررسی شرایط درخواست بدهید" %}
 {% endblock %}

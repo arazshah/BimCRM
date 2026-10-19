@@ -5,9 +5,11 @@
   const box = document.getElementById("qf-extra");
   if (!sel || !box) return;
   const render = () => {
-    box.innerHTML = "";
+    box.replaceChildren();
     let fields = [];
     try { fields = JSON.parse(sel.selectedOptions[0].dataset.fields || "[]"); } catch (e) {}
+    let values = {};
+    try { values = JSON.parse(document.getElementById("quote-form").dataset.values || "{}"); } catch (e) {}
     fields.forEach(f => {
       if (!f.name) return;
       const wrap = document.createElement("div");
@@ -15,9 +17,31 @@
       const label = document.createElement("label");
       label.htmlFor = "qf-f-" + f.name;
       label.textContent = f.label || f.name;
-      const input = document.createElement("input");
+      let input;
+      if (f.type === "select") {
+        input = document.createElement("select");
+        const blank = document.createElement("option");
+        blank.value = "";
+        blank.textContent = "انتخاب کنید";
+        input.append(blank);
+        (f.options || []).forEach(value => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          input.append(option);
+        });
+      } else if (f.type === "textarea") {
+        input = document.createElement("textarea");
+        input.rows = 2;
+      } else {
+        input = document.createElement("input");
+        input.type = ["text", "number", "email", "tel", "date"].includes(f.type) ? f.type : "text";
+      }
       input.id = "qf-f-" + f.name;
       input.name = "f_" + f.name;
+      input.required = Boolean(f.required);
+      input.maxLength = Number(f.max_length) || 200;
+      input.value = values[f.name] || "";
       wrap.append(label, input);
       box.append(wrap);
     });

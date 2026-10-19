@@ -1,22 +1,31 @@
-{% load fa %}<form class="quote-form" action="/quote/" method="post" id="quote-form">
+{% load fa %}<form class="quote-form" action="/quote/" method="post" id="quote-form" data-values="{{ custom_values|json_attr }}">
   {% csrf_token %}
+  <input type="hidden" name="form_page" value="{{ form_page }}">
+  {% if quote_errors %}<div class="qf-errors" role="alert"><p>لطفاً موارد زیر را بررسی کنید:</p><ul>{% for error in quote_errors %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
   {% if lines %}
   <div class="qf-field">
     <label for="qf-line">نوع بیمه</label>
     <select id="qf-line" name="line" required>
-      {% for l in lines %}<option value="{{ l.slug }}" data-fields="{{ l.form_fields|json_attr }}">{{ l.name }}</option>{% endfor %}
+      {% for l in lines %}<option value="{{ l.slug }}" data-fields="{{ l.public_form_fields|json_attr }}" {% if l.slug == selected_line_slug %}selected{% endif %}>{{ l.name }}</option>{% endfor %}
     </select>
   </div>
-  <div class="qf-extra" id="qf-extra"></div>
+  <div class="qf-extra" id="qf-extra">
+    {% for field in line_fields %}<div class="qf-field">
+      <label for="qf-f-{{ field.name }}">{{ field.label }}</label>
+      {% if field.type == "select" %}<select id="qf-f-{{ field.name }}" name="f_{{ field.name }}" {% if field.required %}required{% endif %}><option value="">انتخاب کنید</option>{% for option in field.options %}<option value="{{ option }}" {% if option == custom_values|get_item:field.name %}selected{% endif %}>{{ option }}</option>{% endfor %}</select>
+      {% elif field.type == "textarea" %}<textarea id="qf-f-{{ field.name }}" name="f_{{ field.name }}" maxlength="{{ field.max_length }}" {% if field.required %}required{% endif %}>{{ custom_values|get_item:field.name }}</textarea>
+      {% else %}<input id="qf-f-{{ field.name }}" name="f_{{ field.name }}" type="{{ field.type }}" maxlength="{{ field.max_length }}" value="{{ custom_values|get_item:field.name }}" {% if field.required %}required{% endif %}>{% endif %}
+    </div>{% endfor %}
+  </div>
   <div class="qf-row">
-    <div class="qf-field"><label for="qf-name">نام و نام خانوادگی</label><input id="qf-name" name="full_name" required autocomplete="name"></div>
-    <div class="qf-field"><label for="qf-mobile">موبایل</label><input id="qf-mobile" name="mobile" required inputmode="numeric" autocomplete="tel" dir="ltr" placeholder="09…"></div>
+    <div class="qf-field"><label for="qf-name">نام و نام خانوادگی</label><input id="qf-name" name="full_name" value="{{ form_values.full_name|default:'' }}" required maxlength="120" autocomplete="name"></div>
+    <div class="qf-field"><label for="qf-mobile">موبایل</label><input id="qf-mobile" name="mobile" value="{{ form_values.mobile|default:'' }}" required maxlength="20" inputmode="tel" autocomplete="tel" dir="ltr" placeholder="09…"></div>
   </div>
   {% if site_branches|length > 1 %}<div class="qf-field"><label for="qf-branch">شعبه <span class="opt">(اختیاری)</span></label>
     <select id="qf-branch" name="branch"><option value="">نزدیک‌ترین شعبه را دفتر انتخاب کند</option>{% for br in site_branches %}<option value="{{ br.pk }}">{{ br.name }}{% if br.city %} — {{ br.city }}{% endif %}</option>{% endfor %}</select></div>{% endif %}
-  <div class="qf-field"><label for="qf-msg">توضیحات <span class="opt">(اختیاری)</span></label><textarea id="qf-msg" name="message" rows="2"></textarea></div>
+  <div class="qf-field"><label for="qf-msg">توضیحات <span class="opt">(اختیاری)</span></label><textarea id="qf-msg" name="message" rows="2" maxlength="1000">{{ form_values.message|default:'' }}</textarea></div>
   <button class="qf-submit" type="submit" {% if is_demo %}disabled title="در پیش‌نمایش ارسال نمی‌شود"{% endif %}>{{ submit_label|default:"درخواست استعلام" }}</button>
-  <p class="qf-note">کد پیگیری می‌گیرید و دفتر با شما تماس می‌گیرد.</p>
+  <p class="qf-note">درخواست شما برای بررسی به دفتر می‌رسد. کد پیگیری نمایش داده می‌شود و کارشناس برای ادامه با شما تماس می‌گیرد.</p>
   {% else %}
   <p class="qf-note">فرم استعلام به‌زودی فعال می‌شود. فعلاً با {{ site.phone|default:"دفتر" }} تماس بگیرید.</p>
   {% endif %}

@@ -6,7 +6,7 @@ from apps.billing.models import Invoice, Period
 from apps.core.dns import HOSTNAME_RE, normalize_hostname
 from apps.core.models import Domain
 from apps.crm.models import Branch, Customer, Policy, QuoteRequest
-from apps.sites.models import FAQ, SiteSettings, Testimonial
+from apps.sites.models import FAQ, SiteLineContent, SiteSettings, Testimonial
 from apps.tickets.models import Ticket
 
 
@@ -212,9 +212,40 @@ class SiteContentForm(forms.ModelForm):
         return "" if value == default else value
 
 
-TestimonialFormSet = forms.modelformset_factory(
-    Testimonial, fields=["name", "text", "is_visible"], extra=1, can_delete=True
-)
+class SiteLineContentForm(forms.ModelForm):
+    class Meta:
+        model = SiteLineContent
+        fields = [
+            "intro",
+            "description",
+            "coverage",
+            "considerations",
+            "documents",
+            "process",
+            "seo_title",
+            "seo_description",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 4}),
+            "coverage": forms.Textarea(attrs={"rows": 3}),
+            "considerations": forms.Textarea(attrs={"rows": 3}),
+            "documents": forms.Textarea(attrs={"rows": 3}),
+            "process": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
+class TestimonialForm(forms.ModelForm):
+    class Meta:
+        model = Testimonial
+        fields = ["name", "text", "is_visible"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.instance.pk:
+            self.initial["is_visible"] = False
+
+
+TestimonialFormSet = forms.modelformset_factory(Testimonial, form=TestimonialForm, extra=1, can_delete=True)
 FAQFormSet = forms.modelformset_factory(
     FAQ,
     fields=["question", "answer", "order"],

@@ -13,13 +13,13 @@
       {% if site.hero_subtitle %}<p class="d-sub">{{ site.hero_subtitle }}</p>{% endif %}
       {% if lines %}
       <div class="d-quick">
-        {% for l in lines|slice:":4" %}<a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg>{{ l.name }}</a>{% endfor %}
+        {% for l in lines|slice:":4" %}<a href="/insurance/{{ l.slug }}/" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg>{{ l.name }}</a>{% endfor %}
       </div>
       {% endif %}
     </div>
     <div class="d-form" id="quote">
-      <div class="d-form-head"><h2>استعلام و تمدید</h2><span>قیمت را بگیرید، بعد تصمیم بگیرید</span></div>
-      {% include "sites/_quote_form.html" with submit_label="استعلام قیمت" %}
+      <div class="d-form-head"><h2>درخواست استعلام خودرو</h2><span>اطلاعات را بفرستید تا دفتر شرایط را بررسی کند</span></div>
+      {% include "sites/_quote_form.html" with submit_label="ثبت درخواست استعلام" %}
     </div>
   </div>
   <div class="d-road" aria-hidden="true"></div>
@@ -36,11 +36,11 @@
 
 <section class="d-renew" aria-labelledby="d-renew-title">
   <div class="site-wrap d-renew-grid">
-    <h2 id="d-renew-title">تمدید ثالث، بدون صف و رفت‌وآمد</h2>
+    <h2 id="d-renew-title">برای تمدید بیمهٔ خودرو آماده شوید</h2>
     <ul class="d-checks">
-      <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>تصویر مدارک را بفرستید</strong>کارت خودرو، بیمه‌نامه قبلی و کارت ملی مالک.</span></li>
-      <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>تخفیف عدم خسارت حفظ می‌شود</strong>سابقه شما در استعلام لحاظ می‌شود.</span></li>
-      <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>یادآور سررسید</strong>سال بعد پیش از تمام شدن بیمه‌نامه خبرتان می‌کنیم.</span></li>
+      <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>مدارک مرتبط را آماده کنید</strong>مدارک دقیق را دفتر با توجه به بیمه‌نامه و وضعیت خودرو اعلام می‌کند.</span></li>
+      <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>سابقهٔ بیمه را بررسی کنید</strong>تخفیف و سابقهٔ خسارت باید بر اساس اطلاعات معتبر شرکت بیمه بررسی شود.</span></li>
+      <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>تاریخ پایان را ببینید</strong>برای جلوگیری از وقفه، پیش از سررسید با دفتر دربارهٔ تمدید تماس بگیرید.</span></li>
     </ul>
   </div>
 </section>
@@ -48,7 +48,7 @@
 {% if lines %}
 <section class="d-lines" id="lines" aria-labelledby="d-lines-title"><div class="site-wrap">
   <h2 id="d-lines-title">همه رشته‌ها</h2>
-  <ul>{% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg><span><strong>{{ l.name }}</strong>{{ l.summary }}</span><em>استعلام</em></a></li>{% endfor %}</ul>
+  <ul>{% for l in lines %}<li><a href="/insurance/{{ l.slug }}/" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg><span><strong>{{ l.name }}</strong>{{ l.summary }}</span><em>استعلام</em></a></li>{% endfor %}</ul>
 </div></section>
 {% endif %}
 

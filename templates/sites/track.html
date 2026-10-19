@@ -4,9 +4,11 @@
 <section class="subpage">
   <h1>پیگیری درخواست</h1>
   {% if messages %}<ul class="flash">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
-  <form class="track-form" method="get">
-    <div class="qf-field"><label for="t-code">کد پیگیری</label><input id="t-code" name="code" value="{{ code }}" dir="ltr" inputmode="numeric" required></div>
-    <div class="qf-field"><label for="t-mobile">موبایل</label><input id="t-mobile" name="mobile" value="{{ mobile }}" dir="ltr" inputmode="numeric" required></div>
+  <p>کد نمایش‌داده‌شده پس از ثبت درخواست و شمارهٔ موبایلی را که وارد کرده‌اید بنویسید.</p>
+  <form class="track-form" method="post" action="/track/">
+    {% csrf_token %}
+    <div class="qf-field"><label for="t-code">کد پیگیری</label><input id="t-code" name="code" dir="ltr" inputmode="numeric" minlength="8" maxlength="8" autocomplete="off" required></div>
+    <div class="qf-field"><label for="t-mobile">موبایل</label><input id="t-mobile" name="mobile" dir="ltr" inputmode="tel" maxlength="20" autocomplete="tel" required></div>
     <button class="site-btn" type="submit">پیگیری</button>
   </form>
   {% if quote %}
