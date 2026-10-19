@@ -121,10 +121,14 @@ Docker Hub درخواست‌های IP ایران را رد می‌کند، پس 
 
 **ایزوله‌کردن فایل BimCRM از سایت‌های دیگر روی همین Proxy:**
 
-1. در سرور، مطمئن شو پوشهٔ `/data/coolify/proxy/dynamic` وجود دارد. فایل اختصاصی BimCRM را یک بار بساز و مالک آن را UID کانتینر برنامه (`1000`) قرار بده:
+1. در سرور، مطمئن شو پوشهٔ `/data/coolify/proxy/dynamic` وجود دارد. اگر فایل زیر از قبل وجود ندارد، آن را بساز و مالک آن را UID کانتینر برنامه (`1000`) قرار بده. اگر وجود دارد، محتوایش را بررسی کن و روی آن فایل overwrite نکن:
 
    ```bash
-   sudo install -o 1000 -g 1000 -m 0644 /dev/null /data/coolify/proxy/dynamic/bimcrm-domains.toml
+   if [ ! -e /data/coolify/proxy/dynamic/bimcrm-domains.toml ]; then
+     sudo install -o 1000 -g 1000 -m 0644 /dev/null /data/coolify/proxy/dynamic/bimcrm-domains.toml
+   else
+     echo "File exists; inspect it before deploying."
+   fi
    ```
 
 2. ریسورس همین ریپو را با `docker-compose.yml` جدید redeploy کن. در Compose فقط همین فایل به‌صورت writable به سرویس `worker` وصل می‌شود؛ هیچ فایل یا پوشهٔ دیگر Proxy در اختیار برنامه قرار نمی‌گیرد.
