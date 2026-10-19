@@ -66,14 +66,9 @@ services:
       - traefik.http.routers.bimcrm-wild-http.middlewares=redirect-to-https
       - traefik.http.routers.bimcrm-wild-http.service=bimcrm-wild
       - traefik.http.services.bimcrm-wild.loadbalancer.server.port=8000
-      # Catch-all router for agents' own domains (e.g. alborz8351.ir): anything that isn't
-      # *.bimcrm.ir. Priority 0 (below the wildcard above) so it only matches when nothing more
-      # specific did. Uses Coolify's own default `letsencrypt` resolver — it's already a plain
-      # HTTP-01 challenge with no fixed domain list, so Traefik requests a certificate on demand
-      # for whatever hostname it sees, the first time someone visits it. Nothing to add in the
-      # Coolify proxy config for this. That first visit only succeeds once the domain's own A
-      # record points here, which PDNS_API_URL (above) sets up automatically when the agent's NS
-      # is confirmed.
+      # Fallback for custom domains. HostRegexp cannot supply concrete names to ACME, so the
+      # worker creates higher-priority exact-host HTTPS routers in BimCRM's File Provider config
+      # after the domain is active. The existing Coolify proxy File Provider loads that file.
       - traefik.http.routers.bimcrm-custom.rule=HostRegexp(`^.+$$`)
       - traefik.http.routers.bimcrm-custom.priority=0
       - traefik.http.routers.bimcrm-custom.entrypoints=https
@@ -102,9 +97,13 @@ services:
     build: .
     command: ["worker"]
     restart: unless-stopped
-    environment: *app-env
+    environment:
+      <<: *app-env
+      TRAEFIK_DYNAMIC_CONFIG_FILE: /traefik-dynamic/bimcrm-domains.toml
     volumes:
       - media:/data/media
+      # Only the BimCRM-owned file is mounted writable; this does not expose other proxy configs.
+      - ${TRAEFIK_DYNAMIC_CONFIG_SOURCE:-/data/coolify/proxy/dynamic/bimcrm-domains.toml}:/traefik-dynamic/bimcrm-domains.toml
     depends_on:
       web:
         condition: service_healthy

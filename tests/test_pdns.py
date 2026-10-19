@@ -40,7 +40,7 @@ def test_ensure_zone_creates_then_patches(settings):
     assert records[1]["name"] == "www.alborz8351.ir."
 
 
-def test_check_domain_triggers_zone_creation_only_on_first_activation(tenant, settings):
+def test_check_domain_retries_zone_creation_while_nameservers_match(tenant, settings):
     settings.PDNS_API_URL = "http://pdns:8081"
     domain = Domain.objects.create(tenant=tenant, hostname="alborz8351.ir")
     calls = []
@@ -49,6 +49,17 @@ def test_check_domain_triggers_zone_creation_only_on_first_activation(tenant, se
         assert len(calls) == 1
         domain.refresh_from_db()
         assert domain.status == Domain.Status.ACTIVE
-        # Still active on a later check: no second zone-creation call.
+        # Active domains must retry zone setup, since the first API attempt may have failed.
         check_domain(domain, resolver=lambda h: ["ns1.bimcrm.ir", "ns2.bimcrm.ir"])
-        assert len(calls) == 1
+        assert len(calls) == 2
+
+
+def test_check_domain_retries_failed_zone_creation(tenant):
+    domain = Domain.objects.create(tenant=tenant, hostname="alborz8351.ir")
+    attempts = iter([False, True])
+    with patch("apps.core.pdns.ensure_zone", side_effect=lambda *a: next(attempts)):
+        assert check_domain(domain, resolver=lambda h: ["ns1.bimcrm.ir", "ns2.bimcrm.ir"])
+        assert check_domain(domain, resolver=lambda h: ["ns1.bimcrm.ir", "ns2.bimcrm.ir"])
+
+    domain.refresh_from_db()
+    assert domain.status == Domain.Status.ACTIVE
