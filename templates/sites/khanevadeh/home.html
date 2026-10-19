@@ -22,7 +22,7 @@
     </div>
     <div class="k-form" id="quote">
       <h2>بگویید دنبال چه بیمه‌ای هستید</h2>
-      <p class="k-form-note">با هم بهترین پوشش را برای خانواده‌تان پیدا می‌کنیم.</p>
+      <p class="k-form-note">درخواست شما را بررسی می‌کنیم و شرایط قابل ارائه را توضیح می‌دهیم.</p>
       {% include "sites/_quote_form.html" with submit_label="درخواست تماس" %}
     </div>
   </div>
@@ -33,7 +33,7 @@
   <div class="site-wrap">
     <h2 class="s-title k-center" id="k-protect-title">از چه چیزی محافظت کنیم؟</h2>
     <ul class="k-tiles">
-      {% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><span class="k-tile-icon"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg></span><strong>{{ l.name }}</strong><span>{{ l.summary }}</span></a></li>{% endfor %}
+      {% for l in lines %}<li><a href="/insurance/{{ l.slug }}/" data-line="{{ l.slug }}"><span class="k-tile-icon"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg></span><strong>{{ l.name }}</strong><span>{{ l.summary }}</span></a></li>{% endfor %}
     </ul>
   </div>
 </section>

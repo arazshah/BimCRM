@@ -24,7 +24,8 @@ from apps.finance.models import Installment
 from apps.integrations.models import KIND_LABELS, PROVIDERS, Integration
 from apps.integrations.senders import test_connection
 from apps.sites import registry
-from apps.sites.models import FAQ, SiteSettings, Testimonial
+from apps.sites.models import FAQ, SiteLineContent, SiteSettings, Testimonial
+from apps.sites.readiness import publication_issues
 from apps.tickets.models import Ticket, TicketMessage
 
 from .access import MANAGERS, branch_filter, panel_view, scoped, storage_used_bytes
@@ -42,6 +43,7 @@ from .forms import (
     RenewalOrderForm,
     ReplyForm,
     SiteContentForm,
+    SiteLineContentForm,
     TestimonialFormSet,
     TicketForm,
 )
@@ -465,16 +467,52 @@ def site_settings(request):
     form = SiteContentForm(request.POST or None, request.FILES or None, instance=site, prefix="s")
     tforms = TestimonialFormSet(request.POST or None, queryset=Testimonial.objects.all(), prefix="t")
     fforms = FAQFormSet(request.POST or None, queryset=FAQ.objects.all(), prefix="q")
-    if request.method == "POST" and form.is_valid() and tforms.is_valid() and fforms.is_valid():
+    line_forms = []
+    for line in site.lines.filter(is_active=True):
+        content = SiteLineContent.objects.filter(line=line).first()
+        if content is None:
+            content = SiteLineContent(tenant=request.tenant, line=line)
+        line_forms.append((line, SiteLineContentForm(request.POST or None, instance=content, prefix=f"line{line.pk}")))
+    all_valid = (
+        form.is_valid()
+        and tforms.is_valid()
+        and fforms.is_valid()
+        and all(line_form.is_valid() for _, line_form in line_forms)
+    )
+    if request.method == "POST" and all_valid:
         form.save()
+        for line, line_form in line_forms:
+            content = line_form.save(commit=False)
+            content.tenant = request.tenant
+            content.line = line
+            content.save()
         for fs in (tforms, fforms):
             for obj in fs.save(commit=False):
                 obj.save()
             for obj in fs.deleted_objects:
                 obj.delete()
-        messages.success(request, "محتوای سایت ذخیره شد.")
+        issues = publication_issues(site)
+        if site.is_published and issues:
+            site.is_published = False
+            site.save(update_fields=["is_published", "updated_at"])
+            messages.warning(
+                request, "سایت از دسترس عمومی خارج شد؛ برای انتشار دوباره این موارد را کامل کنید: " + " ".join(issues)
+            )
+        else:
+            messages.success(request, "محتوای سایت ذخیره شد.")
         return redirect("panel:site")
-    return render(request, "panel/site.html", {"form": form, "tforms": tforms, "fforms": fforms, "site": site})
+    return render(
+        request,
+        "panel/site.html",
+        {
+            "form": form,
+            "tforms": tforms,
+            "fforms": fforms,
+            "line_forms": line_forms,
+            "site": site,
+            "publication_issues": publication_issues(site),
+        },
+    )
 
 
 @panel_view(perm="site")
@@ -495,6 +533,11 @@ def site_template(request):
 def site_publish(request):
     site = _site(request)
     site.is_published = request.POST.get("publish") == "1"
+    issues = publication_issues(site) if site.is_published else []
+    if issues:
+        site.is_published = False
+        messages.error(request, "انتشار سایت نیاز به تکمیل دارد: " + " ".join(issues))
+        return redirect("panel:site")
     site.save(update_fields=["is_published", "updated_at"])
     messages.success(request, "سایت منتشر شد." if site.is_published else "سایت از دسترس عموم خارج شد.")
     return redirect("panel:site")

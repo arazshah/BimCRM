@@ -7,7 +7,11 @@ app_name = "sites"
 urlpatterns = [
     path("", views.home, name="home"),
     path("quote/", views.submit_quote, name="quote"),
+    path("quote/done/", views.quote_done, name="quote_done"),
     path("track/", views.track, name="track"),
+    path("insurance/<slug:slug>/", views.line_detail, name="line_detail"),
+    path("guide/<str:kind>/", views.guide, name="guide"),
+    path("privacy/", views.privacy, name="privacy"),
     path("robots.txt", views.robots),
     path("sitemap.xml", views.sitemap),
     path("favicon.ico", views.favicon),

@@ -1,0 +1,35 @@
+{% extends base_template %}
+{% load fa %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block main %}
+<section class="line-hero">
+  <div class="site-wrap line-hero-grid">
+    <div>
+      <p class="line-eyebrow"><a href="/">خانه</a> / بیمه‌ها</p>
+      <h1>{{ line.name }}</h1>
+      <p class="line-lead">{% if line_content and line_content.intro %}{{ line_content.intro }}{% else %}{{ line.summary }}{% endif %}</p>
+      <p class="line-disclaimer">ثبت این فرم فقط درخواست بررسی است. کارشناس دفتر پس از دریافت اطلاعات برای بررسی شرایط و پاسخ با شما تماس می‌گیرد.</p>
+      <a class="s-btn" href="#quote">درخواست استعلام {{ line.name }}</a>
+    </div>
+    <div class="line-quote" id="quote"><h2>درخواست بررسی</h2>{% include "sites/_quote_form.html" with submit_label="ثبت درخواست استعلام" %}</div>
+  </div>
+</section>
+
+<section class="line-information"><div class="site-wrap">
+  {% if line_content and line_content.description %}<article><h2>دربارهٔ این بیمه</h2><div>{{ line_content.description|linebreaks }}</div></article>{% endif %}
+  {% if line_content and line_content.coverage %}<article><h2>مواردی که دفتر بررسی می‌کند</h2><div>{{ line_content.coverage|linebreaks }}</div><p class="line-disclaimer">جزئیات نهایی، استثناها و تعهدات را باید در شرایط بیمه‌نامهٔ شرکت بیمه بررسی کرد.</p></article>{% endif %}
+  {% if line_content and line_content.considerations %}<article><h2>پیش از تصمیم چه چیزهایی را بررسی کنم؟</h2><div>{{ line_content.considerations|linebreaks }}</div><p class="line-disclaimer">شرایط هر بیمه‌نامه را از متن رسمی و مدارک شرکت بیمه تطبیق دهید.</p></article>{% endif %}
+  <article><h2>برای شروع چه اطلاعاتی آماده کنم؟</h2>
+    {% if line_content and line_content.documents %}<div>{{ line_content.documents|linebreaks }}</div>
+    {% elif required_doc_labels %}<ul>{% for doc in required_doc_labels %}<li>{{ doc }}</li>{% endfor %}</ul>
+    {% else %}<p>مدارک لازم به شرایط شما و نظر شرکت بیمه بستگی دارد. پس از بررسی اولیه، دفتر موارد لازم را اعلام می‌کند.</p>{% endif %}
+  </article>
+  <article><h2>مراحل درخواست</h2>
+    {% if line_content and line_content.process %}<div>{{ line_content.process|linebreaks }}</div>
+    {% else %}<ol><li>فرم درخواست را با اطلاعات اولیه تکمیل کنید.</li><li>کارشناس دفتر برای بررسی جزئیات با شما تماس می‌گیرد.</li><li>مدارک لازم و شرایط پیشنهادشده پیش از تصمیم‌گیری با شما مرور می‌شود.</li></ol>{% endif %}
+  </article>
+  <p class="line-contact-note">پیش از ارسال مدارک هویتی یا حساس، روش امن دریافت آن را از دفتر بپرسید. <a href="/guide/claims/">راهنمای اعلام خسارت</a> · <a href="/guide/renewal/">راهنمای تمدید</a></p>
+</div></section>
+{% include "sites/parts/faq.html" with title="پرسش‌های رایج" %}
+{% include "sites/parts/contact.html" with title="دربارهٔ این رشته از دفتر بپرسید" %}
+{% endblock %}

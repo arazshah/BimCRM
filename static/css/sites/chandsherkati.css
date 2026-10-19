@@ -39,8 +39,9 @@
 .c-sec-head p { margin: 0; color: #4a5677; }
 .c-compare, .c-partners, .c-why, .c-split { padding: 72px 0; }
 .t-chand h2 { font-size: clamp(22px, 2.6vw, 28px); color: #172038; margin-bottom: 1.2rem; line-height: 1.6; }
-.c-table-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--s-line); border-radius: 8px; }
+.c-table-wrap { max-width: 100%; overflow-x: auto; direction: ltr; background: #fff; border: 1px solid var(--s-line); border-radius: 8px; }
 .c-table { width: 100%; border-collapse: collapse; }
+.c-table-wrap .c-table { direction: rtl; }
 .c-table thead th { background: #eef2fb; font-size: 13px; color: #4a5677; text-align: right; padding: .75rem 1rem; }
 .c-table th[scope=row] { font-weight: 700; padding: .9rem 1rem; white-space: nowrap; text-align: right; }
 .c-ico { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; background: color-mix(in srgb, var(--brand) 10%, #fff); color: var(--brand); margin-inline-end: .7rem; vertical-align: middle; }

@@ -355,10 +355,14 @@ def test_quote_submission_and_tracking(client, tenant):
         {"line": "third-party", "full_name": "سارا", "mobile": "۰۹۱۲۷۷۷۸۸۸۸", "f_car": "پژو ۲۰۶"},
         HTTP_HOST=host(tenant),
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 302 and resp["Location"] == "/quote/done/"
     q = QuoteRequest.all_objects.get(tenant=tenant)
     assert q.mobile == "09127778888" and q.details == {"نوع و مدل خودرو": "پژو ۲۰۶"}
-    resp = client.get(f"/track/?code={q.tracking_code}&mobile=09127778888", HTTP_HOST=host(tenant))
+    resp = client.get(resp["Location"], HTTP_HOST=host(tenant))
+    assert resp.status_code == 200 and "درخواستتان ثبت شد" in resp.content.decode()
+    resp = client.post("/track/", {"code": q.tracking_code, "mobile": "09127778888"}, HTTP_HOST=host(tenant))
+    assert resp.status_code == 302 and resp["Location"] == "/track/"
+    resp = client.get(resp["Location"], HTTP_HOST=host(tenant))
     assert q.get_status_display() in resp.content.decode()
     # A line the agent did not enable is refused
     client.post("/quote/", {"line": "life", "full_name": "x", "mobile": "09120000000"}, HTTP_HOST=host(tenant))
@@ -939,6 +943,7 @@ def test_tenant_seo_endpoints(client, tenant):
     SiteSettings.all_objects.filter(tenant=tenant).update(is_published=True, seo_description="بیمه ثالث و بدنه در کرج")
     robots = client.get("/robots.txt", HTTP_HOST=h).content.decode()
     assert "Disallow: /panel/" in robots and "sitemap.xml" in robots
+    assert "Disallow: /track/" not in robots
     assert f"<loc>http://{h}/</loc>" in client.get("/sitemap.xml", HTTP_HOST=h).content.decode()
     page = client.get("/", HTTP_HOST=h).content.decode()
     assert 'content="بیمه ثالث و بدنه در کرج"' in page and '"@type":"InsuranceAgency"' in page

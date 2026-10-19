@@ -47,6 +47,29 @@ class SiteSettings(TenantOwned):
         return self.primary_color or self.template_info.default_color
 
 
+class SiteLineContent(TenantOwned):
+    """Agency-authored public details for one insurance line."""
+
+    line = models.ForeignKey(LineOfBusiness, on_delete=models.PROTECT, verbose_name="رشته بیمه")
+    intro = models.CharField("معرفی کوتاه", max_length=255, blank=True)
+    description = models.TextField("توضیحات رشته", blank=True)
+    coverage = models.TextField("پوشش‌هایی که دفتر بررسی می‌کند", blank=True)
+    considerations = models.TextField("شرایطی که مشتری باید بررسی کند", blank=True)
+    documents = models.TextField("مدارک و اطلاعات موردنیاز", blank=True)
+    process = models.TextField("روند درخواست تا پاسخ دفتر", blank=True)
+    seo_title = models.CharField("عنوان صفحه برای گوگل", max_length=120, blank=True)
+    seo_description = models.CharField("توضیح صفحه برای گوگل", max_length=160, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "محتوای رشته در سایت"
+        verbose_name_plural = "محتوای رشته‌های سایت"
+        constraints = [models.UniqueConstraint(fields=["tenant", "line"], name="one_site_line_content_per_tenant")]
+
+    def __str__(self):
+        return f"{self.line} — {self.tenant.name}"
+
+
 class Testimonial(TenantOwned):
     name = models.CharField("نام مشتری", max_length=80)
     text = models.CharField("متن", max_length=300)

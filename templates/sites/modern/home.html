@@ -9,17 +9,17 @@
       {% if site.hero_subtitle %}<p class="m-lead">{{ site.hero_subtitle }}</p>{% endif %}
       {% if lines %}
       <p class="m-chips-label">چه بیمه‌ای لازم دارید؟</p>
-      <ul class="m-chips">{% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg>{{ l.name }}</a></li>{% endfor %}</ul>
+      <ul class="m-chips">{% for l in lines %}<li><a href="/insurance/{{ l.slug }}/" data-line="{{ l.slug }}"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg>{{ l.name }}</a></li>{% endfor %}</ul>
       {% endif %}
       <ul class="m-assure">
-        <li><svg aria-hidden="true"><use href="#i-check"/></svg>استعلام آنلاین، بدون مراجعه</li>
+        <li><svg aria-hidden="true"><use href="#i-check"/></svg>ثبت درخواست آنلاین، بدون مراجعهٔ اولیه</li>
         <li><svg aria-hidden="true"><use href="#i-check"/></svg>کد پیگیری برای هر درخواست</li>
         {% if can_portal %}<li><svg aria-hidden="true"><use href="#i-check"/></svg>پنل مشتری برای بیمه‌نامه‌ها</li>{% endif %}
       </ul>
     </div>
     <div class="m-card" id="quote">
-      <div class="m-card-head"><h2>استعلام قیمت</h2><span>رایگان و بدون تعهد</span></div>
-      {% include "sites/_quote_form.html" with submit_label="دریافت قیمت" %}
+      <div class="m-card-head"><h2>درخواست استعلام</h2><span>کارشناس دفتر اطلاعات را بررسی می‌کند</span></div>
+      {% include "sites/_quote_form.html" with submit_label="ثبت درخواست" %}
     </div>
   </div>
 </section>
@@ -29,11 +29,11 @@
 {% if lines %}
 <section class="m-lines" id="lines" aria-labelledby="m-lines-title">
   <div class="site-wrap">
-    <div class="m-sec-head"><h2 class="s-title" id="m-lines-title">بیمه‌هایی که ارائه می‌کنیم</h2><p>روی هر کدام بزنید تا فرم استعلام همان رشته باز شود.</p></div>
+    <div class="m-sec-head"><h2 class="s-title" id="m-lines-title">رشته‌های بیمهٔ دفتر</h2><p>جزئیات هر رشته و اطلاعاتی را که برای درخواست نیاز است ببینید.</p></div>
     <ul class="m-line-grid">
-      {% for l in lines %}<li><a href="?line={{ l.slug }}#quote" data-line="{{ l.slug }}">
+      {% for l in lines %}<li><a href="/insurance/{{ l.slug }}/" data-line="{{ l.slug }}">
         <span class="m-line-icon"><svg aria-hidden="true"><use href="#i-{{ l.icon }}"/></svg></span>
-        <strong>{{ l.name }}</strong><span class="m-line-sum">{{ l.summary }}</span><span class="m-line-go">استعلام قیمت</span>
+        <strong>{{ l.name }}</strong><span class="m-line-sum">{{ l.summary }}</span><span class="m-line-go">جزئیات و درخواست</span>
       </a></li>{% endfor %}
     </ul>
   </div>
@@ -47,7 +47,7 @@
   <div class="site-wrap m-about-grid">
     <div><h2 class="s-title" id="m-about-title">درباره {{ tenant.name }}</h2><div class="m-about-text">{{ site.about|linebreaks }}</div></div>
     <ul class="m-about-facts">
-      {% if site.years_active %}<li><strong>{{ site.years_active|fa }} سال</strong><span>تجربه در صدور، تمدید و پیگیری خسارت</span></li>{% endif %}
+      {% if site.years_active %}<li><strong>{{ site.years_active|fa }} سال</strong><span>سابقهٔ فعالیت اعلام‌شدهٔ دفتر</span></li>{% endif %}
       {% if site.customers_count %}<li><strong>{{ site.customers_count|toman }} بیمه‌گذار</strong><span>خانواده و کسب‌وکاری که به ما اعتماد کرده‌اند</span></li>{% endif %}
       {% if site.working_hours %}<li><strong>ساعت کاری</strong><span>{{ site.working_hours }}</span></li>{% endif %}
     </ul>
