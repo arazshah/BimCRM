@@ -289,50 +289,102 @@ def test_ready_site_can_be_published(client, tenant, owner):
     assert site.is_published
 
 
-def test_site_panel_saves_tenant_specific_line_page_content(client, tenant, owner):
+def test_line_pages_have_their_own_panel_section(client, tenant, owner):
     site = SiteSettings.all_objects.get(tenant=tenant)
     line = LineOfBusiness.objects.get(slug="third-party")
     site.lines.set([line])
     client.force_login(owner)
-    page = client.get("/panel/site/", HTTP_HOST=host(tenant))
-    assert page.status_code == 200 and "صفحهٔ اختصاصی رشته‌های بیمه" in page.content.decode()
+    site_page = client.get("/panel/site/", HTTP_HOST=host(tenant))
+    assert site_page.status_code == 200
+    assert "line-content-editor" not in site_page.content.decode()
+    hub = client.get("/panel/site/lines/", HTTP_HOST=host(tenant))
+    assert hub.status_code == 200 and "شخص ثالث" in hub.content.decode()
+    assert client.get("/panel/site/lines/third-party/", HTTP_HOST=host(tenant)).status_code == 200
+    assert client.get("/panel/site/lines/life/", HTTP_HOST=host(tenant)).status_code == 404
+
+
+def _png(name="a.png", size=(40, 30)):
+    import io
+
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new("RGB", size, (20, 120, 110)).save(buf, "PNG")
+    return SimpleUploadedFile(name, buf.getvalue(), content_type="image/png")
+
+
+def _line_post(**extra):
     post = {
-        "s-hero_title": tenant.name,
-        "s-hero_subtitle": "معرفی دفتر برای مشتری",
-        "s-phone": "02112345678",
-        "s-lines": [str(line.pk)],
-        "t-TOTAL_FORMS": "1",
-        "t-INITIAL_FORMS": "0",
-        "t-MIN_NUM_FORMS": "0",
-        "t-MAX_NUM_FORMS": "1000",
-        "t-0-name": "",
-        "t-0-text": "",
-        "q-TOTAL_FORMS": "1",
-        "q-INITIAL_FORMS": "0",
-        "q-MIN_NUM_FORMS": "0",
-        "q-MAX_NUM_FORMS": "1000",
-        "q-0-question": "",
-        "q-0-answer": "",
-        "q-0-order": "0",
-        f"line{line.pk}-intro": "توضیح ویژهٔ ثالث",
-        f"line{line.pk}-description": "توضیح کامل رشته",
-        f"line{line.pk}-coverage": "بررسی پوشش‌ها",
-        f"line{line.pk}-considerations": "موارد قابل بررسی",
-        f"line{line.pk}-documents": "مدارک لازم را دفتر اعلام می‌کند",
-        f"line{line.pk}-process": "درخواست و سپس بررسی کارشناس",
-        f"line{line.pk}-seo_title": "",
-        f"line{line.pk}-seo_description": "",
+        "c-intro": "توضیح ویژهٔ ثالث",
+        "c-cover_alt": "تصویر ثالث",
+        "c-highlights": "پاسخ در همان روز\nبررسی رایگان",
+        "c-description": "توضیح کامل رشته",
+        "c-coverage": "بررسی پوشش‌ها",
+        "c-considerations": "موارد قابل بررسی",
+        "c-documents": "مدارک لازم را دفتر اعلام می‌کند",
+        "c-process": "درخواست و سپس بررسی کارشناس",
+        "c-seo_title": "",
+        "c-seo_description": "",
+        "g-TOTAL_FORMS": "1",
+        "g-INITIAL_FORMS": "0",
+        "g-MIN_NUM_FORMS": "0",
+        "g-MAX_NUM_FORMS": "8",
+        "g-0-caption": "کارت بیمه",
+        "g-0-order": "1",
     }
-    response = client.post("/panel/site/", post, HTTP_HOST=host(tenant))
-    assert response.status_code == 302, (
-        response.context["form"].errors,
-        response.context["tforms"].errors,
-        response.context["fforms"].errors,
-        [(f.errors) for _, f in response.context["line_forms"]],
-    )
+    post.update(extra)
+    return post
+
+
+def test_line_page_editor_saves_text_cover_and_gallery(client, tenant, owner, settings, tmp_path):
+    settings.MEDIA_ROOT = str(tmp_path)
+    site = SiteSettings.all_objects.get(tenant=tenant)
+    line = LineOfBusiness.objects.get(slug="third-party")
+    site.lines.set([line])
+    client.force_login(owner)
+    post = _line_post(**{"c-cover": _png("cover.png"), "g-0-image": _png("g.png")})
+    response = client.post("/panel/site/lines/third-party/", post, HTTP_HOST=host(tenant))
+    assert response.status_code == 302, response.context["form"].errors
     with tenant_context(tenant):
         content = SiteLineContent.objects.get(line=line)
-    assert content.intro == "توضیح ویژهٔ ثالث" and content.considerations == "موارد قابل بررسی"
+        assert content.intro == "توضیح ویژهٔ ثالث" and content.considerations == "موارد قابل بررسی"
+        assert content.cover and content.highlight_list == ["پاسخ در همان روز", "بررسی رایگان"]
+        assert content.images.count() == 1 and content.images.first().caption == "کارت بیمه"
+
+
+def test_line_page_shows_cover_gallery_and_quote_form_beside_content(client, tenant, owner, settings, tmp_path):
+    settings.MEDIA_ROOT = str(tmp_path)
+    publishable_site(tenant)
+    client.force_login(owner)
+    post = _line_post(**{"c-cover": _png("cover.png"), "g-0-image": _png("g.png")})
+    assert client.post("/panel/site/lines/third-party/", post, HTTP_HOST=host(tenant)).status_code == 302
+    html = client.get("/insurance/third-party/", HTTP_HOST=host(tenant)).content.decode()
+    assert "line-cover" in html and "line-gallery" in html and "پاسخ در همان روز" in html
+    hero = html.split('<section class="line-body">')[0]
+    assert 'id="quote-form"' not in hero  # the inquiry form lives beside the content, not in the hero
+    assert html.count('id="quote-form"') == 1
+    cover_url = SiteLineContent.all_objects.get(tenant=tenant).cover.url
+    assert client.get(cover_url, HTTP_HOST=host(tenant)).status_code == 200  # uploaded pictures are public
+
+
+def test_line_page_without_images_still_has_a_visual_not_an_empty_hero(client, tenant):
+    publishable_site(tenant)
+    html = client.get("/insurance/third-party/", HTTP_HOST=host(tenant)).content.decode()
+    assert "line-path" in html and "line-gallery" not in html
+
+
+def test_line_page_rejects_oversized_image(client, tenant, owner, settings, tmp_path):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    settings.MEDIA_ROOT = str(tmp_path)
+    site = SiteSettings.all_objects.get(tenant=tenant)
+    site.lines.set(LineOfBusiness.objects.filter(slug="third-party"))
+    client.force_login(owner)
+    big = SimpleUploadedFile("big.png", b"\x89PNG" + b"0" * (3 * 1024 * 1024 + 10), content_type="image/png")
+    response = client.post("/panel/site/lines/third-party/", _line_post(**{"c-cover": big}), HTTP_HOST=host(tenant))
+    assert response.status_code == 200
+    assert not SiteLineContent.all_objects.filter(tenant=tenant).exists()
 
 
 def test_sitemap_excludes_private_workflows_and_includes_enabled_line(client, tenant):

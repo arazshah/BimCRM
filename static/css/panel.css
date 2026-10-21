@@ -700,3 +700,31 @@ h1 .tier { font-size: 13px; vertical-align: 6px; }
 .suggest-plan { background: #eef8f4; border-color: #bfe0d3; margin-top: 18px; }
 .suggest-plan .sp-label { font-size: 12.5px; font-weight: 800; color: #0e7c66; }
 .suggest-plan strong { font-size: 17px; }
+
+/* Line pages hub and editor */
+.line-cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.line-card { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.line-card-cover { aspect-ratio: 16 / 9; background: #eef1f5; display: grid; place-items: center; }
+.line-card-cover img { width: 100%; height: 100%; object-fit: cover; }
+.line-card-empty { display: grid; justify-items: center; gap: .4rem; color: #7a8596; font-size: 13px; }
+.line-card-empty svg { width: 34px; height: 34px; }
+.line-card-body { padding: 16px; display: grid; gap: .6rem; }
+.line-card-body h2 { margin: 0; font-size: 18px; }
+.line-card-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.meter { height: 8px; border-radius: 99px; background: #e6eaf0; overflow: hidden; }
+.meter span { display: block; height: 100%; background: #0f766e; border-radius: inherit; }
+.line-todo { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .35rem; }
+.line-todo li { font-size: 12.5px; padding: .15rem .65rem; border-radius: 99px; border: 1px dashed #c9a24a; color: #7a5a10; background: #fff9ea; }
+.line-todo li.ok { border: 1px solid #9fd8c4; color: #0a5f4f; background: #e3f3ed; }
+.line-todo-bar { margin: 0 0 1rem; }
+.line-step { margin-bottom: 1.2rem; }
+.cover-edit { display: grid; grid-template-columns: minmax(0, 260px) 1fr; gap: 1rem; align-items: start; }
+.cover-preview, .gallery-thumb { aspect-ratio: 4 / 3; border-radius: 12px; border: 2px dashed #c4ccd8; background: #f4f6f9; display: grid; place-items: center; overflow: hidden; color: #7a8596; font-size: 13px; }
+.cover-preview img, .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.gallery-edit { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+.gallery-slot { display: grid; gap: .45rem; padding: 10px; border: 1px solid #e3e7ee; border-radius: 14px; background: #fff; align-content: start; }
+.gallery-slot.has-error { border-color: #d92d20; }
+.gallery-meta { display: flex; justify-content: space-between; align-items: center; gap: .5rem; font-size: 13px; }
+.gallery-meta .order { width: 4.5rem; }
+.gallery-slot input[type=file] { max-width: 100%; font-size: 12px; }
+@media (max-width: 640px) { .cover-edit { grid-template-columns: 1fr; } }

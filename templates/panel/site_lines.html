@@ -1,0 +1,28 @@
+{% extends "panel/base.html" %}
+{% block title %}صفحهٔ رشته‌ها{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>صفحهٔ رشته‌ها</h1>
+  <div class="head-actions"><a class="btn btn-ghost btn-sm" href="{% url 'panel:site' %}">محتوای عمومی سایت</a></div>
+</div>
+<p class="note">هر رشته یک «ویترین فروش» دارد: تصویر شاخص، گالری، نکات برجسته و توضیحات. محتوای هر بیمه‌نامه را از اینجا مدیریت کنید. رشته‌ها را از «محتوای سایت ‹ رشته‌های قابل استعلام» فعال یا غیرفعال می‌کنید.</p>
+{% if cards %}
+<div class="line-cards">
+  {% for c in cards %}<article class="card line-card">
+    <div class="line-card-cover">{% if c.content and c.content.cover %}<img src="{{ c.content.cover.url }}" alt="" loading="lazy">{% else %}<span class="line-card-empty"><svg aria-hidden="true"><use href="#p-shield"/></svg>بدون تصویر شاخص</span>{% endif %}</div>
+    <div class="line-card-body">
+      <h2>{{ c.line.name }}</h2>
+      <div class="meter" role="img" aria-label="{{ c.done }} از {{ c.total }} بخش تکمیل شده"><span style="width:{{ c.percent }}%"></span></div>
+      <p class="muted">{{ c.done }} از {{ c.total }} بخش تکمیل شده</p>
+      <ul class="line-todo">{% for label, ok in c.checklist %}<li class="{% if ok %}ok{% endif %}">{{ label }}</li>{% endfor %}</ul>
+      <div class="line-card-actions">
+        <a class="btn btn-sm" href="{% url 'panel:site_line' c.line.slug %}">ویرایش صفحه</a>
+        <a class="btn btn-ghost btn-sm" href="{{ request.tenant.site_url }}insurance/{{ c.line.slug }}/" target="_blank" rel="noopener">دیدن در سایت</a>
+      </div>
+    </div>
+  </article>{% endfor %}
+</div>
+{% else %}
+<section class="card"><p>هنوز رشته‌ای فعال نشده است. ابتدا از «محتوای سایت» رشته‌های قابل استعلام را انتخاب کنید.</p><a class="btn btn-sm" href="{% url 'panel:site' %}">رفتن به محتوای سایت</a></section>
+{% endif %}
+{% endblock %}

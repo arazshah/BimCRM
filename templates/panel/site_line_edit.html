@@ -1,0 +1,68 @@
+{% extends "panel/base.html" %}
+{% block title %}صفحهٔ {{ line.name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>صفحهٔ «{{ line.name }}»</h1>
+  <div class="head-actions">
+    <a class="btn btn-ghost btn-sm" href="{% url 'panel:site_lines' %}">همهٔ رشته‌ها</a>
+    <a class="btn btn-ghost btn-sm" href="{{ request.tenant.site_url }}insurance/{{ line.slug }}/" target="_blank" rel="noopener">دیدن در سایت</a>
+  </div>
+</div>
+<ul class="line-todo line-todo-bar">{% for label, ok in checklist %}<li class="{% if ok %}ok{% endif %}">{{ label }}</li>{% endfor %}</ul>
+<form method="post" enctype="multipart/form-data" class="panel-form wide" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<ul class="flash"><li class="error">{{ form.non_field_errors|join:" " }}</li></ul>{% endif %}
+  {% if gallery.non_form_errors %}<ul class="flash"><li class="error">{{ gallery.non_form_errors|join:" " }}</li></ul>{% endif %}
+
+  <fieldset class="formset line-step">
+    <legend>۱ · ظاهر و جذابیت صفحه</legend>
+    <p class="note">این بخش بالای صفحه دیده می‌شود. یک تصویر روشن و چند نکتهٔ کوتاه، مشتری را زودتر به استعلام می‌رساند.</p>
+    <div class="cover-edit">
+      <div class="cover-preview" id="cover-preview">{% if content.cover %}<img src="{{ content.cover.url }}" alt="">{% else %}<span>تصویر شاخص</span>{% endif %}</div>
+      <div class="cover-fields">
+        {% with f=form.cover %}<div class="field{% if f.errors %} has-error{% endif %}"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}<div class="help">{{ f.help_text }}</div>{% for e in f.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>{% endwith %}
+        {% with f=form.cover_alt %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }} <span class="optional">(اختیاری)</span></label>{{ f }}</div>{% endwith %}
+      </div>
+    </div>
+    {% with f=form.intro %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>{% endwith %}
+    {% with f=form.highlights %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}<div class="help">{{ f.help_text }}</div>{% for e in f.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>{% endwith %}
+  </fieldset>
+
+  <fieldset class="formset line-step">
+    <legend>۲ · گالری تصاویر</legend>
+    <p class="note">تا ۸ تصویر (نمونه بیمه‌نامه، کارت، پوشش‌ها، اینفوگرافیک…). هر تصویر حداکثر ۳ مگابایت. با ترتیب کمتر، زودتر نمایش داده می‌شود.</p>
+    {{ gallery.management_form }}
+    <div class="gallery-edit">
+      {% for g in gallery %}<div class="gallery-slot{% if g.errors %} has-error{% endif %}">
+        {% for hidden in g.hidden_fields %}{{ hidden }}{% endfor %}
+        <div class="gallery-thumb">{% if g.instance.pk and g.instance.image %}<img src="{{ g.instance.image.url }}" alt="">{% else %}<span>+ تصویر</span>{% endif %}</div>
+        {% if g.instance.pk %}<small class="muted">برای تعویض، فایل تازه انتخاب کنید</small>{% endif %}
+        {{ g.image }}
+        <input type="text" name="{{ g.caption.html_name }}" value="{{ g.caption.value|default:'' }}" placeholder="شرح تصویر" aria-label="شرح تصویر" maxlength="120">
+        <div class="gallery-meta"><label>ترتیب <input type="number" name="{{ g.order.html_name }}" value="{{ g.order.value|default:0 }}" class="order"></label>
+        {% if g.instance.pk %}<label class="inline-check">{{ g.DELETE }} حذف</label>{% endif %}</div>
+        {% for e in g.errors.values %}{% for m in e %}<p class="field-error">{{ m }}</p>{% endfor %}{% endfor %}
+      </div>{% endfor %}
+    </div>
+  </fieldset>
+
+  <fieldset class="formset line-step">
+    <legend>۳ · متن‌های صفحه</legend>
+    <p class="note">دربارهٔ پوشش و شرایط قطعی فقط بر اساس اطلاعات رسمی شرکت بیمه بنویسید. بخش خالی در سایت نمایش داده نمی‌شود.</p>
+    {% for f in text_fields %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>{% endfor %}
+  </fieldset>
+
+  <fieldset class="formset line-step">
+    <legend>۴ · نمایش در گوگل</legend>
+    {% for f in seo_fields %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }} <span class="optional">(اختیاری)</span></label>{{ f }}{% for e in f.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>{% endfor %}
+  </fieldset>
+  <div class="form-actions sticky"><button class="btn" type="submit">ذخیره صفحه</button></div>
+</form>
+<script>
+(function(){
+  function preview(input, box){ input.addEventListener('change', function(){ var f = input.files && input.files[0]; if(!f || !f.type.startsWith('image/')) return; var r = new FileReader(); r.onload = function(e){ box.innerHTML = ''; var i = document.createElement('img'); i.alt=''; i.src = e.target.result; box.appendChild(i); }; r.readAsDataURL(f); }); }
+  var c = document.querySelector('#id_c-cover'); if(c) preview(c, document.getElementById('cover-preview'));
+  document.querySelectorAll('.gallery-slot').forEach(function(slot){ var i = slot.querySelector('input[type=file]'); if(i) preview(i, slot.querySelector('.gallery-thumb')); });
+})();
+</script>
+{% endblock %}

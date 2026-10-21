@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 
@@ -6,6 +7,15 @@ from apps.core.models import LineOfBusiness, TenantOwned
 from . import registry
 
 hex_color = RegexValidator(r"^#[0-9a-fA-F]{6}$", "رنگ را به شکل #1d3557 وارد کنید.")
+
+
+MAX_IMAGE_BYTES = 3 * 1024 * 1024
+MAX_GALLERY_IMAGES = 8
+
+
+def validate_image_size(file):
+    if file.size > MAX_IMAGE_BYTES:
+        raise ValidationError("حجم تصویر باید کمتر از ۳ مگابایت باشد.")
 
 
 class SiteSettings(TenantOwned):
@@ -52,6 +62,19 @@ class SiteLineContent(TenantOwned):
 
     line = models.ForeignKey(LineOfBusiness, on_delete=models.PROTECT, verbose_name="رشته بیمه")
     intro = models.CharField("معرفی کوتاه", max_length=255, blank=True)
+    cover = models.ImageField(
+        "تصویر شاخص",
+        upload_to="lines/",
+        blank=True,
+        validators=[validate_image_size],
+        help_text="تصویر بزرگ بالای صفحه (افقی، حداقل ۱۲۰۰ پیکسل عرض). حداکثر ۳ مگابایت.",
+    )
+    cover_alt = models.CharField("توضیح تصویر شاخص", max_length=120, blank=True)
+    highlights = models.TextField(
+        "نکات برجسته",
+        blank=True,
+        help_text="هر خط یک نکتهٔ کوتاه؛ مثل «پاسخ در همان روز کاری». حداکثر ۶ مورد نمایش داده می‌شود.",
+    )
     description = models.TextField("توضیحات رشته", blank=True)
     coverage = models.TextField("پوشش‌هایی که دفتر بررسی می‌کند", blank=True)
     considerations = models.TextField("شرایطی که مشتری باید بررسی کند", blank=True)
@@ -68,6 +91,29 @@ class SiteLineContent(TenantOwned):
 
     def __str__(self):
         return f"{self.line} — {self.tenant.name}"
+
+    @property
+    def highlight_list(self):
+        return [line.strip() for line in self.highlights.splitlines() if line.strip()][:6]
+
+
+class SiteLineImage(TenantOwned):
+    """One gallery picture on an insurance line's public page."""
+
+    content = models.ForeignKey(
+        SiteLineContent, on_delete=models.CASCADE, related_name="images", verbose_name="محتوای رشته"
+    )
+    image = models.ImageField("تصویر", upload_to="lines/gallery/", validators=[validate_image_size])
+    caption = models.CharField("شرح تصویر", max_length=120, blank=True)
+    order = models.PositiveIntegerField("ترتیب", default=0)
+
+    class Meta:
+        verbose_name = "تصویر رشته"
+        verbose_name_plural = "تصاویر رشته‌ها"
+        ordering = ["order", "id"]
+
+    def __str__(self):
+        return self.caption or f"تصویر {self.pk}"
 
 
 class Testimonial(TenantOwned):
