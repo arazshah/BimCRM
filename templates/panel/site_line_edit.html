@@ -20,7 +20,7 @@
     <div class="cover-edit">
       <div class="cover-preview" id="cover-preview">{% if content.cover %}<img src="{{ content.cover.url }}" alt="">{% else %}<span>تصویر شاخص</span>{% endif %}</div>
       <div class="cover-fields">
-        {% with f=form.cover %}<div class="field{% if f.errors %} has-error{% endif %}"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}<div class="help">{{ f.help_text }}</div>{% for e in f.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>{% endwith %}
+        {% with f=form.cover %}<div class="field{% if f.errors %} has-error{% endif %}"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}<div class="help">{{ f.help_text }}</div>{% for e in f.errors %}<p class="field-error">{{ e }}</p>{% endfor %}{% if content.cover %}<label class="inline-check">{{ form.remove_cover }} حذف تصویر فعلی</label>{% endif %}</div>{% endwith %}
         {% with f=form.cover_alt %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }} <span class="optional">(اختیاری)</span></label>{{ f }}</div>{% endwith %}
       </div>
     </div>

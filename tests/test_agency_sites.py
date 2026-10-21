@@ -351,6 +351,14 @@ def test_line_page_editor_saves_text_cover_and_gallery(client, tenant, owner, se
         assert content.intro == "توضیح ویژهٔ ثالث" and content.considerations == "موارد قابل بررسی"
         assert content.cover and content.highlight_list == ["پاسخ در همان روز", "بررسی رایگان"]
         assert content.images.count() == 1 and content.images.first().caption == "کارت بیمه"
+    again = client.post(
+        "/panel/site/lines/third-party/",
+        _line_post(**{"c-remove_cover": "on", "g-TOTAL_FORMS": "0"}),
+        HTTP_HOST=host(tenant),
+    )
+    assert again.status_code == 302
+    with tenant_context(tenant):
+        assert not SiteLineContent.objects.get(line=line).cover
 
 
 def test_line_page_shows_cover_gallery_and_quote_form_beside_content(client, tenant, owner, settings, tmp_path):

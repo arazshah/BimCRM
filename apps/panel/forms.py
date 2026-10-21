@@ -213,6 +213,13 @@ class SiteContentForm(forms.ModelForm):
 
 
 class SiteLineContentForm(forms.ModelForm):
+    remove_cover = forms.BooleanField(label="حذف تصویر شاخص", required=False)
+
+    def save(self, commit=True):
+        if self.cleaned_data.get("remove_cover") and "cover" not in self.files:
+            self.instance.cover = ""
+        return super().save(commit=commit)
+
     class Meta:
         model = SiteLineContent
         fields = [
@@ -229,6 +236,7 @@ class SiteLineContentForm(forms.ModelForm):
             "seo_description",
         ]
         widgets = {
+            "cover": forms.FileInput(attrs={"accept": "image/*"}),
             "highlights": forms.Textarea(
                 attrs={"rows": 4, "placeholder": "پاسخ در همان روز کاری\nبررسی رایگان شرایط\nمقایسهٔ چند شرکت بیمه"}
             ),
@@ -246,6 +254,7 @@ def line_gallery_formset(content, data=None, files=None):
     factory = forms.modelformset_factory(
         SiteLineImage,
         fields=["image", "caption", "order"],
+        widgets={"image": forms.FileInput(attrs={"accept": "image/*"})},
         extra=max(0, min(3, MAX_GALLERY_IMAGES - existing)),
         max_num=MAX_GALLERY_IMAGES,
         validate_max=True,
