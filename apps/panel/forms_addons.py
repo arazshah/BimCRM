@@ -3,8 +3,10 @@ from django.core.exceptions import ValidationError
 
 from apps.accounts.models import normalize_mobile, validate_mobile
 from apps.claims.models import Claim, ClaimFormFile
-from apps.crm.models import Policy
-from apps.finance.models import CommissionRule, Installment, LedgerEntry
+from apps.crm.documents import validate_upload
+from apps.crm.models import Customer, Policy
+from apps.finance.models import Cheque, CommissionRule, FinanceAccount, Installment, LedgerEntry
+from apps.finance.money import RialInput
 from apps.messaging.models import Campaign, ReminderSettings
 from apps.network.models import Marketer, MarketerPayout
 
@@ -214,3 +216,144 @@ class ReminderSettingsForm(forms.ModelForm):
         if not ReminderSettings.parse_days(value):
             raise ValidationError("دست‌کم یک عدد مثل 30,15,3 وارد کنید.")
         return value
+
+
+def parse_digits(text: str) -> str:
+    """Latin digits only ('۱۲۳' → '123'); everything else is dropped."""
+    table = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+    return "".join(ch for ch in str(text or "").translate(table) if ch.isascii() and ch.isdigit())
+
+
+# ---- cash boxes, bank accounts, received cheques (amounts in rials) ----
+
+
+class FinanceAccountForm(forms.ModelForm):
+    class Meta:
+        model = FinanceAccount
+        fields = [
+            "kind",
+            "title",
+            "bank_name",
+            "branch_name",
+            "account_number",
+            "sheba",
+            "card_number",
+            "opening_balance",
+            "is_active",
+        ]
+        widgets = {
+            "opening_balance": RialInput(),
+            "account_number": forms.TextInput(attrs={"dir": "ltr"}),
+            "sheba": forms.TextInput(attrs={"dir": "ltr", "maxlength": 26}),
+            "card_number": forms.TextInput(attrs={"dir": "ltr", "maxlength": 19}),
+        }
+
+    def clean_sheba(self):
+        value = parse_digits(self.cleaned_data.get("sheba", "").upper().removeprefix("IR"))
+        if value and len(value) != 24:
+            raise ValidationError("شماره شبا باید ۲۴ رقم (بدون IR) باشد.")
+        return value
+
+
+class ChequeForm(forms.ModelForm):
+    class Meta:
+        model = Cheque
+        fields = [
+            "customer",
+            "policy",
+            "installment",
+            "kind",
+            "serial",
+            "sayad_id",
+            "bank_name",
+            "branch_name",
+            "account_number",
+            "drawer_name",
+            "drawer_national_id",
+            "amount",
+            "issue_date",
+            "due_date",
+            "received_date",
+            "image",
+            "note",
+        ]
+        widgets = {
+            "amount": RialInput(),
+            "issue_date": JalaliDateInput(),
+            "due_date": JalaliDateInput(),
+            "received_date": JalaliDateInput(),
+            "serial": forms.TextInput(attrs={"dir": "ltr"}),
+            "sayad_id": forms.TextInput(attrs={"dir": "ltr", "maxlength": 16}),
+            "account_number": forms.TextInput(attrs={"dir": "ltr"}),
+            "drawer_national_id": forms.TextInput(attrs={"dir": "ltr", "maxlength": 11}),
+        }
+
+    def __init__(self, *args, customers=None, policies=None, installments=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["customer"].queryset = (customers if customers is not None else Customer.objects.all()).order_by(
+            "full_name"
+        )
+        self.fields["policy"].queryset = (policies if policies is not None else Policy.objects.all()).select_related(
+            "line"
+        )
+        self.fields["policy"].label_from_instance = lambda p: f"{p.line} {p.number}"
+        self.fields["installment"].queryset = (
+            installments if installments is not None else Installment.objects.all()
+        ).exclude(status=Installment.Status.PAID)
+        self.fields["installment"].label_from_instance = lambda i: f"{i.policy.number} — سررسید {i.due_date}"
+        for name in ("policy", "installment"):
+            self.fields[name].required = False
+
+    def clean_sayad_id(self):
+        value = parse_digits(self.cleaned_data.get("sayad_id", ""))
+        if value and len(value) != 16:
+            raise ValidationError("شناسه صیاد باید ۱۶ رقم باشد.")
+        if value:
+            dup = Cheque.objects.filter(sayad_id=value).exclude(pk=self.instance.pk)
+            if dup.exists():
+                raise ValidationError("چکی با این شناسه صیاد قبلاً ثبت شده است.")
+        return value
+
+    def clean_image(self):
+        f = self.cleaned_data.get("image")
+        if f and hasattr(f, "size"):
+            err = validate_upload(f)
+            if err:
+                raise ValidationError(err)
+        return f
+
+    def clean(self):
+        data = super().clean()
+        customer, policy, inst = data.get("customer"), data.get("policy"), data.get("installment")
+        if customer and policy and policy.customer_id != customer.pk:
+            self.add_error("policy", "این بیمه‌نامه مال همین مشتری نیست.")
+        if inst and policy and inst.policy_id != policy.pk:
+            self.add_error("installment", "این قسط مربوط به بیمه‌نامه انتخاب‌شده نیست.")
+        if data.get("issue_date") and data.get("due_date") and data["issue_date"] > data["due_date"]:
+            self.add_error("due_date", "سررسید نمی‌تواند قبل از تاریخ صدور باشد.")
+        return data
+
+
+class ChequeMoveForm(forms.Form):
+    status = forms.ChoiceField(label="وضعیت جدید")
+    date = forms.DateField(label="تاریخ", widget=JalaliDateInput())
+    account = forms.ModelChoiceField(label="حساب وصول", queryset=FinanceAccount.objects.none(), required=False)
+    handed_to = forms.CharField(label="خرج‌شده به", max_length=100, required=False)
+    note = forms.CharField(label="توضیح", max_length=250, required=False)
+
+    def __init__(self, *args, cheque, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cheque = cheque
+        self.fields["status"].choices = cheque.next_statuses
+        self.fields["account"].queryset = FinanceAccount.objects.filter(is_active=True, kind=FinanceAccount.Kind.BANK)
+
+    def clean(self):
+        data = super().clean()
+        status = data.get("status")
+        if status in (Cheque.Status.DEPOSITED, Cheque.Status.CLEARED) and not (
+            data.get("account") or self.cheque.deposit_account_id
+        ):
+            self.add_error("account", "حساب بانکی وصول را انتخاب کنید.")
+        if status == Cheque.Status.SPENT and not data.get("handed_to"):
+            self.add_error("handed_to", "نام کسی که چک به او خرج شده را بنویسید.")
+        return data

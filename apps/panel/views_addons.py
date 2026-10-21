@@ -17,8 +17,8 @@ from django.views.decorators.http import require_POST
 from apps.claims import services as claim_services
 from apps.claims.models import Claim, ClaimDocument, ClaimEvent, ClaimFormFile
 from apps.core import jalali
-from apps.crm.models import Policy
-from apps.finance.models import CommissionRule, Installment, LedgerEntry
+from apps.crm.models import Customer, Policy
+from apps.finance.models import Cheque, ChequeEvent, CommissionRule, FinanceAccount, Installment, LedgerEntry
 from apps.integrations.senders import tenant_can_sms
 from apps.messaging.models import Campaign, MessageLog
 from apps.messaging.services import campaign_recipients, notify_claim, reminder_settings
@@ -27,6 +27,8 @@ from apps.network.models import Marketer
 from .access import branch_filter, panel_view, scoped, storage_used_bytes
 from .forms_addons import (
     CampaignForm,
+    ChequeForm,
+    ChequeMoveForm,
     ClaimDocumentForm,
     ClaimForm,
     ClaimFormFileForm,
@@ -35,6 +37,7 @@ from .forms_addons import (
     ClaimStatusForm,
     CommissionReceiveForm,
     CommissionRuleForm,
+    FinanceAccountForm,
     InstallmentForm,
     InstallmentPlanForm,
     LedgerForm,
@@ -286,6 +289,167 @@ def ledger_delete(request, pk):
     get_object_or_404(LedgerEntry, pk=pk).delete()
     messages.success(request, "ردیف حذف شد.")
     return redirect("panel:ledger")
+
+
+# ---- cash boxes, bank accounts and received cheques ----
+
+
+@panel_view(feature="finance", office_wide=True, perm="books")
+def finance_accounts(request):
+    accounts = FinanceAccount.objects.all()
+    return render(request, "panel/finance_accounts.html", {"accounts": accounts})
+
+
+@panel_view(feature="finance", office_wide=True, perm="books")
+def finance_account_edit(request, pk=None):
+    obj = get_object_or_404(FinanceAccount, pk=pk) if pk else None
+    form = FinanceAccountForm(request.POST or None, instance=obj)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "ذخیره شد.")
+        return redirect("panel:finance_accounts")
+    return render(
+        request,
+        "panel/form.html",
+        {"form": form, "title": "ویرایش صندوق/حساب" if obj else "صندوق یا حساب جدید", "back": "panel:finance_accounts"},
+    )
+
+
+def _cheque_qs(request):
+    return scoped(
+        request, Cheque.objects.select_related("customer", "policy__line", "deposit_account"), "customer__branch"
+    )
+
+
+@panel_view(feature="finance", perm="finance")
+def cheques(request):
+    qs = _cheque_qs(request)
+    today = timezone.localdate()
+    flt = request.GET.get("f", "open")
+    if flt == "open":
+        qs = qs.filter(status__in=Cheque.OPEN)
+    elif flt == "overdue":
+        qs = qs.filter(status__in=(Cheque.Status.IN_HAND, Cheque.Status.DEPOSITED), due_date__lt=today)
+    elif flt == "week":
+        qs = qs.filter(status=Cheque.Status.IN_HAND, due_date__gte=today, due_date__lte=today + timedelta(days=7))
+    elif flt in Cheque.Status.values:
+        qs = qs.filter(status=flt)
+    kind = request.GET.get("k", "")
+    if kind in Cheque.Kind.values:
+        qs = qs.filter(kind=kind)
+    q = request.GET.get("q", "").strip()
+    if q:
+        qs = qs.filter(
+            Q(serial__icontains=q)
+            | Q(sayad_id__icontains=q)
+            | Q(customer__full_name__icontains=q)
+            | Q(drawer_name__icontains=q)
+            | Q(bank_name__icontains=q)
+        )
+    total = qs.aggregate(s=Sum("amount"))["s"] or 0
+    page = Paginator(qs.order_by("due_date", "id"), 30).get_page(request.GET.get("page"))
+    return render(
+        request,
+        "panel/cheques.html",
+        {
+            "page": page,
+            "f": flt,
+            "k": kind,
+            "q": q,
+            "total": total,
+            "kinds": Cheque.Kind.choices,
+            "statuses": Cheque.Status.choices,
+        },
+    )
+
+
+@panel_view(feature="finance", perm="finance")
+def cheque_edit(request, pk=None):
+    obj = get_object_or_404(_cheque_qs(request), pk=pk) if pk else None
+    initial = {}
+    if not obj and request.GET.get("installment"):
+        inst = (
+            scoped(request, Installment.objects.select_related("policy"), "policy__branch")
+            .filter(pk=request.GET["installment"])
+            .first()
+        )
+        if inst:
+            initial = {
+                "installment": inst.pk,
+                "policy": inst.policy_id,
+                "customer": inst.policy.customer_id,
+                "due_date": inst.due_date,
+                "amount": inst.amount * 10,
+            }
+    form = ChequeForm(
+        request.POST or None,
+        request.FILES or None,
+        instance=obj,
+        initial=initial,
+        customers=scoped(request, Customer.objects.all()),
+        policies=scoped(request, Policy.objects.all()),
+        installments=scoped(request, Installment.objects.select_related("policy"), "policy__branch"),
+    )
+    if request.method == "POST" and form.is_valid():
+        new_image = request.FILES.get("image")
+        sub = request.subscription
+        if new_image and sub and new_image.size > sub.storage_limit_bytes() - storage_used_bytes(request.tenant):
+            messages.error(request, "فضای محیط پر است. از بخش اشتراک فضا اضافه کنید.")
+        else:
+            with transaction.atomic():
+                cheque = form.save()
+                if not obj:
+                    ChequeEvent.objects.create(
+                        tenant_id=cheque.tenant_id,
+                        cheque=cheque,
+                        date=cheque.received_date,
+                        from_status="",
+                        to_status=cheque.status,
+                        note="دریافت چک",
+                        user=request.user,
+                    )
+            messages.success(request, "چک ذخیره شد.")
+            return redirect("panel:cheque", cheque.pk)
+    return render(
+        request,
+        "panel/form.html",
+        {
+            "form": form,
+            "title": f"ویرایش چک {obj.serial}" if obj else "ثبت چک دریافتی",
+            "back": "panel:cheques",
+            "multipart": True,
+        },
+    )
+
+
+@panel_view(feature="finance", perm="finance")
+def cheque_detail(request, pk):
+    cheque = get_object_or_404(_cheque_qs(request).select_related("installment"), pk=pk)
+    form = None
+    if cheque.next_statuses:
+        form = ChequeMoveForm(request.POST or None, cheque=cheque, initial={"date": timezone.localdate()})
+        if request.method == "POST" and form.is_valid():
+            d = form.cleaned_data
+            try:
+                with transaction.atomic():
+                    cheque.move_to(
+                        d["status"],
+                        user=request.user,
+                        when=d["date"],
+                        note=d["note"],
+                        account=d["account"],
+                        handed_to=d["handed_to"],
+                    )
+            except ValueError as e:
+                messages.error(request, str(e))
+            else:
+                messages.success(request, f"وضعیت چک: {cheque.get_status_display()}")
+                return redirect("panel:cheque", cheque.pk)
+    return render(
+        request,
+        "panel/cheque_detail.html",
+        {"cheque": cheque, "form": form, "events": cheque.events.select_related("user")},
+    )
 
 
 # ======================= Claims =======================

@@ -1,0 +1,42 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}چک {{ cheque.serial }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>چک <span class="ltr">{{ cheque.serial }}</span> <span class="tag {% if cheque.status == 'cleared' %}ok{% elif cheque.status == 'bounced' %}hot{% endif %}">{{ cheque.get_status_display }}</span></h1>
+  <span><a class="btn btn-ghost btn-sm" href="{% url 'panel:cheque_edit' cheque.pk %}">ویرایش</a> <a class="btn btn-ghost btn-sm" href="{% url 'panel:cheques' %}">بازگشت</a></span></div>
+{% include "panel/_finance_tabs.html" %}
+<div class="two-col">
+  <section class="panel-box">
+    <h2 class="h2">اطلاعات چک</h2>
+    <dl class="kv">
+      <dt>دریافت از</dt><dd><a href="{% url 'panel:customer' cheque.customer_id %}">{{ cheque.customer.full_name }}</a></dd>
+      {% if cheque.policy %}<dt>بیمه‌نامه</dt><dd>{{ cheque.policy.line }} <span class="ltr">{{ cheque.policy.number }}</span></dd>{% endif %}
+      {% if cheque.installment %}<dt>قسط مرتبط</dt><dd>سررسید {{ cheque.installment.due_date|jdate }}</dd>{% endif %}
+      <dt>مبلغ</dt><dd class="num">{{ cheque.amount|toman }} ریال</dd>
+      <dt>نوع</dt><dd>{{ cheque.get_kind_display }}</dd>
+      <dt>بانک / شعبه</dt><dd>{{ cheque.bank_name }}{% if cheque.branch_name %} / {{ cheque.branch_name }}{% endif %}</dd>
+      {% if cheque.account_number %}<dt>شماره حساب</dt><dd class="ltr">{{ cheque.account_number }}</dd>{% endif %}
+      {% if cheque.sayad_id %}<dt>شناسه صیاد</dt><dd class="ltr">{{ cheque.sayad_id }}</dd>{% endif %}
+      {% if cheque.drawer_name %}<dt>صاحب حساب</dt><dd>{{ cheque.drawer_name }}</dd>{% endif %}
+      {% if cheque.drawer_national_id %}<dt>کد ملی</dt><dd class="ltr">{{ cheque.drawer_national_id }}</dd>{% endif %}
+      {% if cheque.issue_date %}<dt>تاریخ صدور</dt><dd>{{ cheque.issue_date|jdate }}</dd>{% endif %}
+      <dt>سررسید</dt><dd>{{ cheque.due_date|jdate }}</dd>
+      <dt>تاریخ دریافت</dt><dd>{{ cheque.received_date|jdate }}</dd>
+      {% if cheque.deposit_account %}<dt>حساب وصول</dt><dd>{{ cheque.deposit_account }}</dd>{% endif %}
+      {% if cheque.handed_to %}<dt>خرج‌شده به</dt><dd>{{ cheque.handed_to }}</dd>{% endif %}
+      {% if cheque.note %}<dt>توضیح</dt><dd>{{ cheque.note }}</dd>{% endif %}
+    </dl>
+    {% if cheque.image %}<p><a href="{{ cheque.image.url }}" target="_blank" rel="noopener">مشاهده تصویر چک</a></p>{% endif %}
+  </section>
+  <section class="panel-box">
+    {% if form %}
+    <h2 class="h2">تغییر وضعیت</h2>
+    <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}<button class="btn" type="submit">ثبت</button></form>
+    {% else %}<p class="muted">این چک به وضعیت نهایی رسیده است.</p>{% endif %}
+    <h2 class="h2">تاریخچه</h2>
+    <ul class="timeline">{% for e in events %}
+      <li><strong>{{ e.from_label }} ← {{ e.to_label }}</strong> <span class="muted small">{{ e.date|jdate }}{% if e.user %} · {{ e.user }}{% endif %}</span>{% if e.note %}<br><span class="small">{{ e.note }}</span>{% endif %}</li>
+    {% endfor %}</ul>
+  </section>
+</div>
+{% endblock %}
