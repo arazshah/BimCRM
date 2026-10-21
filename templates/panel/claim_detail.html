@@ -14,8 +14,8 @@
         <div><dt>بیمه‌نامه</dt><dd>{{ claim.policy.line }} · {{ claim.policy.company }} <span class="ltr">{{ claim.policy.number }}</span></dd></div>
         <div><dt>تاریخ حادثه</dt><dd>{{ claim.incident_date|jdate:"long" }}</dd></div>
         {% if claim.insurer_file_number %}<div><dt>پرونده در شرکت</dt><dd class="ltr">{{ claim.insurer_file_number }}</dd></div>{% endif %}
-        <div><dt>مبلغ درخواستی</dt><dd class="num">{{ claim.amount_claimed|toman }} تومان</dd></div>
-        {% if claim.amount_paid %}<div><dt>مبلغ پرداختی</dt><dd class="num">{{ claim.amount_paid|toman }} تومان</dd></div>{% endif %}
+        <div><dt>مبلغ درخواستی</dt><dd class="num">{{ claim.amount_claimed|toman }} ریال</dd></div>
+        {% if claim.amount_paid %}<div><dt>مبلغ پرداختی</dt><dd class="num">{{ claim.amount_paid|toman }} ریال</dd></div>{% endif %}
         <div><dt>مسئول</dt><dd>{{ claim.assigned_to|default:"—" }}</dd></div>
         {% if claim.incident_place %}<div><dt>محل حادثه</dt><dd>{{ claim.incident_place }}</dd></div>{% endif %}
         {% if claim.iban %}<div><dt>شبا (واریز)</dt><dd class="ltr">{{ claim.iban }}</dd></div>{% endif %}

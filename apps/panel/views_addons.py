@@ -397,7 +397,7 @@ def cheque_edit(request, pk=None):
                 "policy": inst.policy_id,
                 "customer": inst.policy.customer_id,
                 "due_date": inst.due_date,
-                "amount": inst.amount * 10,
+                "amount": inst.amount,
             }
     form = ChequeForm(
         request.POST or None,

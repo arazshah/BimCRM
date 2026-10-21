@@ -14,9 +14,9 @@
   {% if children %}<div><dt>زیرمجموعه</dt><dd>{% for c in children %}<a href="{% url 'panel:marketer' c.pk %}">{{ c }}</a>{% if not forloop.last %}، {% endif %}{% endfor %}</dd></div>{% endif %}
 </dl>
 <dl class="stats three">
-  <div><dt>کمیسیون کل</dt><dd class="num">{{ earned|toman }} <small>تومان</small></dd></div>
-  <div><dt>تسویه‌شده</dt><dd class="num">{{ paid|toman }} <small>تومان</small></dd></div>
-  <div><dt>مانده</dt><dd class="num">{{ balance|toman }} <small>تومان</small></dd></div>
+  <div><dt>کمیسیون کل</dt><dd class="num">{{ earned|toman }} <small>ریال</small></dd></div>
+  <div><dt>تسویه‌شده</dt><dd class="num">{{ paid|toman }} <small>ریال</small></dd></div>
+  <div><dt>مانده</dt><dd class="num">{{ balance|toman }} <small>ریال</small></dd></div>
 </dl>
 <div class="two-col">
   <section class="panel-box">

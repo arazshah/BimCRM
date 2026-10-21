@@ -28,6 +28,16 @@ def toman(value):
 
 
 @register.filter
+def rial_toman(value):
+    """Rials shown as grouped Persian-digit tomans (for customers, who think in tomans)."""
+    try:
+        n = int(value or 0) // 10
+    except (TypeError, ValueError):
+        return value
+    return f"{n:,}".replace(",", "٬").translate(_DIGITS)
+
+
+@register.filter
 def jdate(value, fmt="short"):
     if not value:
         return ""

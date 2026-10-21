@@ -51,10 +51,10 @@
 <section class="kpis" aria-label="خلاصه">
   <a class="kpi" href="{% url 'panel:policies' %}">
     <span class="kpi-label"><span class="kpi-ico k-green"><svg aria-hidden="true"><use href="#p-wallet"/></svg></span>حق بیمه این ماه</span>
-    <strong class="kpi-value num">{{ stats.month_premium|toman }}<small>تومان</small></strong>
+    <strong class="kpi-value num">{{ stats.month_premium|toman }}<small>ریال</small></strong>
     {% if stats.premium_delta is not None %}
       <span class="kpi-sub"><span class="delta {% if stats.premium_delta >= 0 %}up{% else %}down{% endif %}"><svg aria-hidden="true"><use href="#p-{% if stats.premium_delta >= 0 %}up{% else %}down{% endif %}"/></svg>{{ stats.premium_delta|stringformat:"d"|cut:"-"|fa }}٪</span> نسبت به ماه قبل</span>
-    {% else %}<span class="kpi-sub">ماه قبل: {{ stats.prev_premium|toman }} تومان</span>{% endif %}
+    {% else %}<span class="kpi-sub">ماه قبل: {{ stats.prev_premium|toman }} ریال</span>{% endif %}
   </a>
   <a class="kpi" href="{% url 'panel:policies' %}">
     <span class="kpi-label"><span class="kpi-ico k-blue"><svg aria-hidden="true"><use href="#p-doc"/></svg></span>بیمه‌نامه فعال</span>
@@ -120,14 +120,14 @@
     <div class="trend" role="img" aria-label="نمودار حق بیمه صادره در شش ماه اخیر؛ جزئیات در جدول زیر">
       {% for t in trend %}
       <div class="trend-col{% if forloop.last %} now{% endif %}" tabindex="0" style="--h: {{ t.pct }}%">
-        <span class="trend-tip"><b>{{ t.full }}</b>{{ t.value|toman }} تومان · {{ t.count|fa }} بیمه‌نامه</span>
+        <span class="trend-tip"><b>{{ t.full }}</b>{{ t.value|toman }} ریال · {{ t.count|fa }} بیمه‌نامه</span>
         <span class="trend-val">{% if forloop.last %}{{ t.value|toman }}{% endif %}</span>
         <span class="trend-bar"></span>
         <span class="trend-x">{{ t.label }}</span>
       </div>
       {% endfor %}
     </div>
-    <table class="visually-hidden"><caption>حق بیمه صادره به تفکیک ماه</caption><tbody>{% for t in trend %}<tr><th scope="row">{{ t.full }}</th><td>{{ t.value|toman }} تومان</td><td>{{ t.count|fa }} بیمه‌نامه</td></tr>{% endfor %}</tbody></table>
+    <table class="visually-hidden"><caption>حق بیمه صادره به تفکیک ماه</caption><tbody>{% for t in trend %}<tr><th scope="row">{{ t.full }}</th><td>{{ t.value|toman }} ریال</td><td>{{ t.count|fa }} بیمه‌نامه</td></tr>{% endfor %}</tbody></table>
     {% else %}
     <div class="empty-state">
       <svg aria-hidden="true"><use href="#p-chart"/></svg>

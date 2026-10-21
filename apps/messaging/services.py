@@ -106,7 +106,7 @@ def send_daily_reminders(tenant, today=None) -> int:
                     cfg.installment_text,
                     name=i.policy.customer.full_name,
                     line=i.policy.line.name,
-                    amount=f"{i.amount:,}".replace(",", "٬").translate(_FA),
+                    amount=f"{i.amount // 10:,}".replace(",", "٬").translate(_FA),
                     date=_jdate(i.due_date),
                     office=tenant.name,
                     phone=phone,

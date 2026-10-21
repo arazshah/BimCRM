@@ -14,7 +14,7 @@
 </div>
 {% if page.object_list %}
 <div class="table-wrap"><table class="data">
-  <thead><tr><th>بیمه‌گذار</th><th>رشته</th><th>شرکت</th><th>شماره</th><th>پایان</th><th>حق بیمه (تومان)</th><th></th></tr></thead>
+  <thead><tr><th>بیمه‌گذار</th><th>رشته</th><th>شرکت</th><th>شماره</th><th>پایان</th><th>حق بیمه (ریال)</th><th></th></tr></thead>
   <tbody>{% for p in page %}{% with d=p.end_date|days_until %}
     <tr class="{% if p.status == 'cancelled' %}dim{% endif %}"><td><a href="{% url 'panel:customer' p.customer_id %}">{{ p.customer.full_name }}</a></td><td>{{ p.line }}</td><td>{{ p.company }}</td><td class="ltr">{{ p.number }}</td>
       <td>{{ p.end_date|jdate }} {% if p.status == 'active' and d >= 0 and d <= 30 %}<span class="tag {% if d <= 7 %}hot{% else %}warm{% endif %}">{{ d|fa }} روز</span>{% endif %}</td>

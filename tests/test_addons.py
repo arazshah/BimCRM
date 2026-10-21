@@ -363,7 +363,7 @@ def test_installment_and_birthday_reminders(tenant, sent):
     today = timezone.localdate()
     policy = make_policy(tenant, birth_date=date(1990, today.month, today.day))
     with tenant_context(tenant):
-        Installment.objects.create(policy=policy, due_date=today + timedelta(days=3), amount=2_500_000)
+        Installment.objects.create(policy=policy, due_date=today + timedelta(days=3), amount=25_000_000)
         cfg = ReminderSettings.objects.create(birthday_enabled=True)
     with tenant_context(tenant):
         send_daily_reminders(tenant, today)

@@ -28,8 +28,8 @@
       <div><dt>بیمه‌نامه</dt><dd>{{ claim.policy.line }} · {{ claim.policy.company }} · <span class="ltr">{{ claim.policy.number }}</span></dd></div>
       <div><dt>تاریخ حادثه</dt><dd>{{ claim.incident_date|jdate:"long" }}</dd></div>
       {% if claim.incident_place %}<div><dt>محل</dt><dd>{{ claim.incident_place }}</dd></div>{% endif %}
-      {% if claim.amount_claimed %}<div><dt>برآورد شما</dt><dd class="num">{{ claim.amount_claimed|toman }} تومان</dd></div>{% endif %}
-      {% if claim.amount_paid %}<div><dt>مبلغ پرداخت‌شده</dt><dd class="num">{{ claim.amount_paid|toman }} تومان</dd></div>{% endif %}
+      {% if claim.amount_claimed %}<div><dt>برآورد شما</dt><dd class="num">{{ claim.amount_claimed|rial_toman }} تومان</dd></div>{% endif %}
+      {% if claim.amount_paid %}<div><dt>مبلغ پرداخت‌شده</dt><dd class="num">{{ claim.amount_paid|rial_toman }} تومان</dd></div>{% endif %}
       {% if claim.insurer_file_number %}<div><dt>شمارهٔ پرونده در شرکت بیمه</dt><dd class="ltr">{{ claim.insurer_file_number }}</dd></div>{% endif %}
       <div><dt>اظهارنامه</dt><dd>{% if claim.signed_at %}امضا شده · {{ claim.signed_at|jdate:"time" }}{% else %}امضا نشده{% endif %}</dd></div>
     </dl>

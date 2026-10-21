@@ -22,7 +22,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_points_tiers_renewal_and_installment(client, tenant, owner):
-    p = make_policy(tenant, premium=30_000_000)  # 300 points -> silver (200)
+    p = make_policy(tenant, premium=300_000_000)  # 300 points -> silver (200)
     c = Customer.all_objects.get(pk=p.customer_id)
     assert c.points_balance == 300 and c.tier == "silver"
     with tenant_context(tenant):
@@ -33,7 +33,7 @@ def test_points_tiers_renewal_and_installment(client, tenant, owner):
             number="R1",
             start_date=p.end_date,
             end_date=p.end_date + timedelta(days=365),
-            premium=20_000_000,
+            premium=200_000_000,
             renewed_from=p,
         )
     c.refresh_from_db()
@@ -122,7 +122,7 @@ def test_segments_cross_sell_tasks_and_campaign(client, tenant, owner):
 
 
 def test_portal_shows_club_card(client, tenant):
-    make_policy(tenant, premium=5_000_000)
+    make_policy(tenant, premium=50_000_000)
     client.cookies[CUSTOMER_COOKIE] = signing.dumps({"m": "09121234567"}, salt=f"customer:{tenant.pk}")
     page = client.get("/account/", HTTP_HOST=host(tenant)).content.decode()
     assert "امتیاز باشگاه مشتریان" in page and "wa.me" in page

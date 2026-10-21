@@ -72,7 +72,7 @@ class Installment(TenantOwned):
         "crm.Policy", on_delete=models.CASCADE, related_name="installments", verbose_name="بیمه‌نامه"
     )
     due_date = models.DateField("سررسید", db_index=True)
-    amount = models.PositiveBigIntegerField("مبلغ (تومان)")
+    amount = models.PositiveBigIntegerField("مبلغ (ریال)")
     method = models.CharField("روش", max_length=20, choices=Method.choices, default=Method.TRANSFER)
     cheque_number = models.CharField("شماره چک", max_length=30, blank=True)
     cheque_bank = models.CharField("بانک", max_length=60, blank=True)
@@ -110,7 +110,7 @@ class LedgerEntry(TenantOwned):
     date = models.DateField("تاریخ", default=timezone.localdate, db_index=True)
     kind = models.CharField("نوع", max_length=10, choices=Kind.choices)
     category = models.CharField("دسته", max_length=20, choices=Category.choices, default=Category.OTHER)
-    amount = models.PositiveBigIntegerField("مبلغ (تومان)")
+    amount = models.PositiveBigIntegerField("مبلغ (ریال)")
     description = models.CharField("شرح", max_length=200, blank=True)
     policy = models.ForeignKey(
         "crm.Policy", null=True, blank=True, on_delete=models.SET_NULL, verbose_name="بیمه‌نامه مرتبط"
@@ -468,10 +468,6 @@ def account_balance(account: FinanceAccount) -> int:
     return account.opening_balance + received + cleared - paid
 
 
-# Installments are still stored in tomans while finance amounts are rials; remove once they are converted.
-INSTALLMENT_RIAL_FACTOR = 10
-
-
 def create_receipt(*, tenant_id, user, data: dict, lines: list[dict]) -> Receipt:
     """Saves a receipt with its lines under the next number and settles the installments it pays."""
     from django.db import IntegrityError, transaction
@@ -489,7 +485,7 @@ def create_receipt(*, tenant_id, user, data: dict, lines: list[dict]) -> Receipt
                     obj = ReceiptLine.all_objects.create(tenant_id=tenant_id, receipt=receipt, **line)
                     inst = obj.installment
                     if inst and inst.status != Installment.Status.PAID:
-                        if obj.amount >= inst.amount * INSTALLMENT_RIAL_FACTOR:
+                        if obj.amount >= inst.amount:
                             Installment.all_objects.filter(pk=inst.pk).update(
                                 status=Installment.Status.PAID, paid_at=receipt.date
                             )

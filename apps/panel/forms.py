@@ -6,6 +6,7 @@ from apps.billing.models import Invoice, Period
 from apps.core.dns import HOSTNAME_RE, normalize_hostname
 from apps.core.models import Domain
 from apps.crm.models import Branch, Customer, Policy, QuoteRequest
+from apps.finance.money import RialInput
 from apps.sites.models import FAQ, MAX_GALLERY_IMAGES, SiteLineContent, SiteLineImage, SiteSettings, Testimonial
 from apps.tickets.models import Ticket
 
@@ -124,6 +125,7 @@ class PolicyForm(forms.ModelForm):
         widgets = {
             "start_date": JalaliDateInput(),
             "end_date": JalaliDateInput(),
+            "premium": RialInput(),
             "number": forms.TextInput(attrs={"dir": "ltr"}),
         }
 

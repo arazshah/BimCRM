@@ -26,7 +26,7 @@ class InstallmentPlanForm(forms.Form):
     """Splits an amount into N monthly installments."""
 
     policy = forms.ModelChoiceField(label="بیمه‌نامه", queryset=Policy.objects.none())
-    total = forms.IntegerField(label="مبلغ کل اقساط (تومان)", min_value=1)
+    total = forms.IntegerField(label="مبلغ کل اقساط (ریال)", min_value=1, widget=RialInput())
     count = forms.IntegerField(label="تعداد قسط", min_value=1, max_value=36, initial=4)
     first_due = forms.DateField(label="سررسید قسط اول", widget=JalaliDateInput())
     method = forms.ChoiceField(label="روش", choices=Installment.Method.choices, initial=Installment.Method.CHEQUE)
@@ -43,6 +43,7 @@ class InstallmentForm(forms.ModelForm):
         model = Installment
         fields = ["due_date", "amount", "method", "cheque_number", "cheque_bank", "status", "paid_at", "note"]
         widgets = {
+            "amount": RialInput(),
             "due_date": JalaliDateInput(),
             "paid_at": JalaliDateInput(),
             "cheque_number": forms.TextInput(attrs={"dir": "ltr"}),
@@ -72,11 +73,11 @@ class LedgerForm(forms.ModelForm):
     class Meta:
         model = LedgerEntry
         fields = ["date", "kind", "category", "amount", "description"]
-        widgets = {"date": JalaliDateInput()}
+        widgets = {"date": JalaliDateInput(), "amount": RialInput()}
 
 
 class CommissionReceiveForm(forms.Form):
-    amount = forms.IntegerField(label="مبلغ دریافتی (تومان)", min_value=1)
+    amount = forms.IntegerField(label="مبلغ دریافتی (ریال)", min_value=1, widget=RialInput())
 
 
 class ClaimForm(forms.ModelForm):
@@ -85,6 +86,7 @@ class ClaimForm(forms.ModelForm):
         fields = ["policy", "incident_date", "description", "amount_claimed", "insurer_file_number", "assigned_to"]
         widgets = {
             "incident_date": JalaliDateInput(),
+            "amount_claimed": RialInput(),
             "description": forms.Textarea(attrs={"rows": 4}),
             "insurer_file_number": forms.TextInput(attrs={"dir": "ltr"}),
         }
@@ -104,7 +106,7 @@ class ClaimForm(forms.ModelForm):
 class ClaimStatusForm(forms.Form):
     status = forms.ChoiceField(label="وضعیت جدید", choices=Claim.Status.choices)
     note = forms.CharField(label="توضیح برای مشتری", max_length=300, required=False)
-    amount_paid = forms.IntegerField(label="مبلغ پرداختی (تومان)", min_value=0, required=False)
+    amount_paid = forms.IntegerField(label="مبلغ پرداختی (ریال)", min_value=0, required=False, widget=RialInput())
 
 
 class ClaimDocumentForm(forms.Form):
@@ -176,7 +178,7 @@ class PayoutForm(forms.ModelForm):
     class Meta:
         model = MarketerPayout
         fields = ["amount", "date", "note"]
-        widgets = {"date": JalaliDateInput()}
+        widgets = {"date": JalaliDateInput(), "amount": RialInput()}
 
 
 class CampaignForm(forms.ModelForm):
