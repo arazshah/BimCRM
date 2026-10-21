@@ -47,15 +47,6 @@
 .lead { font-size: 17.5px; color: var(--ink-2); max-width: 33em; line-height: 1.95; }
 .lead strong { color: var(--ink); }
 .hero h1 .hl { color: var(--seal); white-space: nowrap; }
-.hero-steps { list-style: none; display: flex; gap: 6px; padding: 0; margin: 1.5rem 0 0; max-width: 560px; counter-reset: none; }
-.hero-steps li { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; line-height: 1.5; }
-.hero-steps b { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; background: #eef1f5; color: var(--muted); }
-.hero-steps li.on { color: var(--ink); border-color: var(--seal); box-shadow: 0 0 0 3px var(--mint); }
-.hero-steps li.on b { background: var(--seal); color: #fff; }
-.hero-steps li.done { color: var(--seal-deep); background: var(--mint); border-color: transparent; }
-.hero-steps li.done b { background: var(--seal); color: transparent; position: relative; }
-.hero-steps li.done b::after { content: "✓"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff; }
-.hero-steps + .claim { margin-top: .7rem; }
 .hero-watch { display: inline-flex; align-items: center; gap: 8px; margin: 1rem 4px 0; font-size: 14.5px; font-weight: 700; color: var(--seal); text-decoration: none; }
 .hero-watch span { width: 26px; height: 26px; border-radius: 50%; background: var(--seal); color: #fff; display: grid; place-items: center; font-size: 11px; padding-inline-start: 2px; }
 .hero-watch:hover { text-decoration: underline; }
@@ -109,11 +100,8 @@
 .mp-list em { grid-row: 2; font-style: normal; color: var(--muted); font-size: 11.5px; }
 .mp-list b { grid-row: 1 / 3; grid-column: 2; align-self: center; font-size: 11.5px; color: var(--seal); background: var(--mint); border-radius: 7px; padding: 2px 8px; }
 .mp-list b.go { color: #fff; background: var(--seal); }
-.stamp { position: absolute; inset-inline-start: 24px; bottom: 26px; width: 108px; height: 108px; border-radius: 50%; display: grid; place-content: center; text-align: center; font-weight: 800; font-size: 13px; line-height: 1.3; color: #6b4400; background: var(--stamp); transform: rotate(-12deg); box-shadow: 0 0 0 5px #fff, 0 0 0 7px var(--stamp), 0 14px 30px -10px rgba(140, 90, 0, .55); }
-.stamp span { display: block; font-size: 34px; font-weight: 900; line-height: 1.1; color: var(--ink); }
 
 /* ── Section rhythm ── */
-.insurers, .journey, .inventory, .gallery, .howto, .pricing, .faq { padding: 88px 0; }
 .sec-head { max-width: 46em; margin-bottom: 40px; }
 .sec-head h2 { font-size: clamp(25px, 3vw, 36px); font-weight: 900; line-height: 1.4; margin-bottom: .45em; }
 .sec-head p { font-size: 16.5px; color: var(--ink-2); margin: 0; }
@@ -122,8 +110,6 @@
 .ticks li::before { content: ""; position: absolute; right: 2px; top: .95em; width: 11px; height: 6px; border: solid var(--seal); border-width: 0 0 2.2px 2.2px; transform: rotate(-45deg); }
 
 /* Showcase: real agent sites */
-.showcase { padding: 48px 0 8px; }
-.showcase h2 { font-size: clamp(19px, 2.2vw, 24px); font-weight: 800; text-align: center; margin: 0 0 22px; color: var(--ink-2); }
 .showcase-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
 .showcase-card { background: #fff; border: 1px solid #e6eaf1; border-radius: 14px; max-width: 240px; transition: border-color .15s, box-shadow .15s; }
 .showcase-card:hover { border-color: var(--green, #1fc497); box-shadow: 0 10px 26px -14px rgba(20, 30, 50, .25); }
@@ -135,16 +121,6 @@
 .showcase-note { margin: 0 16px 16px; font-size: 13px; color: var(--ink-2); text-align: center; }
 
 /* Insurers */
-.insurers { background: var(--ink); color: #dfe7f1; padding: 64px 0; }
-.insurers-inner { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.4fr); gap: 16px 56px; align-items: start; }
-.insurers h2 { color: #fff; font-size: clamp(22px, 2.5vw, 30px); font-weight: 900; line-height: 1.5; margin: 0; }
-.insurers p { grid-column: 1; margin: 0; color: #b9c6d6; }
-.insurer-list { grid-column: 2; grid-row: 1 / 3; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.insurer-list li { font-size: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, .16); background: rgba(255, 255, 255, .06); }
-.insurer-list li > a, .insurer-list li > span { display: flex; align-items: center; justify-content: center; min-width: 96px; height: 52px; padding: 0 14px; color: inherit; text-decoration: none; }
-.insurer-list li:has(img) { background: #fff; }
-.insurer-list li img { max-height: 36px; width: auto; max-width: 110px; object-fit: contain; }
-.insurer-list li:has(a):hover { border-color: var(--green, #1fc497); }
 
 /* Journey tabs */
 .jr { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 28px; align-items: start; }
@@ -267,7 +243,7 @@
 .tg-screen iframe { position: absolute; top: 0; right: 0; width: 1280px; height: 820px; border: 0; transform-origin: top right; transform: scale(.6); pointer-events: none; }
 
 /* Steps */
-.how-steps { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; position: relative; }
+.how-steps { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; position: relative; }
 .how-steps li { counter-increment: s; position: relative; padding: 60px 0 0 24px; display: flex; flex-direction: column; gap: .3rem; color: var(--ink-2); }
 .how-steps li::before { content: counter(s, persian); position: absolute; top: 0; right: 0; width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-weight: 900; font-size: 18px; z-index: 1; }
 .how-steps li::after { content: ""; position: absolute; top: 21px; right: 44px; left: 0; border-top: 2px dashed #c9d3de; }
@@ -276,14 +252,6 @@
 .addr { display: inline-block; }
 .how-steps strong { font-size: 17px; color: var(--ink); }
 
-/* Free trial */
-.trial { background: var(--seal); color: #e6f6f0; padding: 56px 0; }
-.trial-inner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 36px; align-items: center; }
-.trial-seal { width: 132px; height: 132px; border-radius: 50%; display: grid; place-content: center; text-align: center; background: var(--stamp); color: var(--ink); transform: rotate(-10deg); box-shadow: 0 0 0 6px var(--seal), 0 0 0 8px var(--stamp); }
-.trial-seal strong { font-size: 46px; font-weight: 900; line-height: 1; }
-.trial-seal span { font-weight: 800; }
-.trial h2 { color: #fff; font-size: clamp(22px, 2.6vw, 30px); font-weight: 900; line-height: 1.5; }
-.trial p { margin: 0; max-width: 40em; }
 
 /* Pricing */
 .addon-list, .tier-list { list-style: none; margin: 0 0 2rem; padding: 0; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
@@ -367,15 +335,13 @@
   .topnav { display: none; }
   .topbar-inner { justify-content: space-between; }
   .hero { padding: 40px 0 56px; }
-  .hero-grid, .insurers-inner, .faq-grid { grid-template-columns: 1fr; gap: 32px; }
-  .insurers p, .insurer-list { grid-column: 1; grid-row: auto; }
+  .hero-grid, .faq-grid { grid-template-columns: 1fr; gap: 32px; }
   .hero-visual { max-width: 520px; }
   .jr-panel { grid-template-columns: 1fr; padding: 22px; min-height: 0; }
   .how-steps { grid-template-columns: 1fr; gap: 26px; }
   .how-steps li { padding: 0 60px 0 0; }
   .how-steps li::after { display: none; }
-  .trial-inner { grid-template-columns: 1fr; justify-items: start; gap: 24px; }
-  .insurers, .journey, .inventory, .gallery, .howto, .pricing, .faq { padding: 60px 0; }
+  .journey, .inventory, .gallery, .howto, .pricing, .faq { padding: 60px 0; }
   .fx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fx-trust { grid-template-columns: 1fr 1fr; }
   .fx-tabs { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; width: 100%; padding-bottom: 4px; }
@@ -391,11 +357,9 @@
   .claim-input input { font-size: 17px; }
       .ms-body { grid-template-columns: 1fr; }
   .ms-form { display: none; }
-  .stamp { display: none; }
   .mock-tag { font-size: 12px; }
-  .stamp span { font-size: 26px; }
   .win-site { margin-inline-end: 0; }
-  .hero-visual { padding-bottom: 130px; }
+  .hero-visual { display: none; }
   .footer-grid { grid-template-columns: 1fr; }
   .addon-list li { flex-direction: column; align-items: flex-start; gap: .2rem; }
   .topbar-login { display: none; }
@@ -404,20 +368,7 @@
 .footer-badges img { max-height: 90px; background: #fff; border-radius: 8px; padding: 4px; }
 
 /* Domain concierge */
-.domain-care { padding: 72px 0; background: linear-gradient(125deg, #0f1f38, #173a5a); color: #c9d5e4; }
-.dc-inner { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 48px; align-items: center; }
 .dc-badge { display: inline-block; font-size: 13px; font-weight: 800; color: var(--ink); background: var(--stamp); border-radius: 99px; padding: .15rem .85rem; }
-.domain-care h2 { color: #fff; font-size: clamp(24px, 3vw, 34px); font-weight: 900; line-height: 1.5; margin: .8rem 0 .6rem; }
-.domain-care p { font-size: 16.5px; line-height: 1.95; max-width: 40em; }
-.dc-actions { display: flex; gap: .7rem; flex-wrap: wrap; margin-top: 1.4rem; }
-.domain-care .btn-ghost { color: #fff; border-color: rgba(255,255,255,.3); }
-.domain-care .btn-ghost:hover { background: rgba(255,255,255,.08); }
-.dc-steps { list-style: none; counter-reset: d; padding: 0; margin: 0; display: grid; gap: 12px; }
-.dc-steps li { counter-increment: d; position: relative; padding: 16px 18px 16px 18px; padding-inline-start: 70px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); display: flex; flex-direction: column; }
-.dc-steps li::before { content: counter(d, persian); position: absolute; inset-inline-start: 18px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--seal); color: #fff; font-weight: 900; }
-.dc-steps strong { color: #fff; }
-.dc-steps span { font-size: 14px; }
-@media (max-width: 860px) { .dc-inner { grid-template-columns: 1fr; gap: 28px; } .domain-care { padding: 56px 0; } }
 
 /* ── Help centre ── */
 .help-hero { background: linear-gradient(160deg, var(--night), #12305a); color: #fff; padding: 56px 0 64px; text-align: center; }
@@ -542,8 +493,6 @@
 .promo-ribbon strong { color: #ffe08a; }
 .promo-ribbon:hover { background: #0a5f4f; }
 .dc-free { background: #1fc497; color: #06221b; }
-.dc-offer { background: rgba(31, 196, 151, .14); border: 1px solid rgba(31, 196, 151, .45); border-radius: 12px; padding: 10px 14px; }
-.dc-offer strong { color: #8ff0d0; }
 
 
 /* ---------- Live demo page ---------- */
@@ -575,5 +524,73 @@
 .hero-links { margin: 0; display: flex; flex-wrap: wrap; gap: 0 10px; }
 .topnav .nav-demo { color: var(--seal); font-weight: 700; }
 .topnav .nav-demo::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #e0484d; margin-inline-end: 6px; vertical-align: middle; }
-.insurers-more { grid-column: 1 / -1; margin: 8px 0 0; }
-.insurers-more a { color: #9fe9d2; font-weight: 700; }
+
+/* ── Landing: fewer sections, more air ── */
+.journey, .inventory, .pillars, .gallery, .howto, .pricing, .faq { padding: 96px 0; }
+.sec-head.center { margin-inline: auto; text-align: center; }
+.hero { padding: 80px 0 96px; }
+.hero-grid { gap: 64px; }
+.hero-visual { padding-bottom: 130px; }
+.hero-links { margin: .4rem 0 0; }
+
+/* Trust strip: real offices, then the insurers they represent */
+.trust { padding: 8px 0 24px; }
+.trust-title { font-size: 15px; font-weight: 700; color: var(--muted); text-align: center; margin: 0 0 18px; }
+.trust .showcase-list { margin-bottom: 40px; }
+.insurer-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.insurer-list li { font-size: 14px; font-weight: 600; color: var(--ink-2); border-radius: 12px; border: 1px solid var(--line); background: #fff; }
+.insurer-list li > a, .insurer-list li > span { display: flex; align-items: center; justify-content: center; min-width: 96px; height: 48px; padding: 0 16px; color: inherit; text-decoration: none; }
+.insurer-list li img { max-height: 32px; width: auto; max-width: 110px; object-fit: contain; }
+.insurer-list li:has(a):hover { border-color: var(--seal); }
+.trust-more { text-align: center; margin: 20px 0 0; font-weight: 700; font-size: 15px; }
+.trust-more a, .pl-more a { color: var(--seal); text-decoration: none; }
+.trust-more a:hover, .pl-more a:hover { text-decoration: underline; }
+
+/* The three things you get */
+.pl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.pl-card { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 14px 14px 28px; transition: transform .2s, box-shadow .2s; }
+.pl-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.pl-shot { margin: 0 0 22px; aspect-ratio: 16 / 10; overflow: hidden; border-radius: 14px; border: 1px solid var(--line); background: var(--paper); }
+.pl-shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top right; }
+.pl-card h3 { font-size: 20px; font-weight: 850; line-height: 1.5; margin: 0 12px .4em; }
+.pl-card p { margin: 0 12px; color: var(--ink-2); font-size: 16px; }
+.pl-card p + p { margin-top: .8em; }
+.pl-offer { font-size: 14.5px !important; background: var(--mint); color: var(--seal-deep) !important; border-radius: 10px; padding: 8px 12px; margin-inline: 12px; }
+.pl-addr { display: grid; place-content: center; justify-items: center; gap: 16px; background: linear-gradient(135deg, var(--mint), #fff); }
+.addr-bar { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 10px 22px; font-size: 22px; font-weight: 800; color: var(--ink); box-shadow: var(--shadow); }
+.addr-bar svg { color: var(--seal); flex: none; }
+.addr-bar b { color: var(--seal); }
+.pl-more { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px 32px; margin: 34px 0 0; font-weight: 700; }
+
+/* Pricing: details for the curious, so the plans stay in view */
+.price-more { margin-top: 28px; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
+.price-more > summary { cursor: pointer; font-weight: 800; padding: 16px 22px; list-style: none; }
+.price-more > summary::-webkit-details-marker { display: none; }
+.price-more > summary::after { content: "＋"; float: left; color: var(--seal); }
+.price-more[open] > summary { border-bottom: 1px solid var(--line); }
+.price-more[open] > summary::after { content: "－"; }
+.price-more-body { padding: 8px 22px 22px; }
+
+/* Phones: a start button that follows the reader once the claim box has scrolled away */
+.sticky-cta { position: fixed; inset-inline: 12px; bottom: 12px; z-index: 30; display: none; align-items: center; justify-content: center; gap: 10px; padding: 14px 18px; border-radius: 14px; background: var(--seal); color: #fff; font-weight: 800; text-decoration: none; box-shadow: 0 16px 34px -10px rgba(15, 31, 56, .55); transform: translateY(150%); transition: transform .25s; }
+.sticky-cta small { font-weight: 600; opacity: .85; }
+.sticky-cta.on { transform: none; }
+@media (prefers-reduced-motion: reduce) { .sticky-cta, .pl-card { transition: none; } }
+
+/* Features page */
+.page-head { padding: 72px 0 8px; text-align: center; }
+.page-head h1 { font-size: clamp(30px, 4vw, 46px); font-weight: 900; margin-bottom: .4em; }
+.page-head .lead { margin-inline: auto; }
+.page-head-cta { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 1.6rem 0 0; }
+.features-page .journey { padding-top: 56px; }
+
+/* Landing, small screens (kept last so it wins over the base rules above) */
+@media (max-width: 860px) {
+  .hero { padding: 36px 0 48px; }
+  .journey, .inventory, .pillars, .gallery, .howto, .pricing, .faq { padding: 64px 0; }
+  .pl-grid { grid-template-columns: 1fr; }
+  .pl-card { padding-bottom: 24px; }
+  .sticky-cta { display: flex; }
+  body.landing .site-footer { padding-bottom: 88px; }
+  .page-head { padding-top: 40px; }
+}

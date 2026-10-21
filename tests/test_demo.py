@@ -108,3 +108,14 @@ def test_demo_slug_is_reserved_and_rebuild_works(demo):
     assert is_subdomain_available("demo")[0] is False
     again = rebuild()
     assert again.pk != demo.pk and again.slug == "demo"
+
+
+def test_landing_stays_short_and_hands_the_full_list_to_the_features_page(client, db):
+    """The landing page is the pitch: one claim box, three things you get, steps, pricing, FAQ. Detail lives on /features/."""
+    html = client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert html.count('id="claim-slug"') == 1 and 'id="features"' in html and 'id="domain"' in html
+    assert html.count("<section") <= 9
+    assert 'id="all-features"' not in html and "data-tabs" not in html
+    page = client.get("/features/", HTTP_HOST=MAIN)
+    assert page.status_code == 200 and "<h1>همه امکانات CRM بیمه</h1>" in page.content.decode()
+    assert "/features/" in client.get("/sitemap.xml", HTTP_HOST=MAIN).content.decode()

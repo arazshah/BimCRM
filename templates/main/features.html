@@ -1,0 +1,230 @@
+{% extends "main/base.html" %}
+{% load fa static %}
+{% block title %}همه امکانات CRM بیمه — سایت و پنل کامل دفتر نمایندگی بیمه{% endblock %}
+{% block description %}{{ feature_total|fa }} امکان برای دفتر نمایندگی بیمه: سایت با استعلام آنلاین، پرونده مشتری، یادآور تمدید و پیامک، اقساط، خسارت، کارمزد، شعبه و بازاریاب. ۱۴ روز رایگان.{% endblock %}
+{% block body_class %}landing features-page{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="wrap">
+    <h1>همه امکانات CRM بیمه</h1>
+    <p class="lead">از اولین بازدید مشتری از سایت تا تسویه کارمزد؛ هر کاری که در دفتر انجام می‌شود، جایی در پنل دارد.</p>
+    <p class="page-head-cta"><a class="btn btn-lg" href="{% url 'main:landing' %}#start">شروع {{ platform.trial_days|fa }} روز رایگان</a><a class="btn btn-ghost btn-lg" href="{% url 'main:demo' %}">دموی زنده</a></p>
+  </div>
+</section>
+
+{# ───────── The office, stage by stage ───────── #}
+<section class="journey" id="features" aria-labelledby="journey-title">
+  <div class="wrap">
+    <header class="sec-head">
+      <h2 id="journey-title">از اولین بازدید مشتری تا تسویه کارمزد</h2>
+      <p>هر کاری که در دفتر انجام می‌شود، جایی در پنل دارد. مسیر یک مشتری را دنبال کنید.</p>
+    </header>
+
+    <div class="jr" data-tabs>
+      <div class="jr-tabs" role="tablist" aria-label="بخش‌های پنل">
+        <button role="tab" id="jt-1" aria-controls="jp-1" aria-selected="true"><b>۱</b><span>سایت و جذب مشتری</span></button>
+        <button role="tab" id="jt-2" aria-controls="jp-2" aria-selected="false" tabindex="-1"><b>۲</b><span>درخواست‌ها و فروش</span></button>
+        <button role="tab" id="jt-3" aria-controls="jp-3" aria-selected="false" tabindex="-1"><b>۳</b><span>مشتری‌ها و بیمه‌نامه‌ها</span></button>
+        <button role="tab" id="jt-4" aria-controls="jp-4" aria-selected="false" tabindex="-1"><b>۴</b><span>تمدید و پیامک</span></button>
+        <button role="tab" id="jt-5" aria-controls="jp-5" aria-selected="false" tabindex="-1"><b>۵</b><span>پنل مشتری و خسارت</span></button>
+        <button role="tab" id="jt-6" aria-controls="jp-6" aria-selected="false" tabindex="-1"><b>۶</b><span>مالی، اقساط و کارمزد</span></button>
+        <button role="tab" id="jt-7" aria-controls="jp-7" aria-selected="false" tabindex="-1"><b>۷</b><span>همکاران، شعبه‌ها و بازاریاب‌ها</span></button>
+      </div>
+
+      <div class="jr-panels">
+        <article class="jr-panel" role="tabpanel" id="jp-1" aria-labelledby="jt-1">
+          <div class="jr-text">
+            <h3>سایتی که مشتری را به فرم استعلام می‌رساند</h3>
+            <p>پنج قالب آماده، با لوگو و رنگ و متن خودتان. رشته‌هایی که می‌فروشید، نظرات مشتری‌ها، سؤالات رایج و شعبه‌ها روی سایت می‌آید و هر رشته فرم استعلام مخصوص خودش را دارد.</p>
+            <ul class="ticks"><li>زیردامنه رایگان از روز اول، دامنه ir خودتان هر وقت خواستید</li><li>گواهی امنیتی (SSL) خودکار</li><li>نماد اعتماد، ساماندهی و کد دلخواه</li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk mk-site">
+              <div class="mk-bar" dir="ltr">yourname.{{ PLATFORM_DOMAIN }}</div>
+              <div class="mk-hero"><strong>نمایندگی بیمه، کد ۱۲۳۴</strong><span>استعلام آنلاین ثالث، بدنه و درمان</span></div>
+              <div class="mk-tiles"><span>شخص ثالث</span><span>بدنه خودرو</span><span>آتش‌سوزی منازل</span><span>درمان تکمیلی</span><span>عمر</span><span>مسافرتی</span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-2" aria-labelledby="jt-2" hidden>
+          <div class="jr-text">
+            <h3>همه درخواست‌های سایت، در یک صندوق</h3>
+            <p>هر استعلام با نوع بیمه و اطلاعاتی که مشتری وارد کرده می‌رسد. وضعیتش را جلو می‌برید و مشتری با کد پیگیری، بدون تماس، از سایت می‌بیند کار به کجا رسیده.</p>
+            <ul class="ticks"><li>کد پیگیری برای هر درخواست</li><li>واگذاری به همکار یا شعبه</li><li>اتصال درخواست به پرونده مشتری</li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk">
+              <div class="mk-title">درخواست‌های سایت</div>
+              <ul class="mk-rows">
+                <li><span>سارا محمدی</span><em>شخص ثالث</em><b class="st new">جدید</b></li>
+                <li><span>علی نوری</span><em>درمان تکمیلی</em><b class="st wip">در حال بررسی</b></li>
+                <li><span>فرشته امینی</span><em>آتش‌سوزی منازل</em><b class="st wip">قیمت داده شد</b></li>
+                <li><span>رضا احمدی</span><em>بدنه خودرو</em><b class="st done">صادر شد</b></li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-3" aria-labelledby="jt-3" hidden>
+          <div class="jr-text">
+            <h3>پرونده کامل هر بیمه‌گذار</h3>
+            <p>مشخصات، بیمه‌نامه‌ها با فایل و تاریخ شروع و پایان، شرکت بیمه و حق بیمه. مشتری‌های فعلی‌تان را یک‌جا از فایل اکسل وارد کنید.</p>
+            <ul class="ticks"><li>جست‌وجو با نام، موبایل یا شماره بیمه‌نامه</li><li>بیمه‌نامه‌های همه شرکت‌ها در یک فهرست</li><li>ورود از اکسل</li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk">
+              <div class="mk-profile"><span class="mk-avatar">ح</span><div><strong>حمید کریمی</strong><em class="ltr">0912 345 6789</em></div></div>
+              <table class="mk-table"><tbody>
+                <tr><th>بدنه خودرو</th><td>بیمه البرز</td><td>تا ۱۴۰۵/۰۸/۲۰</td></tr>
+                <tr><th>شخص ثالث</th><td>بیمه دانا</td><td>تا ۱۴۰۶/۰۱/۱۲</td></tr>
+                <tr><th>آتش‌سوزی منازل</th><td>بیمه ایران</td><td>تا ۱۴۰۵/۱۱/۰۳</td></tr>
+              </tbody></table>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-4" aria-labelledby="jt-4" hidden>
+          <div class="jr-text">
+            <h3>تمدیدی از دست نمی‌رود</h3>
+            <p>بیمه‌نامه‌هایی که تا ۳۰ روز دیگر تمام می‌شوند، اول داشبورد است. پیامک یادآور از پنل پیامک خود دفتر و به نام خود دفتر می‌رود. در پکیج حرفه‌ای، پیامک گروهی و مناسبتی هم دارید.</p>
+            <ul class="ticks"><li>فهرست تمدیدهای پیش‌رو در داشبورد</li><li>پیامک یادآور خودکار</li><li>کمپین پیامکی برای گروه‌های مشتری <span class="tag">حرفه‌ای</span></li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk mk-phone">
+              <div class="sms"><small>نمایندگی بیمه البرز</small>مریم رضایی عزیز، بیمه شخص ثالث شما ۳ روز دیگر تمام می‌شود. برای تمدید با ما تماس بگیرید یا از سایت استعلام کنید.</div>
+              <div class="sms me">ممنون، الان استعلام می‌گیرم</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-5" aria-labelledby="jt-5" hidden>
+          <div class="jr-text">
+            <h3>مشتری خودش بیمه‌نامه‌ها و خسارتش را می‌بیند</h3>
+            <p>مشتری با موبایل و کد یک‌بارمصرف وارد پنل خودش روی سایت شما می‌شود: بیمه‌نامه‌ها، قسط‌ها و وضعیت درخواست‌ها. در پکیج حرفه‌ای، خسارت را هم با مدارک اعلام می‌کند و شما مرحله‌به‌مرحله پیگیری می‌کنید.</p>
+            <ul class="ticks"><li>ورود مشتری با کد پیامکی</li><li>دانلود فایل بیمه‌نامه</li><li>اعلام و پیگیری خسارت با بارگذاری مدارک <span class="tag">حرفه‌ای</span></li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk">
+              <div class="mk-title">خسارت بدنه، پرونده ۴۰۲۱</div>
+              <ol class="mk-steps">
+                <li class="done">اعلام خسارت</li><li class="done">مدارک رسید</li><li class="now">کارشناسی</li><li>پرداخت</li>
+              </ol>
+              <p class="mk-note">مدارک فرستاده‌شده: کروکی، گواهی‌نامه، کارت خودرو</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-6" aria-labelledby="jt-6" hidden>
+          <div class="jr-text">
+            <h3>حساب‌وکتاب دفتر، بدون دفترچه و اکسل</h3>
+            <p>اقساط و چک‌های مشتری با سررسید، یادآور قسط، کارمزد هر بیمه‌نامه و دفتر درآمد و هزینه. گزارش پیشرفته تولید هر رشته، شرکت و همکار و نرخ تمدید را نشان می‌دهد.</p>
+            <ul class="ticks"><li>اقساط، چک و یادآور سررسید <span class="tag">حرفه‌ای</span></li><li>کارمزد و دفتر درآمد و هزینه <span class="tag">حرفه‌ای</span></li><li>گزارش تولید و نرخ تمدید <span class="tag">حرفه‌ای</span></li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk">
+              <div class="mk-title">مهر ۱۴۰۵</div>
+              <div class="mk-kpis"><div><em>تولید</em><strong>۸۴۰</strong><small>میلیون تومان</small></div><div><em>کارمزد</em><strong>۹۶</strong><small>میلیون تومان</small></div><div><em>قسط معوق</em><strong>۳</strong><small>مورد</small></div></div>
+              <div class="mk-bars"><span style="--h:45%"></span><span style="--h:62%"></span><span style="--h:54%"></span><span style="--h:78%"></span><span style="--h:70%"></span><span style="--h:92%"></span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="jr-panel" role="tabpanel" id="jp-7" aria-labelledby="jt-7" hidden>
+          <div class="jr-text">
+            <h3>دفتر بزرگ‌تر می‌شود، پنل هم</h3>
+            <p>هر همکار با موبایل خودش وارد می‌شود و فقط به بخش‌هایی دسترسی دارد که به او داده‌اید. شعبه‌ها هر کدام مشتری‌های خودشان را می‌بینند و مدیر همه را. بازاریاب‌ها با کد معرف مشتری می‌آورند و کمیسیون چندسطحی می‌گیرند.</p>
+            <ul class="ticks"><li>نقش و دسترسی جدا برای هر همکار</li><li>چندشعبه‌ای با گزارش تجمیعی <span class="tag">دفتر بزرگ</span></li><li>بازاریاب و زیرشبکه با کمیسیون <span class="tag">دفتر بزرگ</span></li></ul>
+          </div>
+          <div class="jr-mock" aria-hidden="true">
+            <div class="mk">
+              <div class="mk-title">همکاران</div>
+              <ul class="mk-rows">
+                <li><span>مدیر دفتر</span><em>همه شعبه‌ها</em><b class="st done">مدیر</b></li>
+                <li><span>نگار صادقی</span><em>شعبه مرکزی</em><b class="st wip">کارشناس</b></li>
+                <li><span>امید رستمی</span><em>شعبه کرج</em><b class="st wip">کارشناس</b></li>
+                <li><span>کد معرف M-204</span><em>۱۸ مشتری</em><b class="st new">بازاریاب</b></li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ───────── Full feature explorer ───────── #}
+<section class="inventory" id="all-features" aria-labelledby="inv-title" data-cat="all" data-plan="all">
+  {% include "panel/_icons.html" %}
+  <div class="wrap">
+    <header class="sec-head">
+      <h2 id="inv-title">همه امکانات، به زبان ساده</h2>
+      <p>{{ feature_total|fa }} امکان، هرکدام در یک جمله: چه کار می‌کند و به چه دردتان می‌خورد. کنار هر کدام نوشته در کدام پکیج هست؛ برای جزئیات، راهنما یا ویدیوی همان امکان را باز کنید.</p>
+    </header>
+    <div class="fx-bar">
+      <div class="fx-tabs" role="tablist" aria-label="دسته امکانات">
+        <button type="button" role="tab" data-fx-cat="all" aria-selected="true">همه <b>{{ feature_total|fa }}</b></button>
+        {% for c in explorer %}<button type="button" role="tab" data-fx-cat="{{ c.key }}" aria-selected="false"><svg aria-hidden="true"><use href="#{{ c.icon }}"/></svg>{{ c.title }} <b>{{ c.items|length|fa }}</b></button>{% endfor %}
+      </div>
+      <div class="fx-plan" role="radiogroup" aria-label="نمایش امکانات یک پکیج">
+        <span>در پکیج:</span>
+        <label><input type="radio" name="fx-plan" value="all" checked><span>همه</span></label>
+        {% for p in plans %}<label><input type="radio" name="fx-plan" value="{{ p.pk }}"><span>{{ p.name }}</span></label>{% endfor %}
+      </div>
+    </div>
+    {% for c in explorer %}
+    <div class="fx-group" data-group="{{ c.key }}">
+      <h3 class="fx-cat"><span class="fx-cat-ico"><svg aria-hidden="true"><use href="#{{ c.icon }}"/></svg></span>{{ c.title }}</h3>
+      <ul class="fx-grid">
+        {% for it in c.items %}<li class="fx-card" data-plans="{{ it.plans }}">
+          <span class="fx-ico"><svg aria-hidden="true"><use href="#{{ it.f.icon }}"/></svg></span>
+          <h4>{{ it.f.title }}</h4>
+          <p>{{ it.f.text }}</p>
+          <div class="fx-foot">
+            <span class="fx-badge fx-{{ it.level }}">{{ it.badge }}</span>
+            <span class="fx-links"><a href="{{ PLATFORM_URL }}/help/{{ it.f.help }}/">راهنما</a>{% if it.video %}<a href="{{ PLATFORM_URL }}/help/videos/#{{ it.video }}">▶ ویدیو</a>{% endif %}</span>
+          </div>
+          <span class="fx-off">در این پکیج نیست؛ جداگانه هم اضافه می‌شود</span>
+        </li>{% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+    <ul class="fx-trust">
+      <li><svg aria-hidden="true"><use href="#p-globe"/></svg>بدون نصب؛ روی موبایل و کامپیوتر</li>
+      <li><svg aria-hidden="true"><use href="#p-shield"/></svg>اطلاعات هر دفتر جدا و امن</li>
+      <li><svg aria-hidden="true"><use href="#p-help"/></svg>پشتیبانی با تیکت از داخل پنل</li>
+      <li><svg aria-hidden="true"><use href="#p-book"/></svg>راهنمای تصویری و ویدیویی برای هر امکان</li>
+    </ul>
+  </div>
+</section>
+
+
+<section class="closing">
+  <div class="wrap closing-inner">
+    <h2>دفترتان را امروز آنلاین کنید</h2>
+    <p>آدرس را انتخاب کنید، قالب را بزنید و اولین استعلام را از سایت خودتان بگیرید.</p>
+    <a class="btn btn-lg" href="{% url 'main:landing' %}#start">شروع {{ platform.trial_days|fa }} روز رایگان</a>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/tabs.js' %}"></script>
+<script>
+(() => {
+  const sec = document.getElementById("all-features"); if (!sec) return;
+  sec.querySelectorAll("[data-fx-cat]").forEach(b => b.addEventListener("click", () => {
+    sec.dataset.cat = b.dataset.fxCat;
+    sec.querySelectorAll("[data-fx-cat]").forEach(x => x.setAttribute("aria-selected", x === b));
+    sec.querySelectorAll(".fx-group").forEach(g => { g.hidden = b.dataset.fxCat !== "all" && g.dataset.group !== b.dataset.fxCat; });
+  }));
+  sec.querySelectorAll("input[name=fx-plan]").forEach(r => r.addEventListener("change", () => {
+    sec.dataset.plan = r.value;
+    sec.querySelectorAll(".fx-card").forEach(c => c.classList.toggle("off", r.value !== "all" && !c.dataset.plans.split(" ").includes(r.value)));
+  }));
+  // On phones, 32 cards is a long scroll: start with the first group and let the tabs do the rest.
+  if (window.matchMedia("(max-width: 700px)").matches) { const first = sec.querySelectorAll("[data-fx-cat]")[1]; if (first) first.click(); }
+})();
+</script>
+{% endblock %}

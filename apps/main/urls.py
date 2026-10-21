@@ -8,6 +8,7 @@ app_name = "main"
 
 urlpatterns = [
     path("", views.landing, name="landing"),
+    path("features/", views.features_page, name="features"),
     path("templates/<str:key>/", views.template_preview, name="template_preview"),
     path("api/check-slug/", views.check_slug, name="check_slug"),
     path("login/", views.login_start, name="login"),
