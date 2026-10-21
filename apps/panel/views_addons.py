@@ -14,7 +14,8 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from apps.claims.models import Claim, ClaimDocument, ClaimEvent
+from apps.claims import services as claim_services
+from apps.claims.models import Claim, ClaimDocument, ClaimEvent, ClaimFormFile
 from apps.core import jalali
 from apps.crm.models import Policy
 from apps.finance.models import CommissionRule, Installment, LedgerEntry
@@ -28,6 +29,9 @@ from .forms_addons import (
     CampaignForm,
     ClaimDocumentForm,
     ClaimForm,
+    ClaimFormFileForm,
+    ClaimMessageForm,
+    ClaimRequestDocsForm,
     ClaimStatusForm,
     CommissionReceiveForm,
     CommissionRuleForm,
@@ -297,7 +301,7 @@ def claims(request):
         qs = qs.exclude(status__in=[Claim.Status.PAID, Claim.Status.REJECTED])
     elif status in Claim.Status.values:
         qs = qs.filter(status=status)
-    page = Paginator(qs, 25).get_page(request.GET.get("page"))
+    page = Paginator(qs.order_by("-office_unread", "-updated_at"), 25).get_page(request.GET.get("page"))
     return render(request, "panel/claims.html", {"page": page, "s": status, "statuses": Claim.Status.choices})
 
 
@@ -324,6 +328,8 @@ def claim_detail(request, pk):
     )
     status_form = ClaimStatusForm(initial={"status": claim.status, "amount_paid": claim.amount_paid or None})
     doc_form = ClaimDocumentForm()
+    reply_form = ClaimMessageForm()
+    request_form = ClaimRequestDocsForm()
     if request.method == "POST":
         if "status" in request.POST:
             status_form = ClaimStatusForm(request.POST)
@@ -339,6 +345,22 @@ def claim_detail(request, pk):
                     request, "وضعیت به‌روز شد" + (" و به مشتری پیامک شد." if tenant_can_sms(request.tenant) else ".")
                 )
                 return redirect("panel:claim", pk=claim.pk)
+        elif "reply" in request.POST:
+            reply_form = ClaimMessageForm(request.POST)
+            if reply_form.is_valid():
+                claim_services.add_message(
+                    claim, reply_form.cleaned_data["text"], by_customer=False, author=request.user
+                )
+                notify_claim_message(claim, reply_form.cleaned_data["text"])
+                messages.success(request, "پیام در صفحهٔ پیگیری مشتری ثبت شد.")
+                return redirect("panel:claim", pk=claim.pk)
+        elif "request_docs" in request.POST:
+            request_form = ClaimRequestDocsForm(request.POST)
+            if request_form.is_valid():
+                titles = [t.strip() for t in request_form.cleaned_data["titles"].splitlines() if t.strip()][:10]
+                rows = claim_services.request_documents(claim, titles, request_form.cleaned_data["note"], request.user)
+                messages.success(request, f"{len(rows)} مدرک از مشتری خواسته شد." if rows else "عنوانی وارد نشد.")
+                return redirect("panel:claim", pk=claim.pk)
         else:
             doc_form = ClaimDocumentForm(request.POST, request.FILES)
             if doc_form.is_valid():
@@ -350,6 +372,8 @@ def claim_detail(request, pk):
                     ClaimDocument.objects.create(claim=claim, title=doc_form.cleaned_data["title"], file=f)
                     messages.success(request, "مدرک بارگذاری شد.")
                     return redirect("panel:claim", pk=claim.pk)
+    if claim.office_unread:
+        Claim.all_objects.filter(pk=claim.pk).update(office_unread=False)
     return render(
         request,
         "panel/claim_detail.html",
@@ -357,10 +381,57 @@ def claim_detail(request, pk):
             "claim": claim,
             "status_form": status_form,
             "doc_form": doc_form,
+            "reply_form": reply_form,
+            "request_form": request_form,
             "events": claim.events.select_related("created_by"),
             "documents": claim.documents.all(),
+            "doc_requests": claim.doc_requests.all(),
+            "thread": claim.messages.select_related("author"),
         },
     )
+
+
+def notify_claim_message(claim, text: str):
+    """Texts the policyholder that the office wrote on the claim (if the office has an SMS panel)."""
+    from apps.messaging.models import MessageLog
+    from apps.messaging.services import send_logged
+
+    if not tenant_can_sms(claim.tenant):
+        return
+    site = claim.tenant.site_url().rstrip("/")
+    send_logged(
+        claim.tenant,
+        MessageLog.Kind.CLAIM,
+        f"claimmsg:{claim.pk}:{claim.messages.count()}",
+        claim.policy.customer.mobile,
+        f"پیام تازه دربارهٔ خسارت {claim.code} از {claim.tenant.name}. برای دیدن پاسخ: {site}/claims/{claim.pk}/",
+    )
+
+
+@panel_view(feature="claims", perm="claims")
+def claim_forms(request):
+    form = ClaimFormFileForm(request.POST or None, request.FILES or None)
+    if request.method == "POST" and form.is_valid():
+        f = form.cleaned_data["file"]
+        sub = request.subscription
+        if sub and f.size > sub.storage_limit_bytes() - storage_used_bytes(request.tenant):
+            form.add_error("file", "فضای محیط پر است. از بخش اشتراک فضا اضافه کنید.")
+        else:
+            form.save()
+            messages.success(request, "فرم به صفحهٔ خسارت سایت اضافه شد.")
+            return redirect("panel:claim_forms")
+    return render(
+        request,
+        "panel/claim_forms.html",
+        {"form": form, "items": ClaimFormFile.objects.select_related("line")},
+    )
+
+
+@require_POST
+@panel_view(feature="claims", perm="claims")
+def claim_form_delete(request, pk):
+    get_object_or_404(ClaimFormFile, pk=pk).delete()
+    return redirect("panel:claim_forms")
 
 
 @panel_view(feature="claims", perm="claims")

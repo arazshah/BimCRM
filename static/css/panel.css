@@ -728,3 +728,8 @@ h1 .tier { font-size: 13px; vertical-align: 6px; }
 .gallery-meta .order { width: 4.5rem; }
 .gallery-slot input[type=file] { max-width: 100%; font-size: 12px; }
 @media (max-width: 640px) { .cover-edit { grid-template-columns: 1fr; } }
+
+/* Claim conversation */
+.msg { padding: .55rem .8rem; border-radius: 10px; margin-bottom: .5rem; background: var(--surface-2, #f1f4f8); }
+.msg.in { border-inline-start: 3px solid #d9a21b; }
+.msg.out { border-inline-start: 3px solid var(--brand, #1f6feb); }

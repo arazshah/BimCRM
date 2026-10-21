@@ -98,6 +98,7 @@ def _site_context(request, site: SiteSettings) -> dict:
         "body_code": mark_safe(codes.get(("custom", "body"), {}).get("code", "")),
         "is_demo": False,
         "can_portal": tenant_can_sms(request.tenant),
+        "has_claims": "claims" in _features(request),
         "is_preview": not site.is_published,
         "is_noindex": not site.is_published,
         "base_template": f"sites/{site.template}/base.html",
@@ -451,7 +452,8 @@ def account(request):
                 messages.error(request, str(exc))
                 return redirect("sites:account")
             request.session.pop("portal_mobile", None)
-            resp = redirect("sites:account")
+            after = request.session.pop("portal_next", "")
+            resp = redirect(after if after.startswith("/") and not after.startswith("//") else "sites:account")
             resp.set_cookie(
                 CUSTOMER_COOKIE,
                 signing.dumps({"m": mobile}, salt=f"customer:{request.tenant.pk}"),

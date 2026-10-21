@@ -1,0 +1,59 @@
+{% extends base_template %}
+{% load fa %}
+{% block main %}
+<section class="subpage wide-sub">
+  <p><a href="/claims/">اعلام و پیگیری خسارت</a></p>
+  <h1>اعلام خسارت جدید</h1>
+  <p class="muted"><strong>{{ customer.full_name }}</strong> · <a href="/account/logout/">خروج</a></p>
+  {% include "sites/claims/_flash.html" %}
+  {% if not claimable %}
+  <p>بیمه‌نامهٔ فعالی به نام شما در دفتر ثبت نیست. برای اعلام خسارت با دفتر تماس بگیرید{% if site.phone %}: <a class="ltr" href="tel:{{ site.phone }}">{{ site.phone }}</a>{% endif %}.</p>
+  {% else %}
+  <form class="quote-form claim-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <fieldset>
+      <legend>۱. حادثه</legend>
+      <div class="qf-field"><label for="c-policy">بیمه‌نامه</label>
+        <select id="c-policy" name="policy" required onchange="location.search='?policy='+this.value">
+          {% for p in claimable %}<option value="{{ p.pk }}"{% if p.pk == chosen.pk %} selected{% endif %}>{{ p.line }} — {{ p.company }}{% if p.subject %} ({{ p.subject }}){% endif %} · {{ p.number }}</option>{% endfor %}
+        </select></div>
+      <div class="qf-row">
+        <div class="qf-field"><label for="c-date">تاریخ حادثه</label><input id="c-date" type="date" name="incident_date" max="{{ today }}" value="{{ posted.incident_date }}" required></div>
+        <div class="qf-field"><label for="c-place">محل حادثه</label><input id="c-place" name="incident_place" maxlength="200" value="{{ posted.incident_place }}" placeholder="شهر، خیابان یا آدرس"></div>
+      </div>
+      <div class="qf-field"><label for="c-desc">شرح حادثه</label><textarea id="c-desc" name="description" rows="5" required minlength="10" maxlength="2000" placeholder="چه اتفاقی افتاد؟ چه آسیبی دیده است؟">{{ posted.description }}</textarea></div>
+      <div class="qf-field"><label for="c-third">طرف مقابل یا شاهد (اختیاری)</label><textarea id="c-third" name="third_party" rows="2" maxlength="1000" placeholder="نام، شماره تماس، پلاک یا شمارهٔ بیمه‌نامهٔ طرف مقابل">{{ posted.third_party }}</textarea></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>۲. برآورد و پرداخت</legend>
+      <div class="qf-row">
+        <div class="qf-field"><label for="c-amount">برآورد خسارت (تومان، اختیاری)</label><input id="c-amount" name="amount_claimed" inputmode="numeric" dir="ltr" value="{{ posted.amount_claimed }}"></div>
+        <div class="qf-field"><label for="c-iban">شبا برای واریز خسارت (اختیاری)</label><input id="c-iban" name="iban" dir="ltr" maxlength="26" placeholder="IR" value="{{ posted.iban }}"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>۳. مدارک</legend>
+      <p class="muted small">عکس یا PDF، هر فایل تا ۱۰ مگابایت. اگر چیزی همین حالا ندارید رد شوید؛ بعد از ثبت هم از صفحهٔ پیگیری می‌توانید بفرستید.</p>
+      {% for s in slots %}
+      <div class="qf-field slot"><label for="f-{{ s.kind }}">{{ s.label }}</label><span class="muted small">{{ s.hint }}</span>
+        <input id="f-{{ s.kind }}" type="file" name="{{ s.kind }}" accept="image/*,.pdf" multiple></div>
+      {% endfor %}
+      {% if forms %}<div class="claim-forms-box"><strong>فرم‌های دفتر / شرکت بیمه</strong>
+        <ul class="plain-links">{% for f in forms %}<li><a href="{{ f.file.url }}" target="_blank" rel="noopener">دانلود: {{ f.title }}</a>{% if f.instructions %} <span class="muted small">— {{ f.instructions }}</span>{% endif %}</li>{% endfor %}</ul>
+        <p class="muted small">فرم را چاپ و پر کنید، امضا کنید و عکسش را در «فرم خسارت امضاشده» بارگذاری کنید.</p></div>{% endif %}
+    </fieldset>
+
+    <fieldset>
+      <legend>۴. امضا</legend>
+      <p class="small">اظهار می‌کنم اطلاعات بالا درست است و مدارک ارسالی متعلق به همین حادثه است.</p>
+      {% include "sites/claims/_signpad.html" %}
+      <label class="check"><input type="checkbox" name="declaration" value="1" required> صحت اطلاعات را تأیید می‌کنم</label>
+      <p class="muted small">اگر فرم کاغذی را امضا و بارگذاری کرده‌اید، امضای روی صفحه لازم نیست.</p>
+    </fieldset>
+    <button class="qf-submit" type="submit">ثبت خسارت</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

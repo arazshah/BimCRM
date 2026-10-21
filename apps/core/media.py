@@ -5,7 +5,7 @@ from pathlib import Path
 from django.conf import settings
 from django.http import FileResponse, Http404
 
-PUBLIC_PREFIXES = ("logos/", "companies/", "showcases/", "lines/")
+PUBLIC_PREFIXES = ("logos/", "companies/", "showcases/", "lines/", "claimforms/")
 
 
 def serve_media(request, path):

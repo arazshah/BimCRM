@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from apps.accounts.models import normalize_mobile, validate_mobile
-from apps.claims.models import Claim
+from apps.claims.models import Claim, ClaimFormFile
 from apps.crm.models import Policy
 from apps.finance.models import CommissionRule, Installment, LedgerEntry
 from apps.messaging.models import Campaign, ReminderSettings
@@ -99,6 +99,33 @@ class ClaimStatusForm(forms.Form):
 class ClaimDocumentForm(forms.Form):
     title = forms.CharField(label="عنوان مدرک", max_length=120)
     file = forms.FileField(label="فایل")
+
+
+class ClaimMessageForm(forms.Form):
+    text = forms.CharField(label="پیام برای بیمه‌گذار", max_length=2000, widget=forms.Textarea(attrs={"rows": 3}))
+
+
+class ClaimRequestDocsForm(forms.Form):
+    titles = forms.CharField(
+        label="مدارک لازم (هر خط یک مورد)",
+        max_length=1200,
+        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "کروکی پلیس\nعکس کارت ماشین"}),
+    )
+    note = forms.CharField(label="توضیح (اختیاری)", max_length=300, required=False)
+
+
+class ClaimFormFileForm(forms.ModelForm):
+    class Meta:
+        model = ClaimFormFile
+        fields = ["title", "line", "file", "instructions"]
+
+    def clean_file(self):
+        f = self.cleaned_data["file"]
+        if not f.name.lower().endswith((".pdf", ".jpg", ".jpeg", ".png", ".docx")):
+            raise ValidationError("فقط PDF، عکس یا Word.")
+        if f.size > 10 * 1024 * 1024:
+            raise ValidationError("حجم فایل حداکثر ۱۰ مگابایت است.")
+        return f
 
 
 class MarketerForm(forms.ModelForm):

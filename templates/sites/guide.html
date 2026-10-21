@@ -11,6 +11,6 @@
     <h1>برای تمدید بیمه‌نامه آماده شوید</h1>
     <ol><li>تاریخ پایان بیمه‌نامهٔ فعلی را بررسی کنید.</li><li>نسخهٔ بیمه‌نامه و اطلاعاتی را که برای همان رشته لازم است آماده داشته باشید.</li><li>برای بررسی شرایط و مدارک، درخواست استعلام ثبت کنید یا با دفتر تماس بگیرید.</li><li>پیش از پرداخت یا انتخاب، اطلاعات بیمه‌نامهٔ جدید و شرایط آن را با شرکت بیمه/نماینده تطبیق دهید.</li></ol>
   {% endif %}
-  <div class="guide-actions"><a class="s-btn" href="/#quote">درخواست استعلام</a>{% if site.phone %}<a class="s-btn s-btn-alt" href="tel:{{ site.phone }}">تماس با دفتر</a>{% endif %}</div>
+  <div class="guide-actions">{% if guide_kind == "claims" and has_claims %}<a class="s-btn" href="/claims/new/">اعلام آنلاین خسارت</a>{% endif %}<a class="s-btn" href="/#quote">درخواست استعلام</a>{% if site.phone %}<a class="s-btn s-btn-alt" href="tel:{{ site.phone }}">تماس با دفتر</a>{% endif %}</div>
 </section>
 {% endblock %}

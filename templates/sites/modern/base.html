@@ -10,7 +10,7 @@
       <nav class="m-nav" aria-label="منو">
         <a href="/#lines">بیمه‌ها</a>
         {% if faqs %}<a href="/#faq">سؤالات</a>{% endif %}
-        <a href="/track/">پیگیری درخواست</a>
+        <a href="/track/">پیگیری درخواست</a>{% if has_claims %}<a href="/claims/">خسارت</a>{% endif %}
         {% if can_portal %}<a href="/account/">ورود مشتریان</a>{% endif %}
         <a class="m-cta" href="/#quote">استعلام آنلاین</a>
       </nav>

@@ -1,0 +1,6 @@
+{% extends base_template %}
+{% load fa %}
+{% block main %}
+<section class="subpage"><h1>اعلام خسارت</h1>
+<p>با شمارهٔ <span class="ltr">{{ mobile|fa }}</span> بیمه‌نامه‌ای در دفتر ثبت نشده است؛ اعلام خسارت فقط برای بیمه‌نامه‌هایی ممکن است که از طریق این دفتر صادر شده‌اند. اگر شمارهٔ دیگری به نام شماست، <a href="/account/logout/">خارج شوید</a> و دوباره وارد شوید یا با دفتر تماس بگیرید{% if site.phone %}: <a class="ltr" href="tel:{{ site.phone }}">{{ site.phone }}</a>{% endif %}.</p></section>
+{% endblock %}

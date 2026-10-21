@@ -13,7 +13,7 @@
     <div class="site-wrap e-header-inner">
       <a class="e-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% else %}<span class="e-emblem" aria-hidden="true"><svg><use href="#i-shield"/></svg></span>{% endif %}<span>{{ tenant.name }}</span></a>
       <nav class="e-nav" aria-label="منو">
-        <a href="/#lines">رشته‌ها</a>{% if site.about %}<a href="/#about">درباره دفتر</a>{% endif %}<a href="/track/">پیگیری</a>
+        <a href="/#lines">رشته‌ها</a>{% if site.about %}<a href="/#about">درباره دفتر</a>{% endif %}<a href="/track/">پیگیری</a>{% if has_claims %}<a href="/claims/">خسارت</a>{% endif %}
         {% if site.phone %}<a class="e-phone" href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg><span class="ltr">{{ site.phone }}</span></a>{% endif %}
       </nav>
     </div>

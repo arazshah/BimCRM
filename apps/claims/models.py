@@ -32,6 +32,11 @@ class Claim(TenantOwned):
     amount_paid = models.PositiveBigIntegerField("مبلغ پرداختی (تومان)", default=0)
     insurer_file_number = models.CharField("شماره پرونده در شرکت بیمه", max_length=60, blank=True)
     reported_by_customer = models.BooleanField("اعلام از پنل مشتری", default=False)
+    incident_place = models.CharField("محل حادثه", max_length=200, blank=True)
+    third_party = models.TextField("مشخصات طرف مقابل / شاهد", max_length=1000, blank=True)
+    iban = models.CharField("شبا برای واریز خسارت", max_length=26, blank=True)
+    signed_at = models.DateTimeField("زمان امضای اظهارنامه", null=True, blank=True)
+    office_unread = models.BooleanField("فعالیت جدید مشتری (خوانده‌نشده)", default=False, db_index=True)
     assigned_to = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="مسئول"
     )
@@ -64,8 +69,67 @@ class ClaimEvent(models.Model):
         ordering = ["created_at"]
 
 
+class ClaimDocRequest(TenantOwned):
+    """The office asks the policyholder for one specific paper; the customer answers it from the site."""
+
+    claim = models.ForeignKey(Claim, on_delete=models.CASCADE, related_name="doc_requests")
+    title = models.CharField("مدرک درخواستی", max_length=120)
+    note = models.CharField("توضیح", max_length=300, blank=True)
+    done = models.BooleanField(default=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["done", "created_at"]
+
+
+class ClaimMessage(TenantOwned):
+    """Conversation between the policyholder and the office, kept on the claim."""
+
+    claim = models.ForeignKey(Claim, on_delete=models.CASCADE, related_name="messages")
+    by_customer = models.BooleanField(default=False)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    text = models.TextField(max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+
+class ClaimFormFile(TenantOwned):
+    """A blank form of the insurer/office (PDF or image) customers can download, fill in, sign and upload back."""
+
+    title = models.CharField("عنوان فرم", max_length=120)
+    line = models.ForeignKey(
+        "core.LineOfBusiness",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name="رشته (خالی = همه)",
+    )
+    file = models.FileField("فایل", upload_to="claimforms/%Y/%m/")
+    instructions = models.CharField("راهنما", max_length=300, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["title"]
+
+
 class ClaimDocument(models.Model):
+    class Kind(models.TextChoices):
+        PHOTO = "photo", "عکس خسارت"
+        REPORT = "report", "گزارش پلیس/کروکی/کارشناسی"
+        FORM = "form", "فرم خسارت امضاشده"
+        IDENTITY = "identity", "مدارک هویتی و بیمه‌نامه"
+        INVOICE = "invoice", "فاکتور/مدارک پزشکی یا تعمیر"
+        SIGNATURE = "signature", "امضا"
+        OTHER = "other", "سایر"
+
     claim = models.ForeignKey(Claim, on_delete=models.CASCADE, related_name="documents")
+    kind = models.CharField(max_length=12, choices=Kind.choices, default=Kind.OTHER)
+    request = models.ForeignKey(
+        "ClaimDocRequest", null=True, blank=True, on_delete=models.SET_NULL, related_name="documents"
+    )
     title = models.CharField("عنوان", max_length=120)
     file = models.FileField("فایل", upload_to="claims/%Y/%m/")
     size = models.PositiveBigIntegerField(default=0)

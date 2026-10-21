@@ -17,17 +17,34 @@
         <div><dt>مبلغ درخواستی</dt><dd class="num">{{ claim.amount_claimed|toman }} تومان</dd></div>
         {% if claim.amount_paid %}<div><dt>مبلغ پرداختی</dt><dd class="num">{{ claim.amount_paid|toman }} تومان</dd></div>{% endif %}
         <div><dt>مسئول</dt><dd>{{ claim.assigned_to|default:"—" }}</dd></div>
+        {% if claim.incident_place %}<div><dt>محل حادثه</dt><dd>{{ claim.incident_place }}</dd></div>{% endif %}
+        {% if claim.iban %}<div><dt>شبا (واریز)</dt><dd class="ltr">{{ claim.iban }}</dd></div>{% endif %}
+        <div><dt>اظهارنامه</dt><dd>{% if claim.signed_at %}امضا شده · {{ claim.signed_at|jdate:"time" }}{% else %}امضا نشده{% endif %}</dd></div>
       </dl>
+      {% if claim.third_party %}<p><strong>طرف مقابل / شاهد:</strong> {{ claim.third_party|linebreaksbr }}</p>{% endif %}
       <p>{{ claim.description|linebreaksbr }}</p>
     </section>
     <section class="panel-box">
       <h2 class="h2">مدارک</h2>
-      {% if documents %}<ul class="plain-list">{% for d in documents %}<li><a href="{{ d.file.url }}" target="_blank" rel="noopener">{{ d.title }}</a><span class="muted small">{% if d.uploaded_by_customer %}مشتری · {% endif %}{{ d.size|filesize_fa }} · {{ d.created_at|jdate }}</span></li>{% endfor %}</ul>
+      {% if documents %}<ul class="plain-list">{% for d in documents %}<li><a href="{{ d.file.url }}" target="_blank" rel="noopener">{{ d.title }}</a><span class="muted small">{{ d.get_kind_display }} · {% if d.uploaded_by_customer %}مشتری · {% endif %}{{ d.size|filesize_fa }} · {{ d.created_at|jdate }}</span></li>{% endfor %}</ul>
       {% else %}<p class="empty">مدرکی بارگذاری نشده است.</p>{% endif %}
       <form method="post" enctype="multipart/form-data" class="inline-form" novalidate>{% csrf_token %}{% include "includes/form_fields.html" with form=doc_form %}<button class="btn btn-ghost" type="submit" name="upload" value="1">بارگذاری</button></form>
     </section>
+    <section class="panel-box" id="chat">
+      <h2 class="h2">گفتگو با بیمه‌گذار</h2>
+      <p class="muted small">پیام‌ها در صفحهٔ پیگیری مشتری روی سایت شما دیده می‌شود و اگر پنل پیامک وصل باشد، پیامک خبر می‌دهد.</p>
+      {% for m in thread %}<div class="msg {% if m.by_customer %}in{% else %}out{% endif %}"><strong>{% if m.by_customer %}{{ claim.policy.customer.full_name }}{% else %}{{ m.author|default:"دفتر" }}{% endif %}</strong> <span class="muted small">{{ m.created_at|jdate:"time" }}</span><br>{{ m.text|linebreaksbr }}</div>
+      {% empty %}<p class="empty">پیامی رد و بدل نشده است.</p>{% endfor %}
+      <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" with form=reply_form %}<button class="btn" type="submit" name="reply" value="1">ارسال پیام</button></form>
+    </section>
   </div>
   <div>
+    <section class="panel-box">
+      <h2 class="h2">درخواست مدرک از بیمه‌گذار</h2>
+      {% if doc_requests %}<ul class="plain-list">{% for r in doc_requests %}<li>{% if r.done %}✓{% else %}○{% endif %} {{ r.title }}<span class="muted small">{% if r.note %}{{ r.note }} · {% endif %}{% if r.done %}رسید{% else %}منتظر مشتری{% endif %}</span></li>{% endfor %}</ul>{% endif %}
+      <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" with form=request_form %}<button class="btn btn-ghost" type="submit" name="request_docs" value="1">درخواست و اطلاع به مشتری</button></form>
+      <p class="muted small">وضعیت پرونده «نیاز به مدارک» می‌شود و مشتری در سایت دقیقاً همین موارد را با دکمهٔ ارسال می‌بیند.</p>
+    </section>
     <section class="panel-box">
       <h2 class="h2">تغییر وضعیت</h2>
       <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" with form=status_form %}<button class="btn" type="submit">ثبت</button></form>

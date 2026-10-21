@@ -1,0 +1,41 @@
+{% extends base_template %}
+{% load fa %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block main %}
+<section class="subpage wide-sub claims-home">
+  <p><a href="/">خانه</a></p>
+  <h1>اعلام و پیگیری خسارت</h1>
+  <p class="lede">خسارت را همین‌جا به {{ tenant.name }} اعلام کنید؛ مدارک و عکس‌ها را بارگذاری کنید، فرم را پر و امضا کنید و هر زمان مرحلهٔ پرونده را ببینید. دیگر لازم نیست مدارک را از چند پیام‌رسان بفرستید.</p>
+  <div class="guide-actions">
+    <a class="s-btn" href="/claims/new/">اعلام خسارت جدید</a>
+    {% if logged_in %}<a class="s-btn s-btn-alt" href="/claims/mine/">پرونده‌های من</a>{% else %}<a class="s-btn s-btn-alt" href="/claims/mine/">پیگیری پرونده</a>{% endif %}
+    {% if site.phone %}<a class="s-btn s-btn-alt" href="tel:{{ site.phone }}">تماس فوری با دفتر</a>{% endif %}
+  </div>
+  <p class="muted small">ورود با کد پیامکی به شمارهٔ موبایلی است که بیمه‌نامه با آن در دفتر ثبت شده است.</p>
+
+  <h2>چطور کار می‌کند؟</h2>
+  <ol class="claim-howto">
+    <li><strong>اعلام</strong><span>تاریخ، محل و شرح حادثه را بنویسید و عکس‌ها و مدارک اولیه را بفرستید.</span></li>
+    <li><strong>امضا</strong><span>اظهارنامه را روی صفحه امضا کنید یا فرم شرکت بیمه را چاپ، امضا و عکسش را بارگذاری کنید.</span></li>
+    <li><strong>تکمیل مدارک</strong><span>اگر چیزی کم باشد، دفتر دقیقاً همان را از شما می‌خواهد و پیامک می‌شود.</span></li>
+    <li><strong>پیگیری</strong><span>مرحلهٔ پرونده، گفتگو با دفتر و مبلغ پرداخت را همین‌جا ببینید.</span></li>
+  </ol>
+
+  <h2>مدارک معمول</h2>
+  {% for item in lines_help %}
+  <details class="claim-docs-help"{% if forloop.first %} open{% endif %}>
+    <summary>{{ item.line.name }}</summary>
+    <ul>{% for s in item.slots %}<li><strong>{{ s.label }}</strong> — {{ s.hint }}</li>{% endfor %}</ul>
+  </details>
+  {% empty %}
+  <ul>{% for s in lines_help.0.slots %}<li>{{ s.label }}</li>{% endfor %}</ul>
+  {% endfor %}
+  <p class="line-disclaimer">مدارک لازم بسته به شرکت بیمه و نوع حادثه ممکن است فرق کند؛ دفتر در صورت نیاز مدرک دیگری هم می‌خواهد.</p>
+
+  {% if forms %}
+  <h2>فرم‌های قابل دانلود</h2>
+  <ul class="plain-links">{% for f in forms %}<li><a href="{{ f.file.url }}" target="_blank" rel="noopener">{{ f.title }}</a>{% if f.line %} <span class="muted small">({{ f.line.name }})</span>{% endif %}{% if f.instructions %}<br><span class="muted small">{{ f.instructions }}</span>{% endif %}</li>{% endfor %}</ul>
+  {% endif %}
+  <p class="line-disclaimer">این صفحه جایگزین شرایط بیمه‌نامه یا دستور شرکت بیمه نیست. در حادثهٔ فوری ابتدا با اورژانس یا مراجع رسمی تماس بگیرید. <a href="/guide/claims/">راهنمای اقدام هنگام خسارت</a></p>
+</section>
+{% endblock %}
