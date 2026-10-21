@@ -8,7 +8,7 @@
     <div class="site-wrap k-header-inner">
       <a class="k-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% else %}<span class="k-mark" aria-hidden="true"><svg><use href="#i-heart"/></svg></span>{% endif %}<span>{{ tenant.name }}</span></a>
       <nav class="k-nav" aria-label="منو">
-        <a href="/#protect">بیمه‌ها</a>{% if faqs %}<a href="/#faq">سؤالات</a>{% endif %}<a href="/track/">پیگیری</a>
+        <a href="/#protect">بیمه‌ها</a>{% if faqs %}<a href="/#faq">سؤالات</a>{% endif %}<a href="/track/">پیگیری</a>{% if has_claims %}<a href="/claims/">خسارت</a>{% endif %}
         {% if can_portal %}<a href="/account/">ورود مشتریان</a>{% endif %}
         {% if site.whatsapp %}<a class="k-wa" href="https://wa.me/98{{ site.whatsapp|slice:'1:' }}" rel="noopener"><svg aria-hidden="true"><use href="#i-chat"/></svg>گفتگو با ما</a>
         {% elif site.phone %}<a class="k-wa" href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg>تماس با ما</a>{% endif %}

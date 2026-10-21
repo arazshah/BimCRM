@@ -74,6 +74,8 @@ urlpatterns = [
     # Claims add-on
     path("claims/", addons.claims, name="claims"),
     path("claims/new/", addons.claim_new, name="claim_new"),
+    path("claims/forms/", addons.claim_forms, name="claim_forms"),
+    path("claims/forms/<int:pk>/delete/", addons.claim_form_delete, name="claim_form_delete"),
     path("claims/<int:pk>/", addons.claim_detail, name="claim"),
     path("claims/<int:pk>/edit/", addons.claim_edit, name="claim_edit"),
     # Marketers add-on

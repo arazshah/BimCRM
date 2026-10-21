@@ -1,0 +1,21 @@
+{# Hand-drawn signature. Fills the hidden field `signature_data` with a PNG data URL. #}
+<div class="sign-box" data-signpad>
+  <canvas width="600" height="200" aria-label="کادر امضا"></canvas>
+  <input type="hidden" name="signature_data" value="">
+  <div class="sign-tools"><span class="muted small">با انگشت یا ماوس امضا کنید.</span><button type="button" class="s-btn s-btn-alt" data-sign-clear>پاک کردن</button></div>
+</div>
+<script>
+(function () {
+  document.querySelectorAll("[data-signpad]").forEach(function (box) {
+    if (box.dataset.ready) return; box.dataset.ready = "1";
+    var c = box.querySelector("canvas"), f = box.querySelector("input"), g = c.getContext("2d"), down = false, dirty = false;
+    g.lineWidth = 2.5; g.lineCap = "round"; g.strokeStyle = "#111";
+    function pos(e) { var r = c.getBoundingClientRect(); return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height]; }
+    c.addEventListener("pointerdown", function (e) { down = true; c.setPointerCapture(e.pointerId); var p = pos(e); g.beginPath(); g.moveTo(p[0], p[1]); e.preventDefault(); });
+    c.addEventListener("pointermove", function (e) { if (!down) return; var p = pos(e); g.lineTo(p[0], p[1]); g.stroke(); dirty = true; e.preventDefault(); });
+    function up() { if (down && dirty) f.value = c.toDataURL("image/png"); down = false; }
+    c.addEventListener("pointerup", up); c.addEventListener("pointercancel", up);
+    box.querySelector("[data-sign-clear]").addEventListener("click", function () { g.clearRect(0, 0, c.width, c.height); f.value = ""; dirty = false; });
+  });
+})();
+</script>

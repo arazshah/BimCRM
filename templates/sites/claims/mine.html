@@ -1,0 +1,19 @@
+{% extends base_template %}
+{% load fa %}
+{% block main %}
+<section class="subpage wide-sub">
+  <p><a href="/claims/">اعلام و پیگیری خسارت</a></p>
+  <h1>پرونده‌های خسارت من</h1>
+  <p class="muted">وارد شده با <span class="ltr">{{ mobile|fa }}</span> · <a href="/account/logout/">خروج</a></p>
+  {% include "sites/claims/_flash.html" %}
+  <p><a class="s-btn" href="/claims/new/">اعلام خسارت جدید</a></p>
+  {% for c in claims %}
+  <a class="claim-card claim-link" href="{% url 'sites:claim_detail' c.pk %}">
+    <h3>{{ c.policy.line }} — پرونده <span class="ltr">{{ c.code|fa }}</span></h3>
+    <p class="muted small">حادثه {{ c.incident_date|jdate }} · ثبت {{ c.created_at|jdate }}</p>
+    <span class="claim-status st-{{ c.status }}">{{ c.get_status_display }}</span>
+    {% if c.doc_requests.all %}{% for r in c.doc_requests.all %}{% if not r.done %}<span class="claim-flag">مدرک خواسته شده</span>{% endif %}{% endfor %}{% endif %}
+  </a>
+  {% empty %}<p>هنوز خسارتی اعلام نکرده‌اید.</p>{% endfor %}
+</section>
+{% endblock %}

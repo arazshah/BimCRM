@@ -47,9 +47,10 @@
 
   {% if claims is not None %}
   <h2>خسارت</h2>
+  <p><a class="site-btn" href="/claims/new/">اعلام خسارت جدید</a> <a class="s-btn s-btn-alt" href="/claims/mine/">پیگیری و گفتگو با دفتر</a></p>
   {% for c in claims %}
   <article class="claim-card">
-    <h3>{{ c.policy.line }} — پرونده <span class="ltr">{{ c.code|fa }}</span></h3>
+    <h3><a href="{% url 'sites:claim_detail' c.pk %}">{{ c.policy.line }} — پرونده <span class="ltr">{{ c.code|fa }}</span></a></h3>
     <ol class="status-steps">{% for e in c.events.all %}<li class="{% if forloop.last %}on{% endif %}">{{ e.get_status_display }}{% if e.note %}: {{ e.note }}{% endif %}</li>{% endfor %}</ol>
     {% if c.documents.all %}<p class="muted small">مدارک فرستاده‌شده: {% for d in c.documents.all %}{{ d.title }}{% if not forloop.last %}، {% endif %}{% endfor %}</p>{% endif %}
     {% if c.is_open %}

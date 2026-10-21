@@ -1,0 +1,18 @@
+{% extends "panel/base.html" %}
+{% block title %}فرم‌های خسارت سایت{% endblock %}
+{% block content %}
+<div class="page-head"><h1>فرم‌های خسارت برای دانلود</h1><a class="btn btn-ghost btn-sm" href="{% url 'panel:claims' %}">بازگشت</a></div>
+<p class="muted">فرم‌های خالی شرکت بیمه یا دفتر را اینجا بگذارید؛ بیمه‌گذار از صفحهٔ «اعلام و پیگیری خسارت» سایت شما دانلود می‌کند، پر و امضا می‌کند و عکسش را همان‌جا بارگذاری می‌کند.</p>
+<div class="two-col">
+  <section class="panel-box">
+    <h2 class="h2">فرم‌ها</h2>
+    {% if items %}<ul class="plain-list">{% for f in items %}<li><a href="{{ f.file.url }}" target="_blank" rel="noopener">{{ f.title }}</a><span class="muted small">{{ f.line|default:"همهٔ رشته‌ها" }}</span>
+      <form method="post" action="{% url 'panel:claim_form_delete' f.pk %}" class="inline-form">{% csrf_token %}<button class="btn btn-ghost btn-sm" type="submit">حذف</button></form></li>{% endfor %}</ul>
+    {% else %}<p class="empty">هنوز فرمی نگذاشته‌اید.</p>{% endif %}
+  </section>
+  <section class="panel-box">
+    <h2 class="h2">افزودن فرم</h2>
+    <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}{% include "includes/form_fields.html" with form=form %}<button class="btn" type="submit">افزودن</button></form>
+  </section>
+</div>
+{% endblock %}

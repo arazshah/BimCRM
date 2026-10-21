@@ -1,0 +1,81 @@
+{% extends base_template %}
+{% load fa %}
+{% block main %}
+<section class="subpage wide-sub claim-page">
+  <p><a href="/claims/mine/">پرونده‌های من</a></p>
+  <h1>خسارت <span class="ltr">{{ claim.code|fa }}</span> <span class="claim-status st-{{ claim.status }}">{{ claim.get_status_display }}</span></h1>
+  {% include "sites/claims/_flash.html" %}
+  {% include "sites/claims/_stepper.html" %}
+  <p class="claim-now">{{ status_help }}</p>
+
+  {% if open_requests %}
+  <section class="claim-box need">
+    <h2>مدارک خواسته‌شده از شما</h2>
+    {% for r in open_requests %}
+    <form class="upload-row" method="post" action="{% url 'sites:claim_upload' claim.pk %}" enctype="multipart/form-data">
+      {% csrf_token %}<input type="hidden" name="request" value="{{ r.pk }}">
+      <div><strong>{{ r.title }}</strong>{% if r.note %}<br><span class="muted small">{{ r.note }}</span>{% endif %}</div>
+      <input type="file" name="file" accept="image/*,.pdf" multiple required aria-label="فایل {{ r.title }}">
+      <button class="site-btn" type="submit">ارسال</button>
+    </form>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <section class="claim-box">
+    <h2>اطلاعات پرونده</h2>
+    <dl class="claim-facts">
+      <div><dt>بیمه‌نامه</dt><dd>{{ claim.policy.line }} · {{ claim.policy.company }} · <span class="ltr">{{ claim.policy.number }}</span></dd></div>
+      <div><dt>تاریخ حادثه</dt><dd>{{ claim.incident_date|jdate:"long" }}</dd></div>
+      {% if claim.incident_place %}<div><dt>محل</dt><dd>{{ claim.incident_place }}</dd></div>{% endif %}
+      {% if claim.amount_claimed %}<div><dt>برآورد شما</dt><dd class="num">{{ claim.amount_claimed|toman }} تومان</dd></div>{% endif %}
+      {% if claim.amount_paid %}<div><dt>مبلغ پرداخت‌شده</dt><dd class="num">{{ claim.amount_paid|toman }} تومان</dd></div>{% endif %}
+      {% if claim.insurer_file_number %}<div><dt>شمارهٔ پرونده در شرکت بیمه</dt><dd class="ltr">{{ claim.insurer_file_number }}</dd></div>{% endif %}
+      <div><dt>اظهارنامه</dt><dd>{% if claim.signed_at %}امضا شده · {{ claim.signed_at|jdate:"time" }}{% else %}امضا نشده{% endif %}</dd></div>
+    </dl>
+    <p>{{ claim.description|linebreaksbr }}</p>
+  </section>
+
+  {% if not claim.signed_at and claim.is_open %}
+  <section class="claim-box">
+    <h2>امضای اظهارنامه</h2>
+    <form method="post" action="{% url 'sites:claim_sign' claim.pk %}">{% csrf_token %}
+      {% include "sites/claims/_signpad.html" %}
+      <label class="check"><input type="checkbox" name="declaration" value="1" required> صحت اطلاعات این پرونده را تأیید می‌کنم</label>
+      <button class="site-btn" type="submit">ثبت امضا</button>
+    </form>
+  </section>
+  {% endif %}
+
+  <section class="claim-box">
+    <h2>مدارک فرستاده‌شده</h2>
+    {% if documents %}<ul class="plain-links">{% for d in documents %}<li><a href="{% url 'sites:claim_file' claim.pk d.pk %}" target="_blank" rel="noopener">{{ d.title }}</a> <span class="muted small">{{ d.get_kind_display }} · {% if d.uploaded_by_customer %}شما{% else %}دفتر{% endif %} · {{ d.created_at|jdate }}</span></li>{% endfor %}</ul>
+    {% else %}<p class="muted">هنوز مدرکی نفرستاده‌اید.</p>{% endif %}
+    {% if claim.is_open %}
+    <form class="upload-row" method="post" action="{% url 'sites:claim_upload' claim.pk %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <select name="kind" aria-label="نوع مدرک">{% for s in slots %}<option value="{{ s.kind }}">{{ s.label }}</option>{% endfor %}<option value="other">سایر</option></select>
+      <input type="file" name="file" accept="image/*,.pdf" multiple required aria-label="فایل">
+      <button class="site-btn" type="submit">افزودن مدرک</button>
+    </form>
+    {% if forms %}<p class="muted small">فرم‌ها: {% for f in forms %}<a href="{{ f.file.url }}" target="_blank" rel="noopener">{{ f.title }}</a>{% if not forloop.last %}، {% endif %}{% endfor %}</p>{% endif %}
+    {% endif %}
+  </section>
+
+  <section class="claim-box" id="chat">
+    <h2>گفتگو با دفتر</h2>
+    <div class="chat">{% for m in thread %}
+      <div class="bubble {% if m.by_customer %}me{% else %}them{% endif %}"><span class="who">{% if m.by_customer %}شما{% else %}{{ tenant.name }}{% endif %} · {{ m.created_at|jdate:"time" }}</span>{{ m.text|linebreaksbr }}</div>
+    {% empty %}<p class="muted">پیامی نیست. هر توضیحی دارید اینجا بنویسید.</p>{% endfor %}</div>
+    <form method="post" action="{% url 'sites:claim_message' claim.pk %}">{% csrf_token %}
+      <div class="qf-field"><label for="m-text">پیام شما</label><textarea id="m-text" name="text" rows="3" maxlength="2000" required></textarea></div>
+      <button class="site-btn" type="submit">ارسال پیام</button>
+    </form>
+  </section>
+
+  <section class="claim-box">
+    <h2>تاریخچهٔ پرونده</h2>
+    <ol class="claim-log">{% for e in events %}<li><strong>{{ e.get_status_display }}</strong> <span class="muted small">{{ e.created_at|jdate:"time" }}</span>{% if e.note %}<br>{{ e.note }}{% endif %}</li>{% endfor %}</ol>
+  </section>
+</section>
+{% endblock %}

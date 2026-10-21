@@ -13,7 +13,7 @@
     <div class="site-wrap c-header-inner">
       <a class="c-brand" href="/">{% if site.logo %}<img src="{{ site.logo.url }}" alt="">{% else %}<span class="c-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>{% endif %}<span>{{ tenant.name }}</span></a>
       <nav class="c-nav" aria-label="منو">
-        <a href="/#compare">رشته‌ها</a>{% if companies %}<a href="/#partners">شرکت‌ها</a>{% endif %}{% if faqs %}<a href="/#faq">سؤالات</a>{% endif %}<a href="/track/">پیگیری</a>
+        <a href="/#compare">رشته‌ها</a>{% if companies %}<a href="/#partners">شرکت‌ها</a>{% endif %}{% if faqs %}<a href="/#faq">سؤالات</a>{% endif %}<a href="/track/">پیگیری</a>{% if has_claims %}<a href="/claims/">خسارت</a>{% endif %}
         {% if can_portal %}<a class="c-login" href="/account/"><svg aria-hidden="true"><use href="#i-user"/></svg>ورود مشتریان</a>{% endif %}
         <a class="c-cta" href="/#quote">درخواست استعلام</a>
       </nav>
