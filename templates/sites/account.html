@@ -41,7 +41,7 @@
   <h2>اقساط پیش رو</h2>
   <table class="acc-table">
     <thead><tr><th>بیمه‌نامه</th><th>سررسید</th><th>مبلغ (تومان)</th><th>وضعیت</th></tr></thead>
-    <tbody>{% for i in installments %}<tr><td>{{ i.policy.line }}</td><td>{{ i.due_date|jdate }}</td><td class="num">{{ i.amount|toman }}</td><td>{% if i.is_overdue %}معوق{% else %}{{ i.get_status_display }}{% endif %}</td></tr>{% endfor %}</tbody>
+    <tbody>{% for i in installments %}<tr><td>{{ i.policy.line }}</td><td>{{ i.due_date|jdate }}</td><td class="num">{{ i.amount|rial_toman }}</td><td>{% if i.is_overdue %}معوق{% else %}{{ i.get_status_display }}{% endif %}</td></tr>{% endfor %}</tbody>
   </table>
   {% endif %}
 

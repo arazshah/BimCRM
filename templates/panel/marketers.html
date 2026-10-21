@@ -6,7 +6,7 @@
 <p class="note">هر بازاریاب یک لینک معرف دارد. هر کس از آن لینک فرم استعلام را پر کند، درخواست و مشتری و بیمه‌نامه‌هایش به نام آن بازاریاب ثبت می‌شود. سرگروه از بیمه‌نامه‌های زیرمجموعه‌های مستقیمش هم کمیسیون سرگروهی می‌گیرد.</p>
 {% if rows %}
 <div class="table-wrap"><table class="data">
-  <thead><tr><th>نام</th><th>سرگروه</th><th>لینک معرف</th><th>مشتری</th><th>کمیسیون (تومان)</th><th>تسویه‌شده</th><th>مانده</th></tr></thead>
+  <thead><tr><th>نام</th><th>سرگروه</th><th>لینک معرف</th><th>مشتری</th><th>کمیسیون (ریال)</th><th>تسویه‌شده</th><th>مانده</th></tr></thead>
   <tbody>{% for r in rows %}
     <tr class="{% if not r.m.is_active %}dim{% endif %}"><td><a href="{% url 'panel:marketer' r.m.pk %}">{{ r.m.full_name }}</a></td><td>{{ r.m.parent|default:"—" }}</td>
       <td><code class="ltr small">{{ r.url }}</code> <button type="button" class="linkish copy" data-copy="{{ r.url }}">کپی</button></td>

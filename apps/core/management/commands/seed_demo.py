@@ -80,7 +80,7 @@ class Command(BaseCommand):
                         "company": companies[i % len(companies)],
                         "start_date": end - timedelta(days=365),
                         "end_date": end,
-                        "premium": 3_500_000 + i * 900_000,
+                        "premium": 35_000_000 + i * 9_000_000,
                         "subject": ["پژو ۲۰۶", "پراید ۱۳۱", "آپارتمان ۸۵ متری", "", "دنا پلاس", ""][i],
                     },
                 )
@@ -132,20 +132,20 @@ class Command(BaseCommand):
             Installment.objects.create(
                 policy=first,
                 due_date=today + timedelta(days=30 * n - 5),
-                amount=1_500_000,
+                amount=15_000_000,
                 method="cheque",
                 cheque_number=f"7731{n}",
                 cheque_bank="ملت",
             )
         LedgerEntry.objects.create(
-            kind="income", category="commission", amount=320_000, policy=first, description="کارمزد ثالث"
+            kind="income", category="commission", amount=3_200_000, policy=first, description="کارمزد ثالث"
         )
-        LedgerEntry.objects.create(kind="expense", category="rent", amount=1_800_000, description="اجاره مهر")
+        LedgerEntry.objects.create(kind="expense", category="rent", amount=18_000_000, description="اجاره مهر")
         claim = Claim.objects.create(
             policy=policies[1],
             incident_date=today - timedelta(days=4),
             description="تصادف از عقب در بزرگراه همت؛ کروکی کشیده شده.",
-            amount_claimed=18_000_000,
+            amount_claimed=180_000_000,
             reported_by_customer=True,
         )
         ClaimEvent.objects.create(claim=claim, status="reported", note="اعلام از پنل مشتری")

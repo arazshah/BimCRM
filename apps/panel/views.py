@@ -141,7 +141,7 @@ def dashboard(request):
         n = overdue.count()
         if n:
             total = overdue.aggregate(s=Sum("amount"))["s"] or 0
-            alerts.append((f"{n} قسط معوق به مبلغ {total:,} تومان", "panel:installments", "?f=overdue"))
+            alerts.append((f"{n} قسط معوق به مبلغ {total:,} ریال", "panel:installments", "?f=overdue"))
     if "claims" in request.features:
         n = (
             scoped(request, Claim.objects.all(), "policy__branch")

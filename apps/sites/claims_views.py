@@ -15,6 +15,7 @@ from django.views.decorators.http import require_POST
 from apps.claims import services
 from apps.claims.models import Claim, ClaimDocRequest, ClaimEvent, ClaimFormFile
 from apps.crm.models import Policy
+from apps.finance.money import parse_amount
 
 from .views import _customer_mobile, _features, _is_team_member, _portal_customer, _site, _site_context
 
@@ -182,11 +183,14 @@ def claim_new(request):
         for f in files:
             if err := services.validate_upload(f):
                 errors.append(f"{f.name}: {err}")
-    try:
-        amount = max(0, int(request.POST.get("amount_claimed", "0").replace(",", "").strip() or 0))
-    except ValueError:
-        amount = 0
-        errors.append("مبلغ برآوردی را به عدد وارد کنید.")
+    raw_amount = request.POST.get("amount_claimed", "").strip()
+    amount = 0
+    if raw_amount:
+        toman = parse_amount(raw_amount)
+        if toman is None:
+            errors.append("مبلغ برآوردی را به عدد وارد کنید.")
+        else:
+            amount = toman * 10  # customers type tomans; the office books are in rials
     if errors:
         for e in dict.fromkeys(errors):
             messages.error(request, e)

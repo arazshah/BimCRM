@@ -10,7 +10,7 @@
 </nav>
 {% if page.object_list %}
 <div class="table-wrap"><table class="data">
-  <thead><tr><th>پرونده</th><th>بیمه‌گذار</th><th>بیمه‌نامه</th><th>تاریخ حادثه</th><th>وضعیت</th><th>مبلغ (تومان)</th></tr></thead>
+  <thead><tr><th>پرونده</th><th>بیمه‌گذار</th><th>بیمه‌نامه</th><th>تاریخ حادثه</th><th>وضعیت</th><th>مبلغ (ریال)</th></tr></thead>
   <tbody>{% for c in page %}
     <tr><td><a class="ltr num" href="{% url 'panel:claim' c.pk %}">{{ c.code|fa }}</a>{% if c.reported_by_customer %} <span class="tag">از سایت</span>{% endif %}{% if c.office_unread %} <span class="tag hot">جدید از مشتری</span>{% endif %}</td>
       <td>{{ c.policy.customer.full_name }}</td><td>{{ c.policy.line }} · {{ c.policy.company }}</td><td>{{ c.incident_date|jdate }}</td>

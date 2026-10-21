@@ -84,7 +84,7 @@ def test_report_with_documents_and_signature(client, tenant, ready, monkeypatch,
     r = report(client, h, ready, photo=[photo])
     claim = Claim.all_objects.get(tenant=tenant)
     assert r.status_code == 302 and r.url == f"/claims/{claim.pk}/"
-    assert claim.reported_by_customer and claim.office_unread and claim.amount_claimed == 5_000_000
+    assert claim.reported_by_customer and claim.office_unread and claim.amount_claimed == 50_000_000
     assert claim.signed_at and claim.iban.startswith("IR")
     kinds = sorted(ClaimDocument.objects.filter(claim=claim).values_list("kind", flat=True))
     assert kinds == ["photo", "signature"]

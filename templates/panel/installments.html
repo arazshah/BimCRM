@@ -13,7 +13,7 @@
 </nav>
 {% if page.object_list %}
 <div class="table-wrap"><table class="data">
-  <thead><tr><th>بیمه‌گذار</th><th>بیمه‌نامه</th><th>سررسید</th><th>مبلغ (تومان)</th><th>روش</th><th>وضعیت</th><th></th></tr></thead>
+  <thead><tr><th>بیمه‌گذار</th><th>بیمه‌نامه</th><th>سررسید</th><th>مبلغ (ریال)</th><th>روش</th><th>وضعیت</th><th></th></tr></thead>
   <tbody>{% for i in page %}
     <tr><td><a href="{% url 'panel:customer' i.policy.customer_id %}">{{ i.policy.customer.full_name }}</a></td>
       <td>{{ i.policy.line }} <span class="ltr muted small">{{ i.policy.number }}</span></td>

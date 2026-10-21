@@ -91,7 +91,7 @@ def on_policy_created(policy):
     club = ClubSettings.for_tenant(customer.tenant)
     if not club.enabled:
         return
-    pts = policy.premium * club.points_per_million // 1_000_000
+    pts = policy.premium * club.points_per_million // 10_000_000
     award(
         customer,
         pts,

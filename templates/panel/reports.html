@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-head"><div><h1>گزارش‌ها</h1><p class="page-sub">۱۲ ماه اخیر، بر اساس تاریخ شروع بیمه‌نامه‌ها</p></div><div class="head-actions"><a class="btn btn-sm" href="{% url 'panel:reports_team' %}">عملکرد همکاران و خدمات</a>{% include "panel/_branch_select.html" %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:reports_export' %}{% if b %}?b={{ b }}{% endif %}">خروجی اکسل بیمه‌نامه‌ها</a></div></div>
 <dl class="stats">
-  <div><dt>حق بیمه صادره ۱۲ ماه اخیر</dt><dd class="num">{{ year_total|toman }} <small>تومان</small></dd></div>
+  <div><dt>حق بیمه صادره ۱۲ ماه اخیر</dt><dd class="num">{{ year_total|toman }} <small>ریال</small></dd></div>
   <div><dt>نرخ تمدید</dt><dd class="num">{% if renewal_rate is not None %}{{ renewal_rate|fa }}٪{% else %}—{% endif %}</dd>{% if renewal_rate is not None %}<span class="meter"><span style="width: {{ renewal_rate }}%"></span></span>{% endif %}</div>
   <div><dt>بیمه‌نامه تمام‌شده / تمدیدشده</dt><dd class="num">{{ ended_n|fa }} / {{ renewed_n|fa }}</dd></div>
   <div><dt>درخواست سایت / صادرشده</dt><dd class="num">{{ quotes_n|fa }} / {{ quotes_issued|fa }}</dd></div>
@@ -15,14 +15,14 @@
   <div class="trend trend-12" role="img" aria-label="حق بیمه صادره ماهانه، ۱۲ ماه اخیر؛ جزئیات در جدول زیر">
     {% for m in months %}
     <div class="trend-col{% if forloop.last %} now{% endif %}" tabindex="0" style="--h: {{ m.premium|percent_of:peak }}%">
-      <span class="trend-tip"><b>{{ m.label }}</b>{{ m.premium|toman }} تومان · {{ m.n|fa }} بیمه‌نامه</span>
+      <span class="trend-tip"><b>{{ m.label }}</b>{{ m.premium|toman }} ریال · {{ m.n|fa }} بیمه‌نامه</span>
       <span class="trend-val">{% if forloop.last %}{{ m.premium|toman }}{% endif %}</span>
       <span class="trend-bar"></span>
       <span class="trend-x">{{ m.label|slice:":-5" }}</span>
     </div>
     {% endfor %}
   </div>
-  <table class="visually-hidden"><caption>حق بیمه صادره ماهانه</caption><tbody>{% for m in months %}<tr><th scope="row">{{ m.label }}</th><td>{{ m.premium|toman }} تومان</td><td>{{ m.n|fa }} بیمه‌نامه</td></tr>{% endfor %}</tbody></table>
+  <table class="visually-hidden"><caption>حق بیمه صادره ماهانه</caption><tbody>{% for m in months %}<tr><th scope="row">{{ m.label }}</th><td>{{ m.premium|toman }} ریال</td><td>{{ m.n|fa }} بیمه‌نامه</td></tr>{% endfor %}</tbody></table>
 </section>
 
 <div class="two-col even">

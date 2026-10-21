@@ -71,7 +71,7 @@ class Marketer(TenantOwned):
 
 class MarketerPayout(TenantOwned):
     marketer = models.ForeignKey(Marketer, on_delete=models.CASCADE, related_name="payouts", verbose_name="بازاریاب")
-    amount = models.PositiveBigIntegerField("مبلغ (تومان)")
+    amount = models.PositiveBigIntegerField("مبلغ (ریال)")
     date = models.DateField("تاریخ")
     note = models.CharField("توضیح", max_length=200, blank=True)
 

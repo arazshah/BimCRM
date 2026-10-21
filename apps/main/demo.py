@@ -272,10 +272,10 @@ def _fill(tenant, users):  # noqa: C901 - one long, readable recipe
             number=f"۱۴۰۴/{2300 + n}".translate(FA_DIGITS),
             start_date=end - timedelta(days=365),
             end_date=end,
-            premium=premium,
+            premium=premium * 10,
             subject=subject,
             created_by=rnd.choice([owner, manager, staff]),
-            commission_received=premium * 8 // 100 if n % 3 else 0,
+            commission_received=premium * 80 // 100 if n % 3 else 0,
         )
         policies.append(p)
         return p
@@ -392,7 +392,7 @@ def _fill(tenant, users):  # noqa: C901 - one long, readable recipe
         Installment.objects.create(
             policy=first,
             due_date=due,
-            amount=2_500_000,
+            amount=25_000_000,
             method="cheque",
             cheque_number=f"77310{k}",
             cheque_bank="ملت",
@@ -402,47 +402,47 @@ def _fill(tenant, users):  # noqa: C901 - one long, readable recipe
     Installment.objects.create(
         policy=policies[1],
         due_date=today - timedelta(days=6),
-        amount=4_000_000,
+        amount=40_000_000,
         method="cheque",
         cheque_number="551208",
         cheque_bank="صادرات",
         status="bounced",
         note="برگشت خورد؛ تماس گرفته شد",
     )
-    Installment.objects.create(policy=group, due_date=today + timedelta(days=3), amount=24_000_000, method="transfer")
+    Installment.objects.create(policy=group, due_date=today + timedelta(days=3), amount=240_000_000, method="transfer")
     for m in range(6):
         day = today - timedelta(days=30 * m + 3)
         LedgerEntry.objects.create(
             date=day,
             kind="income",
             category="commission",
-            amount=rnd.randint(28, 46) * 1_000_000,
+            amount=rnd.randint(28, 46) * 10_000_000,
             description="کارمزد ماهانه شرکت‌ها",
         )
         LedgerEntry.objects.create(
-            date=day, kind="expense", category="rent", amount=18_000_000, description="اجاره دفتر"
+            date=day, kind="expense", category="rent", amount=180_000_000, description="اجاره دفتر"
         )
         LedgerEntry.objects.create(
-            date=day, kind="expense", category="salary", amount=32_000_000, description="حقوق همکاران"
+            date=day, kind="expense", category="salary", amount=320_000_000, description="حقوق همکاران"
         )
         LedgerEntry.objects.create(
             date=day + timedelta(days=1),
             kind="expense",
             category="ads",
-            amount=rnd.randint(2, 5) * 1_000_000,
+            amount=rnd.randint(2, 5) * 10_000_000,
             description="تبلیغات اینستاگرام",
         )
 
     claim_rows = [
-        (policies[1], "تصادف از عقب در بزرگراه همت؛ کروکی کشیده شده.", 18_000_000, 0, ["reported", "docs_needed"]),
+        (policies[1], "تصادف از عقب در بزرگراه همت؛ کروکی کشیده شده.", 180_000_000, 0, ["reported", "docs_needed"]),
         (
             policies[3],
             "نشت آب از لوله آشپزخانه و خرابی کابینت.",
-            42_000_000,
+            420_000_000,
             0,
             ["reported", "submitted", "inspection"],
         ),
-        (policies[2], "شکستگی چراغ و سپر جلو.", 9_500_000, 9_000_000, ["reported", "submitted", "approved", "paid"]),
+        (policies[2], "شکستگی چراغ و سپر جلو.", 95_000_000, 90_000_000, ["reported", "submitted", "approved", "paid"]),
     ]
     notes_for = {
         "reported": "اعلام از پنل مشتری",

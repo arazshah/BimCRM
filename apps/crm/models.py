@@ -93,7 +93,7 @@ class Policy(TenantOwned):
     number = models.CharField("شماره بیمه‌نامه", max_length=60)
     start_date = models.DateField("شروع")
     end_date = models.DateField("پایان", db_index=True)
-    premium = models.PositiveBigIntegerField("حق بیمه (تومان)", default=0)
+    premium = models.PositiveBigIntegerField("حق بیمه (ریال)", default=0)
     subject = models.CharField("موضوع بیمه", max_length=160, blank=True, help_text="مثلاً پلاک خودرو یا نشانی ملک")
     file = models.FileField("فایل بیمه‌نامه", upload_to="policies/%Y/%m/", blank=True)
     file_size = models.PositiveBigIntegerField(default=0, editable=False)
@@ -109,7 +109,7 @@ class Policy(TenantOwned):
         blank=True,
         help_text="خالی = از جدول نرخ کارمزد خوانده می‌شود",
     )
-    commission_received = models.PositiveBigIntegerField("کارمزد دریافت‌شده (تومان)", default=0)
+    commission_received = models.PositiveBigIntegerField("کارمزد دریافت‌شده (ریال)", default=0)
     marketer = models.ForeignKey(
         "network.Marketer",
         null=True,
