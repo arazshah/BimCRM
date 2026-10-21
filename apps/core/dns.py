@@ -39,11 +39,13 @@ def check_domain(domain: Domain, resolver=lookup_nameservers) -> bool:
     from . import pdns
 
     expected = PlatformSettings.load().get_nameservers()
+    # Make sure our PowerDNS zone exists BEFORE looking up the NS records. A recursive resolver
+    # follows the registry delegation to our nameservers; with no zone they answer REFUSED, the
+    # lookup fails (SERVFAIL) and the NS never look "ours" — so creating the zone only after a
+    # successful check would deadlock every newly delegated domain. ensure_zone() is idempotent,
+    # never raises, and also recovers from earlier PowerDNS outages on every periodic check.
+    pdns.ensure_zone(domain.hostname, expected)
     found = resolver(domain.hostname)
     ok = nameservers_match(found, expected)
     domain.mark_checked(found, ok)
-    if ok:
-        # Keep reconciling the zone while the nameservers point here. If PowerDNS was unavailable
-        # during activation, the periodic check can recover without requiring a manual action.
-        pdns.ensure_zone(domain.hostname, expected)
     return ok
