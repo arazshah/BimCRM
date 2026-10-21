@@ -1,0 +1,19 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}حواله‌های پرداخت{% endblock %}
+{% block content %}
+<div class="page-head"><h1>حواله‌های پرداخت</h1><a class="btn btn-sm" href="{% url 'panel:payment_new' %}">حواله جدید</a></div>
+{% include "panel/_finance_tabs.html" %}
+<form method="get" class="toolbar"><input type="search" name="q" value="{{ q }}" placeholder="شماره، نام دریافت‌کننده، شرح"><button class="btn btn-ghost btn-sm">جستجو</button></form>
+{% if page.object_list %}
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>شماره</th><th>تاریخ</th><th>پرداخت به</th><th>دسته</th><th>از</th><th>مبلغ (ریال)</th><th></th></tr></thead>
+  <tbody>{% for o in page %}
+    <tr><td class="num">{{ o.number|fa }}</td><td>{{ o.date|jdate }}</td><td>{{ o.payee }}{% if o.status == "cancelled" %} <span class="tag hot">ابطال‌شده</span>{% endif %}</td>
+      <td>{{ o.get_category_display }}</td><td>{{ o.account }}</td><td class="num">{{ o.amount|toman }}</td>
+      <td class="row-actions"><a href="{% url 'panel:payment' o.pk %}">مشاهده</a><a href="{% url 'panel:payment' o.pk %}?print=1" target="_blank">چاپ</a></td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% include "panel/_pager.html" %}
+{% else %}<p class="empty">هنوز حواله‌ای ثبت نشده است.</p>{% endif %}
+{% endblock %}
