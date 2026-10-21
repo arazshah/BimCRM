@@ -47,6 +47,7 @@
       {% endwith %}
       <span class="nav-group">سایت</span>
       {% if request.can.site %}<a href="{% url 'panel:site' %}" {% if u == "site" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-globe"/></svg>محتوای سایت</a>
+      <a href="{% url 'panel:site_lines' %}" {% if u == "site_lines" or u == "site_line" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-shield"/></svg>صفحهٔ رشته‌ها</a>
       <a href="{% url 'panel:site_template' %}" {% if u == "site_template" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-palette"/></svg>قالب</a>{% endif %}
       {% if request.membership.role != "staff" %}<a href="{% url 'panel:domains' %}" {% if u == "domains" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-link"/></svg>دامنه</a>{% endif %}
       <span class="nav-group">دفتر</span>

@@ -21,16 +21,11 @@
   {% csrf_token %}
   {% include "includes/form_fields.html" %}
 
-  {% if line_forms %}<fieldset class="formset line-content-set">
-    <legend>صفحهٔ اختصاصی رشته‌های بیمه</legend>
-    <p class="note">این توضیحات در صفحهٔ هر رشته نمایش داده می‌شوند. اگر خالی بمانند، اطلاعات پایهٔ کاتالوگ استفاده می‌شود. دربارهٔ پوشش و شرایط قطعی فقط بر اساس اطلاعات رسمی شرکت بیمه بنویسید.</p>
-    {% for line, f in line_forms %}<details class="line-content-editor" {% if f.errors %}open{% endif %}>
-      <summary>{{ line.name }}</summary>
-      <div class="line-content-fields">
-        {% for field in f %}<div class="field-wrap"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>{% endfor %}
-      </div>
-    </details>{% endfor %}
-  </fieldset>{% endif %}
+  <section class="card lines-pointer">
+    <h2>صفحهٔ فروش هر رشتهٔ بیمه</h2>
+    <p>تصویر، گالری، نکات برجسته و توضیحات هر بیمه‌نامه را از بخش جداگانهٔ «صفحهٔ رشته‌ها» مدیریت کنید؛ همان‌جا که مشتری تصمیم به خرید می‌گیرد.</p>
+    <a class="btn btn-ghost btn-sm" href="{% url 'panel:site_lines' %}">مدیریت صفحهٔ رشته‌ها</a>
+  </section>
 
   <fieldset class="formset">
     <legend>نظرات مشتریان</legend>

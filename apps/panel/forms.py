@@ -6,7 +6,7 @@ from apps.billing.models import Invoice, Period
 from apps.core.dns import HOSTNAME_RE, normalize_hostname
 from apps.core.models import Domain
 from apps.crm.models import Branch, Customer, Policy, QuoteRequest
-from apps.sites.models import FAQ, SiteLineContent, SiteSettings, Testimonial
+from apps.sites.models import FAQ, MAX_GALLERY_IMAGES, SiteLineContent, SiteLineImage, SiteSettings, Testimonial
 from apps.tickets.models import Ticket
 
 
@@ -213,10 +213,20 @@ class SiteContentForm(forms.ModelForm):
 
 
 class SiteLineContentForm(forms.ModelForm):
+    remove_cover = forms.BooleanField(label="حذف تصویر شاخص", required=False)
+
+    def save(self, commit=True):
+        if self.cleaned_data.get("remove_cover") and "cover" not in self.files:
+            self.instance.cover = ""
+        return super().save(commit=commit)
+
     class Meta:
         model = SiteLineContent
         fields = [
+            "cover",
+            "cover_alt",
             "intro",
+            "highlights",
             "description",
             "coverage",
             "considerations",
@@ -226,12 +236,32 @@ class SiteLineContentForm(forms.ModelForm):
             "seo_description",
         ]
         widgets = {
+            "cover": forms.FileInput(attrs={"accept": "image/*"}),
+            "highlights": forms.Textarea(
+                attrs={"rows": 4, "placeholder": "پاسخ در همان روز کاری\nبررسی رایگان شرایط\nمقایسهٔ چند شرکت بیمه"}
+            ),
             "description": forms.Textarea(attrs={"rows": 4}),
             "coverage": forms.Textarea(attrs={"rows": 3}),
             "considerations": forms.Textarea(attrs={"rows": 3}),
             "documents": forms.Textarea(attrs={"rows": 3}),
             "process": forms.Textarea(attrs={"rows": 3}),
         }
+
+
+def line_gallery_formset(content, data=None, files=None):
+    """Gallery of one line page; empty slots are offered up to the image limit."""
+    existing = content.images.count() if content.pk else 0
+    factory = forms.modelformset_factory(
+        SiteLineImage,
+        fields=["image", "caption", "order"],
+        widgets={"image": forms.FileInput(attrs={"accept": "image/*"})},
+        extra=max(0, min(3, MAX_GALLERY_IMAGES - existing)),
+        max_num=MAX_GALLERY_IMAGES,
+        validate_max=True,
+        can_delete=True,
+    )
+    queryset = content.images.all() if content.pk else SiteLineImage.objects.none()
+    return factory(data, files, queryset=queryset, prefix="g")
 
 
 class TestimonialForm(forms.ModelForm):

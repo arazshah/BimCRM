@@ -2,20 +2,40 @@
 {% load fa %}
 {% block title %}{{ page_title }}{% endblock %}
 {% block main %}
+{% with images=line_content.images.all %}
 <section class="line-hero">
   <div class="site-wrap line-hero-grid">
-    <div>
+    <div class="line-hero-text">
       <p class="line-eyebrow"><a href="/">خانه</a> / بیمه‌ها</p>
       <h1>{{ line.name }}</h1>
       <p class="line-lead">{% if line_content and line_content.intro %}{{ line_content.intro }}{% else %}{{ line.summary }}{% endif %}</p>
-      <p class="line-disclaimer">ثبت این فرم فقط درخواست بررسی است. کارشناس دفتر پس از دریافت اطلاعات برای بررسی شرایط و پاسخ با شما تماس می‌گیرد.</p>
-      <a class="s-btn" href="#quote">درخواست استعلام {{ line.name }}</a>
+      {% if line_content.highlight_list %}<ul class="line-highlights">{% for item in line_content.highlight_list %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+      <div class="line-cta">
+        <a class="s-btn" href="#quote">درخواست استعلام {{ line.name }}</a>
+        {% if site.phone %}<a class="s-btn s-btn-ghost" href="tel:{{ site.phone }}" dir="ltr">{{ site.phone }}</a>{% endif %}
+      </div>
     </div>
-    <div class="line-quote" id="quote"><h2>درخواست بررسی</h2>{% include "sites/_quote_form.html" with submit_label="ثبت درخواست استعلام" %}</div>
+    <div class="line-hero-media">
+      {% if line_content and line_content.cover %}
+        <figure class="line-cover"><img src="{{ line_content.cover.url }}" alt="{{ line_content.cover_alt|default:line.name }}" fetchpriority="high"></figure>
+      {% else %}
+        <ol class="line-path" aria-label="مراحل دریافت {{ line.name }}">
+          <li><b>۱</b><span>فرم کوتاه را پر کنید<small>فقط چند اطلاعات اولیه</small></span></li>
+          <li><b>۲</b><span>کارشناس دفتر تماس می‌گیرد<small>بررسی شرایط و پاسخ به سؤال‌های شما</small></span></li>
+          <li><b>۳</b><span>مقایسه و تصمیم‌گیری<small>پیش از هر پرداختی، گزینه‌ها را مرور می‌کنید</small></span></li>
+        </ol>
+      {% endif %}
+    </div>
   </div>
 </section>
 
-<section class="line-information"><div class="site-wrap">
+{% if images %}<section class="line-gallery" aria-label="تصاویر {{ line.name }}"><div class="site-wrap">
+  <ul class="line-gallery-grid">{% for img in images %}<li><button type="button" class="line-thumb" data-full="{{ img.image.url }}" data-caption="{{ img.caption }}" aria-label="بزرگ‌نمایی تصویر{% if img.caption %}: {{ img.caption }}{% endif %}"><img src="{{ img.image.url }}" alt="{{ img.caption }}" loading="lazy">{% if img.caption %}<span>{{ img.caption }}</span>{% endif %}</button></li>{% endfor %}</ul>
+</div></section>
+<dialog class="line-lightbox" id="line-lightbox" aria-label="نمایش تصویر"><form method="dialog"><button class="line-lightbox-close" aria-label="بستن">×</button></form><img alt=""><p></p></dialog>{% endif %}
+
+<section class="line-body"><div class="site-wrap line-body-grid">
+  <div class="line-information">
   {% if line_content and line_content.description %}<article><h2>دربارهٔ این بیمه</h2><div>{{ line_content.description|linebreaks }}</div></article>{% endif %}
   {% if line_content and line_content.coverage %}<article><h2>مواردی که دفتر بررسی می‌کند</h2><div>{{ line_content.coverage|linebreaks }}</div><p class="line-disclaimer">جزئیات نهایی، استثناها و تعهدات را باید در شرایط بیمه‌نامهٔ شرکت بیمه بررسی کرد.</p></article>{% endif %}
   {% if line_content and line_content.considerations %}<article><h2>پیش از تصمیم چه چیزهایی را بررسی کنم؟</h2><div>{{ line_content.considerations|linebreaks }}</div><p class="line-disclaimer">شرایط هر بیمه‌نامه را از متن رسمی و مدارک شرکت بیمه تطبیق دهید.</p></article>{% endif %}
@@ -29,7 +49,24 @@
     {% else %}<ol><li>فرم درخواست را با اطلاعات اولیه تکمیل کنید.</li><li>کارشناس دفتر برای بررسی جزئیات با شما تماس می‌گیرد.</li><li>مدارک لازم و شرایط پیشنهادشده پیش از تصمیم‌گیری با شما مرور می‌شود.</li></ol>{% endif %}
   </article>
   <p class="line-contact-note">پیش از ارسال مدارک هویتی یا حساس، روش امن دریافت آن را از دفتر بپرسید. <a href="/guide/claims/">راهنمای اعلام خسارت</a> · <a href="/guide/renewal/">راهنمای تمدید</a></p>
+  </div>
+  <aside class="line-quote" id="quote" aria-labelledby="quote-title">
+    <h2 id="quote-title">درخواست بررسی {{ line.name }}</h2>
+    <p class="line-disclaimer">ثبت این فرم فقط درخواست بررسی است. کارشناس دفتر پس از دریافت اطلاعات برای بررسی شرایط و پاسخ با شما تماس می‌گیرد.</p>
+    {% include "sites/_quote_form.html" with submit_label="ثبت درخواست استعلام" %}
+  </aside>
 </div></section>
+<div class="line-sticky-cta"><a class="s-btn" href="#quote">درخواست استعلام {{ line.name }}</a></div>
+{% endwith %}
 {% include "sites/parts/faq.html" with title="پرسش‌های رایج" %}
 {% include "sites/parts/contact.html" with title="دربارهٔ این رشته از دفتر بپرسید" %}
+<script>
+(function(){
+  var dlg = document.getElementById('line-lightbox'); if(!dlg || !dlg.showModal) return;
+  document.querySelectorAll('.line-thumb').forEach(function(b){ b.addEventListener('click', function(){
+    dlg.querySelector('img').src = b.dataset.full; dlg.querySelector('img').alt = b.dataset.caption || '';
+    dlg.querySelector('p').textContent = b.dataset.caption || ''; dlg.showModal(); }); });
+  dlg.addEventListener('click', function(e){ if(e.target === dlg) dlg.close(); });
+})();
+</script>
 {% endblock %}

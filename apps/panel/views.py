@@ -46,6 +46,7 @@ from .forms import (
     SiteLineContentForm,
     TestimonialFormSet,
     TicketForm,
+    line_gallery_formset,
 )
 from .views_work import customer_work_context
 
@@ -467,25 +468,9 @@ def site_settings(request):
     form = SiteContentForm(request.POST or None, request.FILES or None, instance=site, prefix="s")
     tforms = TestimonialFormSet(request.POST or None, queryset=Testimonial.objects.all(), prefix="t")
     fforms = FAQFormSet(request.POST or None, queryset=FAQ.objects.all(), prefix="q")
-    line_forms = []
-    for line in site.lines.filter(is_active=True):
-        content = SiteLineContent.objects.filter(line=line).first()
-        if content is None:
-            content = SiteLineContent(tenant=request.tenant, line=line)
-        line_forms.append((line, SiteLineContentForm(request.POST or None, instance=content, prefix=f"line{line.pk}")))
-    all_valid = (
-        form.is_valid()
-        and tforms.is_valid()
-        and fforms.is_valid()
-        and all(line_form.is_valid() for _, line_form in line_forms)
-    )
+    all_valid = form.is_valid() and tforms.is_valid() and fforms.is_valid()
     if request.method == "POST" and all_valid:
         form.save()
-        for line, line_form in line_forms:
-            content = line_form.save(commit=False)
-            content.tenant = request.tenant
-            content.line = line
-            content.save()
         for fs in (tforms, fforms):
             for obj in fs.save(commit=False):
                 obj.save()
@@ -508,9 +493,83 @@ def site_settings(request):
             "form": form,
             "tforms": tforms,
             "fforms": fforms,
-            "line_forms": line_forms,
             "site": site,
             "publication_issues": publication_issues(site),
+        },
+    )
+
+
+def _line_checklist(content, image_count):
+    """What still makes a line page more convincing; shown as progress in the panel."""
+    has = bool
+    return [
+        ("تصویر شاخص", has(content and content.cover)),
+        ("معرفی کوتاه", has(content and content.intro)),
+        ("نکات برجسته", has(content and content.highlights.strip())),
+        ("توضیحات", has(content and content.description.strip())),
+        ("پوشش‌ها و شرایط", has(content and (content.coverage.strip() or content.considerations.strip()))),
+        ("گالری تصاویر", image_count > 0),
+    ]
+
+
+@panel_view(perm="site")
+def site_lines(request):
+    """Hub where the agent manages the sales page of every insurance line."""
+    site = _site(request)
+    lines = list(site.lines.filter(is_active=True))
+    contents = {c.line_id: c for c in SiteLineContent.objects.filter(line__in=lines).prefetch_related("images")}
+    cards = []
+    for line in lines:
+        content = contents.get(line.pk)
+        checklist = _line_checklist(content, len(content.images.all()) if content else 0)
+        done = sum(1 for _, ok in checklist if ok)
+        cards.append(
+            {
+                "line": line,
+                "content": content,
+                "checklist": checklist,
+                "done": done,
+                "total": len(checklist),
+                "percent": round(done * 100 / len(checklist)),
+            }
+        )
+    return render(request, "panel/site_lines.html", {"site": site, "cards": cards})
+
+
+@panel_view(perm="site")
+def site_line_edit(request, slug):
+    site = _site(request)
+    line = get_object_or_404(site.lines.filter(is_active=True), slug=slug)
+    content = SiteLineContent.objects.filter(line=line).first() or SiteLineContent(tenant=request.tenant, line=line)
+    form = SiteLineContentForm(request.POST or None, request.FILES or None, instance=content, prefix="c")
+    gallery = line_gallery_formset(content, request.POST or None, request.FILES or None)
+    if request.method == "POST" and form.is_valid() and gallery.is_valid():
+        content = form.save(commit=False)
+        content.tenant = request.tenant
+        content.line = line
+        content.save()
+        for image in gallery.save(commit=False):
+            image.tenant = request.tenant
+            image.content = content
+            image.save()
+        for image in gallery.deleted_objects:
+            image.delete()
+        messages.success(request, f"صفحهٔ «{line.name}» ذخیره شد.")
+        return redirect("panel:site_line", slug=line.slug)
+    image_count = content.images.count() if content.pk else 0
+    checklist = _line_checklist(content if content.pk else None, image_count)
+    return render(
+        request,
+        "panel/site_line_edit.html",
+        {
+            "site": site,
+            "line": line,
+            "form": form,
+            "gallery": gallery,
+            "content": content,
+            "checklist": checklist,
+            "text_fields": [form[n] for n in ("description", "coverage", "considerations", "documents", "process")],
+            "seo_fields": [form[n] for n in ("seo_title", "seo_description")],
         },
     )
 
