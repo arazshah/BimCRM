@@ -98,8 +98,10 @@ def test_feature_explorer_badges_follow_the_packages(client, plans):
     assert items["پرونده کامل مشتری"]["badge"] == "همه پکیج‌ها"
     assert items["اقساط و چک"]["badge"] == "حرفه‌ای و بالاتر"
     assert items["چند شعبه"]["badge"] == "دفتر بزرگ"
-    page = client.get("/", HTTP_HOST=MAIN).content.decode()
+    page = client.get("/features/", HTTP_HOST=MAIN).content.decode()
     assert "همه امکانات، به زبان ساده" in page and page.count('class="fx-card"') == total
+    landing = client.get("/", HTTP_HOST=MAIN).content.decode()
+    assert 'class="fx-card"' not in landing and 'href="/features/"' in landing
     for c in cats:
         for it in c["items"]:
             assert client.get(f"/help/{it['f'].help}/", HTTP_HOST=MAIN).status_code == 200

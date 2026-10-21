@@ -23,21 +23,16 @@
 
 {% block content %}
 
-{# ───────── Hero: claim your address; the mock browser updates as you type ───────── #}
+{# ───────── 1. Hero: one promise, one action (claim your address) ───────── #}
 <section class="hero" id="start">
   <div class="wrap hero-grid">
     <div class="hero-copy">
+      <span class="hero-kicker">ویژه نماینده‌های همه شرکت‌های بیمه</span>
       <h1>سایت و پنل دفتر بیمه‌تان، در <span class="hl">۵ دقیقه</span></h1>
-      <p class="lead">مشتری در <strong>سایت</strong> استعلام می‌گیرد؛ شما در <strong>پنل</strong> تمدیدها را می‌گردانید.</p>
-
-      <ol class="hero-steps" aria-label="سه قدم تا سایت آماده">
-        <li class="on"><b>۱</b>آدرس بنویسید</li>
-        <li><b>۲</b>ورود با موبایل</li>
-        <li><b>۳</b>سایت آماده</li>
-      </ol>
+      <p class="lead">مشتری در <strong>سایت شما</strong> استعلام می‌گیرد؛ شما تمدیدها، پرونده‌ها و پیامک‌ها را از <strong>یک پنل</strong> می‌گردانید.</p>
 
       <form class="claim" action="{% url 'main:login' %}" method="get" id="claim-form" novalidate>
-        <label class="claim-label" for="claim-slug">آدرس سایت شما</label>
+        <label class="claim-label" for="claim-slug">اول آدرس سایتتان را انتخاب کنید</label>
         <div class="claim-row">
           <div class="claim-input" dir="ltr">
             <input id="claim-slug" name="slug" type="text" inputmode="url" autocomplete="off" spellcheck="false"
@@ -52,6 +47,7 @@
       <ul class="hero-facts">
         <li>{{ platform.trial_days|fa }} روز رایگان</li>
         <li>بدون کارت بانکی</li>
+        <li>فقط با شماره موبایل</li>
       </ul>
       <p class="hero-links"><a class="hero-watch" href="#promo-title"><span aria-hidden="true">▶</span>ویدیوی ۱ دقیقه‌ای</a><a class="hero-watch hero-demo" href="{% url 'main:demo' %}"><span aria-hidden="true">👁</span>دموی زنده را ببینید</a></p>
     </div>
@@ -85,16 +81,16 @@
           <li><span>شرکت آرین</span><em>آتش‌سوزی · ۶ روز</em><b class="go">ارسال پیامک</b></li>
         </ul>
       </div>
-      <div class="stamp"><span>{{ platform.trial_days|fa }}</span>روز رایگان</div>
     </div>
   </div>
 </section>
 
-{% if showcases %}
-{# ───────── Showcase: real agent sites ───────── #}
-<section class="showcase" aria-labelledby="showcase-title">
+{# ───────── 2. Trust: real offices and the insurers they represent (one quiet strip) ───────── #}
+{% if showcases or companies %}
+<section class="trust" aria-label="اعتماد">
   <div class="wrap">
-    <h2 id="showcase-title">دفترهایی که با CRM بیمه سایت و پنلشان را راه انداختند</h2>
+    {% if showcases %}
+    <h2 class="trust-title" id="showcase-title">دفترهایی که با CRM بیمه سایت و پنلشان را راه انداختند</h2>
     <ul class="showcase-list">
       {% for s in showcases %}
       <li class="showcase-card">
@@ -107,30 +103,56 @@
       </li>
       {% endfor %}
     </ul>
+    {% endif %}
+    {% if companies %}
+    <h2 class="trust-title" id="insurers-title">نماینده هر شرکتی باشید، فرقی نمی‌کند</h2>
+    <ul class="insurer-list">
+      {% for c in companies|slice:":10" %}<li>{% if c.website %}<a href="{{ c.website }}" target="_blank" rel="noopener nofollow ugc" title="سایت {{ c.name }}">{% endif %}{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}" loading="lazy" height="36">{% else %}<span>{{ c.name }}</span>{% endif %}{% if c.website %}</a>{% endif %}</li>{% endfor %}
+    </ul>
+    {% with n=companies|length %}<p class="trust-more"><a href="{% url 'main:company_hub' %}">{% if n > 10 %}و {{ n|add:"-10"|fa }} شرکت دیگر؛ {% endif %}صفحهٔ اختصاصی نمایندگان هر شرکت ←</a></p>{% endwith %}
+    {% endif %}
   </div>
 </section>
 {% endif %}
 
-{# ───────── Insurers ───────── #}
-<section class="insurers" aria-labelledby="insurers-title">
-  <div class="wrap insurers-inner">
-    <h2 id="insurers-title">نماینده کدام شرکت هستید؟ فرقی نمی‌کند.</h2>
-    <p>سایت و پنل برای خود دفتر شماست، نه یک شرکت خاص. اگر نماینده چند شرکت هستید، همه را کنار هم نشان دهید.</p>
-    {% if companies %}
-    <ul class="insurer-list">
-      {% for c in companies %}<li>{% if c.website %}<a href="{{ c.website }}" target="_blank" rel="noopener nofollow ugc" title="سایت {{ c.name }}">{% endif %}{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}" loading="lazy" height="36">{% else %}<span>{{ c.name }}</span>{% endif %}{% if c.website %}</a>{% endif %}</li>{% endfor %}
-    </ul>
-    {% endif %}
-    <p class="insurers-more"><a href="{% url 'main:company_hub' %}">صفحهٔ اختصاصی نمایندگان هر شرکت ←</a></p>
+{# ───────── 3. What you get: three things, nothing else ───────── #}
+<section class="pillars" id="features" aria-labelledby="pillars-title">
+  <div class="wrap">
+    <header class="sec-head center">
+      <h2 id="pillars-title">یک جا، هم برای فروش، هم برای اداره دفتر</h2>
+      <p>سه چیزی که هر دفتر بیمه لازم دارد؛ از روز اول آماده.</p>
+    </header>
+    <div class="pl-grid">
+      <article class="pl-card">
+        <figure class="pl-shot"><img src="{% static 'demo/site.jpg' %}" alt="سایت دفتر بیمه با فرم استعلام آنلاین" width="1280" height="800" loading="lazy"></figure>
+        <h3>سایتی که مشتری را به استعلام می‌رساند</h3>
+        <p>۵ قالب آماده. هر رشته فرم استعلام خودش را دارد و مشتری با کد پیگیری می‌بیند کارش به کجا رسیده.</p>
+      </article>
+      <article class="pl-card">
+        <figure class="pl-shot"><img src="{% static 'demo/panel.jpg' %}" alt="پنل مدیریت دفتر با تمدیدهای پیش‌رو و کارهای امروز" width="1280" height="800" loading="lazy"></figure>
+        <h3>پنلی که دفترتان را می‌گرداند</h3>
+        <p>مشتری، بیمه‌نامه، تمدید و پیامک یادآور، اقساط، خسارت و گزارش؛ همه یک‌جا، روی موبایل و کامپیوتر.</p>
+      </article>
+      <article class="pl-card pl-domain" id="domain">
+        <div class="pl-shot pl-addr" aria-hidden="true">
+          <div class="addr-bar" dir="ltr"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M4.5 7V5.5a3.5 3.5 0 017 0V7M3.5 7h9v6.5h-9z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span>alborzbime<b>.ir</b></span></div>
+          {% if platform.domain_service_enabled and platform.free_domain_active %}<span class="dc-badge dc-free">ثبت رایگان تا {{ platform.free_domain_until|jdate:"long" }}</span>{% endif %}
+        </div>
+        <h3>آدرس اختصاصی <span class="ltr">.ir</span> برای دفترتان</h3>
+        <p>از روز اول روی زیردامنه رایگان کار می‌کنید و هر وقت خواستید دامنه خودتان را وصل می‌کنید{% if platform.domain_service_enabled %}؛ یا دامنه را ما برایتان می‌خریم و راه می‌اندازیم{% endif %}.</p>
+        {% if platform.domain_service_enabled and platform.free_domain_active %}<p class="pl-offer"><strong>طرح ویژه:</strong> تا {{ platform.free_domain_until|jdate:"long" }} ثبت دامنه <span class="ltr">.ir</span> و راه‌اندازی آن رایگان است.</p>{% endif %}
+      </article>
+    </div>
+    <p class="pl-more"><a href="{% url 'main:features' %}">دیدن همه {{ feature_total|fa }} امکان ←</a><a href="{% url 'main:demo' %}">دموی زنده ←</a></p>
   </div>
 </section>
 
-{# ── Promo video ── #}
+{# ───────── 4. One-minute video ───────── #}
 <section class="promo" aria-labelledby="promo-title">
   <div class="wrap">
     <div class="promo-head">
       <h2 id="promo-title">CRM بیمه در کمتر از یک دقیقه</h2>
-      <p>سایت فروش، کارها و پرونده کامل مشتری، تمدید و پیامک خودکار، باشگاه مشتریان، فروش متقابل، خسارت و دامنه رایگان؛ همه را یک‌جا ببینید.</p>
+      <p>سایت فروش، پرونده مشتری، تمدید و پیامک خودکار و دامنه رایگان؛ همه را یک‌جا ببینید.</p>
     </div>
     <div class="promo-frame vwrap">
       <video preload="none" playsinline poster="{% static 'video/promo.jpg' %}"><source src="{% static 'video/promo.mp4' %}" type="video/mp4"></video>
@@ -140,198 +162,12 @@
   </div>
 </section>
 
-{# ───────── The office, stage by stage ───────── #}
-<section class="journey" id="features" aria-labelledby="journey-title">
-  <div class="wrap">
-    <header class="sec-head">
-      <h2 id="journey-title">از اولین بازدید مشتری تا تسویه کارمزد</h2>
-      <p>هر کاری که در دفتر انجام می‌شود، جایی در پنل دارد. مسیر یک مشتری را دنبال کنید.</p>
-    </header>
-
-    <div class="jr" data-tabs>
-      <div class="jr-tabs" role="tablist" aria-label="بخش‌های پنل">
-        <button role="tab" id="jt-1" aria-controls="jp-1" aria-selected="true"><b>۱</b><span>سایت و جذب مشتری</span></button>
-        <button role="tab" id="jt-2" aria-controls="jp-2" aria-selected="false" tabindex="-1"><b>۲</b><span>درخواست‌ها و فروش</span></button>
-        <button role="tab" id="jt-3" aria-controls="jp-3" aria-selected="false" tabindex="-1"><b>۳</b><span>مشتری‌ها و بیمه‌نامه‌ها</span></button>
-        <button role="tab" id="jt-4" aria-controls="jp-4" aria-selected="false" tabindex="-1"><b>۴</b><span>تمدید و پیامک</span></button>
-        <button role="tab" id="jt-5" aria-controls="jp-5" aria-selected="false" tabindex="-1"><b>۵</b><span>پنل مشتری و خسارت</span></button>
-        <button role="tab" id="jt-6" aria-controls="jp-6" aria-selected="false" tabindex="-1"><b>۶</b><span>مالی، اقساط و کارمزد</span></button>
-        <button role="tab" id="jt-7" aria-controls="jp-7" aria-selected="false" tabindex="-1"><b>۷</b><span>همکاران، شعبه‌ها و بازاریاب‌ها</span></button>
-      </div>
-
-      <div class="jr-panels">
-        <article class="jr-panel" role="tabpanel" id="jp-1" aria-labelledby="jt-1">
-          <div class="jr-text">
-            <h3>سایتی که مشتری را به فرم استعلام می‌رساند</h3>
-            <p>پنج قالب آماده، با لوگو و رنگ و متن خودتان. رشته‌هایی که می‌فروشید، نظرات مشتری‌ها، سؤالات رایج و شعبه‌ها روی سایت می‌آید و هر رشته فرم استعلام مخصوص خودش را دارد.</p>
-            <ul class="ticks"><li>زیردامنه رایگان از روز اول، دامنه ir خودتان هر وقت خواستید</li><li>گواهی امنیتی (SSL) خودکار</li><li>نماد اعتماد، ساماندهی و کد دلخواه</li></ul>
-          </div>
-          <div class="jr-mock" aria-hidden="true">
-            <div class="mk mk-site">
-              <div class="mk-bar" dir="ltr">yourname.{{ PLATFORM_DOMAIN }}</div>
-              <div class="mk-hero"><strong>نمایندگی بیمه، کد ۱۲۳۴</strong><span>استعلام آنلاین ثالث، بدنه و درمان</span></div>
-              <div class="mk-tiles"><span>شخص ثالث</span><span>بدنه خودرو</span><span>آتش‌سوزی منازل</span><span>درمان تکمیلی</span><span>عمر</span><span>مسافرتی</span></div>
-            </div>
-          </div>
-        </article>
-
-        <article class="jr-panel" role="tabpanel" id="jp-2" aria-labelledby="jt-2" hidden>
-          <div class="jr-text">
-            <h3>همه درخواست‌های سایت، در یک صندوق</h3>
-            <p>هر استعلام با نوع بیمه و اطلاعاتی که مشتری وارد کرده می‌رسد. وضعیتش را جلو می‌برید و مشتری با کد پیگیری، بدون تماس، از سایت می‌بیند کار به کجا رسیده.</p>
-            <ul class="ticks"><li>کد پیگیری برای هر درخواست</li><li>واگذاری به همکار یا شعبه</li><li>اتصال درخواست به پرونده مشتری</li></ul>
-          </div>
-          <div class="jr-mock" aria-hidden="true">
-            <div class="mk">
-              <div class="mk-title">درخواست‌های سایت</div>
-              <ul class="mk-rows">
-                <li><span>سارا محمدی</span><em>شخص ثالث</em><b class="st new">جدید</b></li>
-                <li><span>علی نوری</span><em>درمان تکمیلی</em><b class="st wip">در حال بررسی</b></li>
-                <li><span>فرشته امینی</span><em>آتش‌سوزی منازل</em><b class="st wip">قیمت داده شد</b></li>
-                <li><span>رضا احمدی</span><em>بدنه خودرو</em><b class="st done">صادر شد</b></li>
-              </ul>
-            </div>
-          </div>
-        </article>
-
-        <article class="jr-panel" role="tabpanel" id="jp-3" aria-labelledby="jt-3" hidden>
-          <div class="jr-text">
-            <h3>پرونده کامل هر بیمه‌گذار</h3>
-            <p>مشخصات، بیمه‌نامه‌ها با فایل و تاریخ شروع و پایان، شرکت بیمه و حق بیمه. مشتری‌های فعلی‌تان را یک‌جا از فایل اکسل وارد کنید.</p>
-            <ul class="ticks"><li>جست‌وجو با نام، موبایل یا شماره بیمه‌نامه</li><li>بیمه‌نامه‌های همه شرکت‌ها در یک فهرست</li><li>ورود از اکسل</li></ul>
-          </div>
-          <div class="jr-mock" aria-hidden="true">
-            <div class="mk">
-              <div class="mk-profile"><span class="mk-avatar">ح</span><div><strong>حمید کریمی</strong><em class="ltr">0912 345 6789</em></div></div>
-              <table class="mk-table"><tbody>
-                <tr><th>بدنه خودرو</th><td>بیمه البرز</td><td>تا ۱۴۰۵/۰۸/۲۰</td></tr>
-                <tr><th>شخص ثالث</th><td>بیمه دانا</td><td>تا ۱۴۰۶/۰۱/۱۲</td></tr>
-                <tr><th>آتش‌سوزی منازل</th><td>بیمه ایران</td><td>تا ۱۴۰۵/۱۱/۰۳</td></tr>
-              </tbody></table>
-            </div>
-          </div>
-        </article>
-
-        <article class="jr-panel" role="tabpanel" id="jp-4" aria-labelledby="jt-4" hidden>
-          <div class="jr-text">
-            <h3>تمدیدی از دست نمی‌رود</h3>
-            <p>بیمه‌نامه‌هایی که تا ۳۰ روز دیگر تمام می‌شوند، اول داشبورد است. پیامک یادآور از پنل پیامک خود دفتر و به نام خود دفتر می‌رود. در پکیج حرفه‌ای، پیامک گروهی و مناسبتی هم دارید.</p>
-            <ul class="ticks"><li>فهرست تمدیدهای پیش‌رو در داشبورد</li><li>پیامک یادآور خودکار</li><li>کمپین پیامکی برای گروه‌های مشتری <span class="tag">حرفه‌ای</span></li></ul>
-          </div>
-          <div class="jr-mock" aria-hidden="true">
-            <div class="mk mk-phone">
-              <div class="sms"><small>نمایندگی بیمه البرز</small>مریم رضایی عزیز، بیمه شخص ثالث شما ۳ روز دیگر تمام می‌شود. برای تمدید با ما تماس بگیرید یا از سایت استعلام کنید.</div>
-              <div class="sms me">ممنون، الان استعلام می‌گیرم</div>
-            </div>
-          </div>
-        </article>
-
-        <article class="jr-panel" role="tabpanel" id="jp-5" aria-labelledby="jt-5" hidden>
-          <div class="jr-text">
-            <h3>مشتری خودش بیمه‌نامه‌ها و خسارتش را می‌بیند</h3>
-            <p>مشتری با موبایل و کد یک‌بارمصرف وارد پنل خودش روی سایت شما می‌شود: بیمه‌نامه‌ها، قسط‌ها و وضعیت درخواست‌ها. در پکیج حرفه‌ای، خسارت را هم با مدارک اعلام می‌کند و شما مرحله‌به‌مرحله پیگیری می‌کنید.</p>
-            <ul class="ticks"><li>ورود مشتری با کد پیامکی</li><li>دانلود فایل بیمه‌نامه</li><li>اعلام و پیگیری خسارت با بارگذاری مدارک <span class="tag">حرفه‌ای</span></li></ul>
-          </div>
-          <div class="jr-mock" aria-hidden="true">
-            <div class="mk">
-              <div class="mk-title">خسارت بدنه، پرونده ۴۰۲۱</div>
-              <ol class="mk-steps">
-                <li class="done">اعلام خسارت</li><li class="done">مدارک رسید</li><li class="now">کارشناسی</li><li>پرداخت</li>
-              </ol>
-              <p class="mk-note">مدارک فرستاده‌شده: کروکی، گواهی‌نامه، کارت خودرو</p>
-            </div>
-          </div>
-        </article>
-
-        <article class="jr-panel" role="tabpanel" id="jp-6" aria-labelledby="jt-6" hidden>
-          <div class="jr-text">
-            <h3>حساب‌وکتاب دفتر، بدون دفترچه و اکسل</h3>
-            <p>اقساط و چک‌های مشتری با سررسید، یادآور قسط، کارمزد هر بیمه‌نامه و دفتر درآمد و هزینه. گزارش پیشرفته تولید هر رشته، شرکت و همکار و نرخ تمدید را نشان می‌دهد.</p>
-            <ul class="ticks"><li>اقساط، چک و یادآور سررسید <span class="tag">حرفه‌ای</span></li><li>کارمزد و دفتر درآمد و هزینه <span class="tag">حرفه‌ای</span></li><li>گزارش تولید و نرخ تمدید <span class="tag">حرفه‌ای</span></li></ul>
-          </div>
-          <div class="jr-mock" aria-hidden="true">
-            <div class="mk">
-              <div class="mk-title">مهر ۱۴۰۵</div>
-              <div class="mk-kpis"><div><em>تولید</em><strong>۸۴۰</strong><small>میلیون تومان</small></div><div><em>کارمزد</em><strong>۹۶</strong><small>میلیون تومان</small></div><div><em>قسط معوق</em><strong>۳</strong><small>مورد</small></div></div>
-              <div class="mk-bars"><span style="--h:45%"></span><span style="--h:62%"></span><span style="--h:54%"></span><span style="--h:78%"></span><span style="--h:70%"></span><span style="--h:92%"></span></div>
-            </div>
-          </div>
-        </article>
-
-        <article class="jr-panel" role="tabpanel" id="jp-7" aria-labelledby="jt-7" hidden>
-          <div class="jr-text">
-            <h3>دفتر بزرگ‌تر می‌شود، پنل هم</h3>
-            <p>هر همکار با موبایل خودش وارد می‌شود و فقط به بخش‌هایی دسترسی دارد که به او داده‌اید. شعبه‌ها هر کدام مشتری‌های خودشان را می‌بینند و مدیر همه را. بازاریاب‌ها با کد معرف مشتری می‌آورند و کمیسیون چندسطحی می‌گیرند.</p>
-            <ul class="ticks"><li>نقش و دسترسی جدا برای هر همکار</li><li>چندشعبه‌ای با گزارش تجمیعی <span class="tag">دفتر بزرگ</span></li><li>بازاریاب و زیرشبکه با کمیسیون <span class="tag">دفتر بزرگ</span></li></ul>
-          </div>
-          <div class="jr-mock" aria-hidden="true">
-            <div class="mk">
-              <div class="mk-title">همکاران</div>
-              <ul class="mk-rows">
-                <li><span>مدیر دفتر</span><em>همه شعبه‌ها</em><b class="st done">مدیر</b></li>
-                <li><span>نگار صادقی</span><em>شعبه مرکزی</em><b class="st wip">کارشناس</b></li>
-                <li><span>امید رستمی</span><em>شعبه کرج</em><b class="st wip">کارشناس</b></li>
-                <li><span>کد معرف M-204</span><em>۱۸ مشتری</em><b class="st new">بازاریاب</b></li>
-              </ul>
-            </div>
-          </div>
-        </article>
-      </div>
-    </div>
-  </div>
-</section>
-
-{# ───────── Full feature explorer ───────── #}
-<section class="inventory" id="all-features" aria-labelledby="inv-title" data-cat="all" data-plan="all">
-  {% include "panel/_icons.html" %}
-  <div class="wrap">
-    <header class="sec-head">
-      <h2 id="inv-title">همه امکانات، به زبان ساده</h2>
-      <p>{{ feature_total|fa }} امکان، هرکدام در یک جمله: چه کار می‌کند و به چه دردتان می‌خورد. کنار هر کدام نوشته در کدام پکیج هست؛ برای جزئیات، راهنما یا ویدیوی همان امکان را باز کنید.</p>
-    </header>
-    <div class="fx-bar">
-      <div class="fx-tabs" role="tablist" aria-label="دسته امکانات">
-        <button type="button" role="tab" data-fx-cat="all" aria-selected="true">همه <b>{{ feature_total|fa }}</b></button>
-        {% for c in explorer %}<button type="button" role="tab" data-fx-cat="{{ c.key }}" aria-selected="false"><svg aria-hidden="true"><use href="#{{ c.icon }}"/></svg>{{ c.title }} <b>{{ c.items|length|fa }}</b></button>{% endfor %}
-      </div>
-      <div class="fx-plan" role="radiogroup" aria-label="نمایش امکانات یک پکیج">
-        <span>در پکیج:</span>
-        <label><input type="radio" name="fx-plan" value="all" checked><span>همه</span></label>
-        {% for p in plans %}<label><input type="radio" name="fx-plan" value="{{ p.pk }}"><span>{{ p.name }}</span></label>{% endfor %}
-      </div>
-    </div>
-    {% for c in explorer %}
-    <div class="fx-group" data-group="{{ c.key }}">
-      <h3 class="fx-cat"><span class="fx-cat-ico"><svg aria-hidden="true"><use href="#{{ c.icon }}"/></svg></span>{{ c.title }}</h3>
-      <ul class="fx-grid">
-        {% for it in c.items %}<li class="fx-card" data-plans="{{ it.plans }}">
-          <span class="fx-ico"><svg aria-hidden="true"><use href="#{{ it.f.icon }}"/></svg></span>
-          <h4>{{ it.f.title }}</h4>
-          <p>{{ it.f.text }}</p>
-          <div class="fx-foot">
-            <span class="fx-badge fx-{{ it.level }}">{{ it.badge }}</span>
-            <span class="fx-links"><a href="{{ PLATFORM_URL }}/help/{{ it.f.help }}/">راهنما</a>{% if it.video %}<a href="{{ PLATFORM_URL }}/help/videos/#{{ it.video }}">▶ ویدیو</a>{% endif %}</span>
-          </div>
-          <span class="fx-off">در این پکیج نیست؛ جداگانه هم اضافه می‌شود</span>
-        </li>{% endfor %}
-      </ul>
-    </div>
-    {% endfor %}
-    <ul class="fx-trust">
-      <li><svg aria-hidden="true"><use href="#p-globe"/></svg>بدون نصب؛ روی موبایل و کامپیوتر</li>
-      <li><svg aria-hidden="true"><use href="#p-shield"/></svg>اطلاعات هر دفتر جدا و امن</li>
-      <li><svg aria-hidden="true"><use href="#p-help"/></svg>پشتیبانی با تیکت از داخل پنل</li>
-      <li><svg aria-hidden="true"><use href="#p-book"/></svg>راهنمای تصویری و ویدیویی برای هر امکان</li>
-    </ul>
-  </div>
-</section>
-
-{# ───────── Template gallery with the real rendered output ───────── #}
+{# ───────── 5. Template gallery with the real rendered output ───────── #}
 <section class="gallery" id="templates" aria-labelledby="tpl-title">
   <div class="wrap">
     <header class="sec-head">
       <h2 id="tpl-title">ببینید سایت دفترتان چه شکلی می‌شود</h2>
-      <p>این‌ها خود قالب‌ها هستند با محتوای نمونه. بعد از ثبت‌نام، اسم دفتر، رشته‌ها و شماره‌های شما جایشان می‌نشیند. قالب را هر وقت خواستید عوض کنید.</p>
+      <p>این‌ها خود قالب‌ها هستند با محتوای نمونه. بعد از ثبت‌نام، اسم دفتر، رشته‌ها و شماره‌های شما جایشان می‌نشیند و قالب را هر وقت خواستید عوض می‌کنید.</p>
     </header>
     <div class="tg" data-gallery>
       <div class="tg-picker" role="tablist" aria-label="قالب‌ها">
@@ -356,60 +192,24 @@
   </div>
 </section>
 
-{# ───────── Steps ───────── #}
+{# ───────── 6. Three steps ───────── #}
 <section class="howto" aria-labelledby="how-title">
   <div class="wrap">
-    <header class="sec-head">
-      <h2 id="how-title">در چند دقیقه، سایت و پنل خودتان</h2>
+    <header class="sec-head center">
+      <h2 id="how-title">سه قدم تا سایت آماده</h2>
     </header>
     <ol class="how-steps">
       <li><strong>آدرس را انتخاب کنید</strong><span>با موبایل و کد پیامکی وارد می‌شوید و آدرسی مثل <span class="ltr addr">alborz1234.{{ PLATFORM_DOMAIN }}</span> می‌گیرید.</span></li>
       <li><strong>قالب را بزنید</strong><span>یکی از پنج قالب. بعداً هم بدون از دست رفتن محتوا عوض می‌شود.</span></li>
-      <li><strong>اطلاعات دفتر را وارد کنید</strong><span>نام، کد نمایندگی، رشته‌ها و شماره تماس. سایت و پنل همان لحظه آماده است.</span></li>
-      <li><strong>دامنه خودتان را وصل کنید</strong><span>هر وقت خواستید: NSها را در ایرنیک بگذارید، بقیه خودکار است.</span></li>
+      <li><strong>اطلاعات دفتر را وارد کنید</strong><span>نام، رشته‌ها و شماره تماس. سایت و پنل همان لحظه آماده است.</span></li>
     </ol>
   </div>
 </section>
 
-{# ───────── Domain concierge ───────── #}
-{% if platform.domain_service_enabled %}
-<section class="domain-care" id="domain" aria-labelledby="dc-title">
-  <div class="wrap dc-inner">
-    <div class="dc-copy">
-      {% if platform.free_domain_active %}<span class="dc-badge dc-free">رایگان تا {{ platform.free_domain_until|jdate:"long" }}</span>{% else %}<span class="dc-badge">خدمت ویژه</span>{% endif %}
-      <h2 id="dc-title">دامنه اختصاصی می‌خواهید؟ ما برایتان می‌خریم و راه می‌اندازیم</h2>
-      <p>سایت شما از روز اول روی زیردامنه رایگان کار می‌کند. اگر آدرس اختصاصی مثل <span class="ltr">alborzbime.ir</span> می‌خواهید و حوصله ایرنیک و تنظیمات فنی را ندارید، کافی است بگویید. نام آزاد را با هم پیدا می‌کنیم، به نام دفترتان ثبت می‌کنیم و سایت را با گواهی امنیتی روی دامنه خودتان بالا می‌آوریم.</p>
-      {% if platform.free_domain_active %}<p class="dc-offer"><strong>طرح ویژه:</strong> تا {{ platform.free_domain_until|jdate:"long" }} ثبت دامنه <span class="ltr">.ir</span> و پشتیبانی راه‌اندازی آن برای دفترهای CRM بیمه کاملاً رایگان است.</p>{% endif %}
-      <div class="dc-actions">
-        <a class="btn" href="#start">شروع و درخواست از داخل پنل</a>
-        {% if platform.support_phone %}<a class="btn btn-ghost" href="tel:{{ platform.support_phone }}">تماس: <span class="ltr">{{ platform.support_phone }}</span></a>{% endif %}
-      </div>
-    </div>
-    <ol class="dc-steps">
-      <li><strong>نام دلخواه را بگویید</strong><span>از پنل › دامنه یا با تماس تلفنی</span></li>
-      <li><strong>ثبت به نام دفتر شما</strong><span>{% if platform.free_domain_active %}دامنه ir رایگان تا {{ platform.free_domain_until|jdate:"long" }}{% else %}هزینه ثبت را پیش از آن هماهنگ می‌کنیم{% endif %}</span></li>
-      <li><strong>سایت روی دامنه شما</strong><span>اتصال، SSL و انتقال سایت{% if platform.free_domain_active %}؛ پشتیبانی رایگان{% else %} با ما{% endif %}</span></li>
-    </ol>
-  </div>
-</section>
-{% endif %}
-
-{# ───────── Free trial ───────── #}
-<section class="trial" aria-labelledby="trial-title">
-  <div class="wrap trial-inner">
-    <div class="trial-seal" aria-hidden="true"><strong>{{ platform.trial_days|fa }}</strong><span>روز</span></div>
-    <div class="trial-copy">
-      <h2 id="trial-title">{{ platform.trial_days|fa }} روز با همه امکانات پایه کار کنید، رایگان</h2>
-      <p>روی آدرس واقعی خودتان، با مشتری‌های واقعی. کارت بانکی نمی‌خواهد و پرداخت خودکاری انجام نمی‌شود. اگر راضی بودید، پکیج را از داخل پنل پرداخت می‌کنید و همه چیز سر جایش می‌ماند.</p>
-    </div>
-    <a class="btn btn-light" href="#start">ساخت سایت و پنل رایگان</a>
-  </div>
-</section>
-
-{# ───────── Pricing (all values from the super admin) ───────── #}
+{# ───────── 7. Pricing (all values from the super admin) ───────── #}
 <section class="pricing" id="pricing" aria-labelledby="price-title">
   <div class="wrap">
-    <header class="sec-head">
+    <header class="sec-head center">
       <h2 id="price-title">اول رایگان شروع کنید؛ بعد پکیج را انتخاب کنید</h2>
       <p>ثبت‌نام هیچ هزینه‌ای ندارد. {{ platform.trial_days|fa }} روز با مشتری‌های خودتان کار کنید؛ بعد یکی از سه پکیج را برمی‌دارید. بدون قرارداد و بدون از دست رفتن اطلاعات.</p>
     </header>
@@ -417,13 +217,20 @@
       {% include "billing/_period_toggle.html" %}
       {% include "billing/_plans.html" with mode="landing" %}
       {% include "billing/_compare.html" %}
-      {% if extras %}<div class="extras"><h3>هر وقت لازم شد، روی هر پکیج اضافه کنید</h3><ul>{% for e in extras %}<li><strong>{{ e.title }}</strong><span>{{ e.text|fa }}</span>{% if e.price %}<em><b class="num">{{ e.price|toman }}</b> تومان در ماه{% if e.unit %}، {{ e.unit }}{% endif %}</em>{% endif %}</li>{% endfor %}</ul></div>{% endif %}
-      {% if price_faq %}<div class="price-faq">{% for q, a in price_faq %}<details><summary>{{ q }}</summary><p>{{ a }}</p></details>{% endfor %}</div>{% endif %}
+      {% if extras or price_faq %}
+      <details class="price-more">
+        <summary>افزونه‌ها و پاسخ سؤال‌های قیمت</summary>
+        <div class="price-more-body">
+          {% if extras %}<div class="extras"><h3>هر وقت لازم شد، روی هر پکیج اضافه کنید</h3><ul>{% for e in extras %}<li><strong>{{ e.title }}</strong><span>{{ e.text|fa }}</span>{% if e.price %}<em><b class="num">{{ e.price|toman }}</b> تومان در ماه{% if e.unit %}، {{ e.unit }}{% endif %}</em>{% endif %}</li>{% endfor %}</ul></div>{% endif %}
+          {% if price_faq %}<div class="price-faq">{% for q, a in price_faq %}<details><summary>{{ q }}</summary><p>{{ a }}</p></details>{% endfor %}</div>{% endif %}
+        </div>
+      </details>
+      {% endif %}
     </div>
   </div>
 </section>
 
-{# ───────── FAQ ───────── #}
+{# ───────── 8. FAQ ───────── #}
 <section class="faq" id="faq" aria-labelledby="faq-title">
   <div class="wrap faq-grid">
     <h2 id="faq-title">سؤال‌هایی که نماینده‌ها می‌پرسند</h2>
@@ -434,7 +241,6 @@
       <details><summary>اطلاعات مشتری‌هایم امن است؟</summary><p>اطلاعات هر دفتر در خود پایگاه داده از دفترهای دیگر جداست و هیچ دفتری داده دفتر دیگر را نمی‌بیند. هر همکار هم فقط بخش‌هایی را می‌بیند که به او دسترسی داده‌اید.</p></details>
       <details><summary>دامنه ir خودم را چطور وصل کنم؟</summary><p>از روز اول سایت روی زیردامنه رایگان کار می‌کند. هر وقت دامنه ir گرفتید، NSهای ما را در پنل ایرنیک برایش بگذارید و دامنه را در پنل وارد کنید. بررسی، گواهی SSL و انتقال سایت خودکار است.</p></details>
       <details><summary>بعد از دوره رایگان چه می‌شود؟</summary><p>برای ادامه، پکیج را ماهانه یا سالانه از داخل پنل پرداخت می‌کنید. پرداخت خودکار نداریم، پس بدون اجازه شما چیزی کسر نمی‌شود.</p></details>
-      <details><summary>همکارانم هم می‌توانند وارد شوند؟</summary><p>بله. هر همکار با موبایل خودش وارد می‌شود و نقش و دسترسی جدا دارد.{% if package %} پکیج پایه {{ package.included_users|fa }} کاربر دارد و{% endif %} کاربر اضافه را از داخل پنل می‌گیرید.</p></details>
     </div>
   </div>
 </section>
@@ -447,25 +253,12 @@
     <a class="btn btn-lg" href="#start">شروع {{ platform.trial_days|fa }} روز رایگان</a>
   </div>
 </section>
+
+<a class="sticky-cta" id="sticky-cta" href="#start" aria-hidden="true" tabindex="-1">ساخت رایگان سایتم <small>{{ platform.trial_days|fa }} روز رایگان</small></a>
 {% endblock %}
 
 {% block scripts %}
-<script>
-(() => {
-  const sec = document.getElementById("all-features"); if (!sec) return;
-  sec.querySelectorAll("[data-fx-cat]").forEach(b => b.addEventListener("click", () => {
-    sec.dataset.cat = b.dataset.fxCat;
-    sec.querySelectorAll("[data-fx-cat]").forEach(x => x.setAttribute("aria-selected", x === b));
-    sec.querySelectorAll(".fx-group").forEach(g => { g.hidden = b.dataset.fxCat !== "all" && g.dataset.group !== b.dataset.fxCat; });
-  }));
-  sec.querySelectorAll("input[name=fx-plan]").forEach(r => r.addEventListener("change", () => {
-    sec.dataset.plan = r.value;
-    sec.querySelectorAll(".fx-card").forEach(c => c.classList.toggle("off", r.value !== "all" && !c.dataset.plans.split(" ").includes(r.value)));
-  }));
-  // On phones, 32 cards is a long scroll: start with the first group and let the tabs do the rest.
-  if (window.matchMedia("(max-width: 700px)").matches) { const first = sec.querySelectorAll("[data-fx-cat]")[1]; if (first) first.click(); }
-})();
-</script>
+<script src="{% static 'js/tabs.js' %}"></script>
 <script>
 (() => {
   // Address claim: live availability + the mock browser shows the typed address.
@@ -480,48 +273,31 @@
     mock.textContent = input.value || "alborz1234";
     clearTimeout(timer);
     status.className = "claim-status";
-    const steps = document.querySelectorAll(".hero-steps li");
-    steps[0].classList.remove("done"); steps[1].classList.remove("on");
     if (input.value.length < 3) { status.textContent = "فقط حروف کوچک انگلیسی، عدد و خط تیره؛ حداقل ۳ حرف."; return; }
     timer = setTimeout(async () => {
       try {
         const r = await fetch("{% url 'main:check_slug' %}?slug=" + encodeURIComponent(input.value));
         const d = await r.json();
-        status.textContent = d.ok ? "✓ " + input.value + ".{{ PLATFORM_DOMAIN }} آزاد است." : d.message;
+        status.textContent = d.ok ? "✓ " + input.value + ".{{ PLATFORM_DOMAIN }} آزاد است. حالا دکمه را بزنید." : d.message;
         status.className = "claim-status " + (d.ok ? "ok" : "bad");
-        if (d.ok) { steps[0].classList.add("done"); steps[1].classList.add("on"); status.textContent += " حالا دکمه را بزنید."; }
       } catch (e) { status.textContent = ""; }
     }, 300);
   });
   form.addEventListener("submit", () => { next.value = "/signup/?slug=" + encodeURIComponent(input.value); input.disabled = true; });
 
-  // Accessible tabs (features and template gallery share the keyboard behaviour).
-  const wireTabs = (list, onSelect) => {
-    const tabs = [...list.querySelectorAll('[role="tab"]')];
-    const select = (tab, focus) => {
-      tabs.forEach(t => { const on = t === tab; t.setAttribute("aria-selected", on); t.tabIndex = on ? 0 : -1; });
-      onSelect(tab);
-      if (focus) tab.focus();
-    };
-    tabs.forEach((tab, i) => {
-      tab.addEventListener("click", () => select(tab));
-      tab.addEventListener("keydown", e => {
-        const vertical = getComputedStyle(list).flexDirection === "column";
-        const prev = vertical ? "ArrowUp" : "ArrowRight", nextK = vertical ? "ArrowDown" : "ArrowLeft";
-        let j = null;
-        if (e.key === nextK) j = (i + 1) % tabs.length;
-        if (e.key === prev) j = (i - 1 + tabs.length) % tabs.length;
-        if (e.key === "Home") j = 0;
-        if (e.key === "End") j = tabs.length - 1;
-        if (j !== null) { e.preventDefault(); select(tabs[j], true); }
-      });
-    });
-  };
-  document.querySelectorAll("[data-tabs]").forEach(box => {
-    wireTabs(box.querySelector('[role="tablist"]'), tab => {
-      box.querySelectorAll('[role="tabpanel"]').forEach(p => { p.hidden = p.id !== tab.getAttribute("aria-controls"); });
-    });
-  });
+  // Every "start" button scrolls to the claim box and puts the cursor in it.
+  document.querySelectorAll('a[href="#start"]').forEach(a => a.addEventListener("click", () => setTimeout(() => input.focus({ preventScroll: true }), 500)));
+
+  // Phones: a sticky start button appears once the claim box has scrolled away (and hides near the closing call to action).
+  const sticky = document.getElementById("sticky-cta");
+  if (sticky && "IntersectionObserver" in window) {
+    const seen = new Set();
+    const update = () => { const on = seen.size === 0 && window.scrollY > 300; sticky.classList.toggle("on", on); sticky.setAttribute("aria-hidden", !on); sticky.tabIndex = on ? 0 : -1; };
+    const io = new IntersectionObserver(es => { es.forEach(e => e.isIntersecting ? seen.add(e.target) : seen.delete(e.target)); update(); });
+    [form, document.querySelector(".closing"), document.querySelector(".prices"), document.querySelector(".site-footer")].forEach(el => el && io.observe(el));
+    addEventListener("scroll", update, { passive: true });
+  }
+
   const gal = document.querySelector("[data-gallery]");
   if (gal) {
     const frame = document.getElementById("tg-frame"), open = document.getElementById("tg-open");

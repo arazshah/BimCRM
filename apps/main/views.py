@@ -44,6 +44,11 @@ def landing(request):
     )
 
 
+def features_page(request):
+    """Every feature in plain words (moved off the landing page so the landing stays short)."""
+    return render(request, "main/features.html", {**_pricing(), "platform": PlatformSettings.load()})
+
+
 def _pricing():
     from apps.billing import pricing
 
@@ -417,6 +422,7 @@ def sitemap(request):
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         f"  <url><loc>{base}/</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>\n"
+        f"  <url><loc>{base}/features/</loc><lastmod>{today}</lastmod><priority>0.9</priority></url>\n"
         f"  <url><loc>{base}/help/</loc><lastmod>{today}</lastmod><priority>0.7</priority></url>\n"
         f"  <url><loc>{base}/help/videos/</loc><lastmod>{today}</lastmod><priority>0.7</priority></url>\n"
         + "".join(f"  <url><loc>{base}/help/{a.slug}/</loc><priority>0.6</priority></url>\n" for a in help_articles())
