@@ -1,0 +1,16 @@
+{% load fa %}<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>رسید دریافت {{ receipt.number }}</title>
+<style>body{font-family:Vazirmatn,Tahoma,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;color:#111}
+h1{font-size:20px}table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #888;padding:6px 8px;text-align:right}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}.sign{display:flex;justify-content:space-between;margin-top:48px}
+.words{margin:8px 0}@media print{.noprint{display:none}}</style></head><body>
+<p class="noprint"><button onclick="window.print()">چاپ</button></p>
+<h1>رسید دریافت شماره {{ receipt.number|fa }} {% if receipt.status == "cancelled" %}(ابطال‌شده){% endif %}</h1>
+<div class="meta"><div>تاریخ: {{ receipt.date|jdate }}</div><div>دریافت از: {{ receipt.customer.full_name }}</div>
+{% if receipt.policy %}<div>بابت: {{ receipt.policy.line }} {{ receipt.policy.number|fa }}</div>{% endif %}
+{% if receipt.description %}<div>شرح: {{ receipt.description }}</div>{% endif %}</div>
+<table><thead><tr><th>روش</th><th>مبلغ (ریال)</th><th>مشخصات</th></tr></thead><tbody>
+{% for l in lines %}<tr><td>{{ l.get_method_display }}</td><td>{{ l.amount|toman }}</td><td>{% if l.cheque %}چک {{ l.cheque.serial|fa }} — {{ l.cheque.bank_name }} — سررسید {{ l.cheque.due_date|jdate }}{% else %}{{ l.account|default:"" }} {{ l.reference|fa }}{% endif %}</td></tr>{% endfor %}
+</tbody><tfoot><tr><th>جمع</th><th colspan="2">{{ total|toman }} ریال</th></tr></tfoot></table>
+<div class="sign"><div>امضای دریافت‌کننده</div><div>امضای پرداخت‌کننده</div></div>
+</body></html>

@@ -305,3 +305,215 @@ class ChequeEvent(TenantOwned):
     @property
     def from_label(self):
         return Cheque.Status(self.from_status).label if self.from_status else "ثبت اولیه"
+
+
+# ---- Receipts (money in) and payment orders (money out). Rials. ----
+
+
+class Receipt(TenantOwned):
+    """رسید دریافت: what a customer handed over, split over cash / card / transfer / cheque lines."""
+
+    class Status(models.TextChoices):
+        ACTIVE = "active", "معتبر"
+        CANCELLED = "cancelled", "ابطال‌شده"
+
+    number = models.PositiveIntegerField("شماره رسید", editable=False)
+    date = models.DateField("تاریخ", default=timezone.localdate, db_index=True)
+    customer = models.ForeignKey(
+        "crm.Customer", on_delete=models.PROTECT, related_name="receipts", verbose_name="دریافت از"
+    )
+    policy = models.ForeignKey(
+        "crm.Policy", null=True, blank=True, on_delete=models.SET_NULL, related_name="receipts", verbose_name="بیمه‌نامه"
+    )
+    description = models.CharField("شرح", max_length=250, blank=True)
+    status = models.CharField("وضعیت", max_length=10, choices=Status.choices, default=Status.ACTIVE)
+    cancel_reason = models.CharField("دلیل ابطال", max_length=250, blank=True)
+    created_by = models.ForeignKey(
+        "accounts.User", null=True, blank=True, on_delete=models.SET_NULL, related_name="+", verbose_name="ثبت‌کننده"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "رسید دریافت"
+        verbose_name_plural = "رسیدهای دریافت"
+        ordering = ["-date", "-number"]
+        constraints = [models.UniqueConstraint(fields=["tenant", "number"], name="uniq_receipt_number")]
+
+    def __str__(self):
+        return f"رسید {self.number}"
+
+    @property
+    def total(self) -> int:
+        return sum(line.amount for line in self.lines.all())
+
+    @classmethod
+    def next_number(cls, tenant_id) -> int:
+        last = cls.all_objects.filter(tenant_id=tenant_id).aggregate(m=models.Max("number"))["m"]
+        return (last or 0) + 1
+
+
+class ReceiptLine(TenantOwned):
+    class Method(models.TextChoices):
+        CASH = "cash", "نقد"
+        CARD = "card", "کارت‌خوان"
+        TRANSFER = "transfer", "واریز / حواله بانکی"
+        CHEQUE = "cheque", "چک"
+
+    receipt = models.ForeignKey(Receipt, on_delete=models.CASCADE, related_name="lines")
+    method = models.CharField("روش", max_length=10, choices=Method.choices, default=Method.CASH)
+    amount = models.PositiveBigIntegerField("مبلغ (ریال)")
+    account = models.ForeignKey(
+        FinanceAccount,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="receipt_lines",
+        verbose_name="صندوق/حساب",
+    )
+    cheque = models.ForeignKey(
+        Cheque, null=True, blank=True, on_delete=models.PROTECT, related_name="receipt_lines", verbose_name="چک"
+    )
+    installment = models.ForeignKey(
+        Installment,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="receipt_lines",
+        verbose_name="قسط",
+    )
+    reference = models.CharField("شماره پیگیری / مرجع", max_length=60, blank=True)
+
+    class Meta:
+        ordering = ["id"]
+
+
+class PaymentOrder(TenantOwned):
+    """حواله پرداخت: money the office pays out (marketer commission, rent, refunds ...)."""
+
+    class Method(models.TextChoices):
+        CASH = "cash", "نقد"
+        TRANSFER = "transfer", "واریز / حواله بانکی"
+        CARD = "card", "کارت‌خوان"
+
+    class Status(models.TextChoices):
+        ACTIVE = "active", "معتبر"
+        CANCELLED = "cancelled", "ابطال‌شده"
+
+    number = models.PositiveIntegerField("شماره حواله", editable=False)
+    date = models.DateField("تاریخ", default=timezone.localdate, db_index=True)
+    payee = models.CharField("پرداخت به", max_length=120)
+    marketer = models.ForeignKey(
+        "network.Marketer",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="بازاریاب",
+    )
+    category = models.CharField(
+        "دسته", max_length=20, choices=LedgerEntry.Category.choices, default=LedgerEntry.Category.OTHER
+    )
+    method = models.CharField("روش", max_length=10, choices=Method.choices, default=Method.TRANSFER)
+    account = models.ForeignKey(
+        FinanceAccount, on_delete=models.PROTECT, related_name="payments", verbose_name="از صندوق/حساب"
+    )
+    amount = models.PositiveBigIntegerField("مبلغ (ریال)")
+    reference = models.CharField("شماره پیگیری / مرجع", max_length=60, blank=True)
+    description = models.CharField("شرح", max_length=250, blank=True)
+    status = models.CharField("وضعیت", max_length=10, choices=Status.choices, default=Status.ACTIVE)
+    cancel_reason = models.CharField("دلیل ابطال", max_length=250, blank=True)
+    created_by = models.ForeignKey(
+        "accounts.User", null=True, blank=True, on_delete=models.SET_NULL, related_name="+", verbose_name="ثبت‌کننده"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "حواله پرداخت"
+        verbose_name_plural = "حواله‌های پرداخت"
+        ordering = ["-date", "-number"]
+        constraints = [models.UniqueConstraint(fields=["tenant", "number"], name="uniq_payment_number")]
+
+    def __str__(self):
+        return f"حواله {self.number}"
+
+    @classmethod
+    def next_number(cls, tenant_id) -> int:
+        last = cls.all_objects.filter(tenant_id=tenant_id).aggregate(m=models.Max("number"))["m"]
+        return (last or 0) + 1
+
+
+def account_balance(account: FinanceAccount) -> int:
+    """Opening balance + money received into it − money paid out of it (rials).
+
+    Cheques count when they are cleared into a bank account, not when they are received.
+    """
+    from django.db.models import Sum
+
+    received = (
+        ReceiptLine.all_objects.filter(
+            account=account, receipt__status=Receipt.Status.ACTIVE, method__in=["cash", "card", "transfer"]
+        ).aggregate(s=Sum("amount"))["s"]
+        or 0
+    )
+    cleared = (
+        Cheque.all_objects.filter(deposit_account=account, status=Cheque.Status.CLEARED).aggregate(s=Sum("amount"))["s"]
+        or 0
+    )
+    paid = (
+        PaymentOrder.all_objects.filter(account=account, status=PaymentOrder.Status.ACTIVE).aggregate(s=Sum("amount"))[
+            "s"
+        ]
+        or 0
+    )
+    return account.opening_balance + received + cleared - paid
+
+
+# Installments are still stored in tomans while finance amounts are rials; remove once they are converted.
+INSTALLMENT_RIAL_FACTOR = 10
+
+
+def create_receipt(*, tenant_id, user, data: dict, lines: list[dict]) -> Receipt:
+    """Saves a receipt with its lines under the next number and settles the installments it pays."""
+    from django.db import IntegrityError, transaction
+
+    for _attempt in range(5):
+        try:
+            with transaction.atomic():
+                receipt = Receipt.all_objects.create(
+                    tenant_id=tenant_id,
+                    number=Receipt.next_number(tenant_id),
+                    created_by=user,
+                    **data,
+                )
+                for line in lines:
+                    obj = ReceiptLine.all_objects.create(tenant_id=tenant_id, receipt=receipt, **line)
+                    inst = obj.installment
+                    if inst and inst.status != Installment.Status.PAID:
+                        if obj.amount >= inst.amount * INSTALLMENT_RIAL_FACTOR:
+                            Installment.all_objects.filter(pk=inst.pk).update(
+                                status=Installment.Status.PAID, paid_at=receipt.date
+                            )
+                return receipt
+        except IntegrityError:
+            continue
+    raise RuntimeError("could not allocate a receipt number")
+
+
+def cancel_receipt(receipt: Receipt, reason: str):
+    """Cancels a receipt and re-opens the installments it had settled."""
+    from django.db import transaction
+
+    with transaction.atomic():
+        receipt.status = Receipt.Status.CANCELLED
+        receipt.cancel_reason = reason
+        receipt.save(update_fields=["status", "cancel_reason"])
+        for line in receipt.lines.select_related("installment"):
+            inst = line.installment
+            if inst and inst.status == Installment.Status.PAID and inst.paid_at == receipt.date:
+                still_paid = (
+                    ReceiptLine.all_objects.filter(installment=inst, receipt__status=Receipt.Status.ACTIVE)
+                    .exclude(pk=line.pk)
+                    .exists()
+                )
+                if not still_paid:
+                    Installment.all_objects.filter(pk=inst.pk).update(status=Installment.Status.PENDING, paid_at=None)

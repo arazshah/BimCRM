@@ -1,0 +1,18 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}حواله {{ order.number }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>حواله پرداخت {{ order.number|fa }} {% if order.status == "cancelled" %}<span class="tag hot">ابطال‌شده</span>{% endif %}</h1>
+  <span><a class="btn btn-sm" href="?print=1" target="_blank">چاپ</a> <a class="btn btn-ghost btn-sm" href="{% url 'panel:payments' %}">بازگشت</a></span></div>
+{% include "panel/_finance_tabs.html" %}
+<section class="panel-box"><dl class="kv">
+  <dt>تاریخ</dt><dd>{{ order.date|jdate }}</dd><dt>پرداخت به</dt><dd>{{ order.payee }}</dd>
+  <dt>دسته</dt><dd>{{ order.get_category_display }}</dd><dt>روش</dt><dd>{{ order.get_method_display }}</dd>
+  <dt>از</dt><dd>{{ order.account }}</dd><dt>مبلغ</dt><dd class="num">{{ order.amount|toman }} ریال</dd>
+  {% if order.reference %}<dt>پیگیری</dt><dd class="ltr">{{ order.reference }}</dd>{% endif %}
+  {% if order.description %}<dt>شرح</dt><dd>{{ order.description }}</dd>{% endif %}
+  {% if order.status == "cancelled" %}<dt>دلیل ابطال</dt><dd>{{ order.cancel_reason }}</dd>{% endif %}
+</dl></section>
+{% if cancel %}<section class="panel-box"><h2 class="h2">ابطال حواله</h2>
+  <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" with form=cancel %}<button class="btn btn-danger" type="submit" onclick="return confirm('حواله ابطال شود؟')">ابطال</button></form></section>{% endif %}
+{% endblock %}

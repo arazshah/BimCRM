@@ -5,7 +5,7 @@ from datetime import timedelta
 
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Count, F, Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -18,7 +18,19 @@ from apps.claims import services as claim_services
 from apps.claims.models import Claim, ClaimDocument, ClaimEvent, ClaimFormFile
 from apps.core import jalali
 from apps.crm.models import Customer, Policy
-from apps.finance.models import Cheque, ChequeEvent, CommissionRule, FinanceAccount, Installment, LedgerEntry
+from apps.finance.models import (
+    Cheque,
+    ChequeEvent,
+    CommissionRule,
+    FinanceAccount,
+    Installment,
+    LedgerEntry,
+    PaymentOrder,
+    Receipt,
+    account_balance,
+    cancel_receipt,
+    create_receipt,
+)
 from apps.integrations.senders import tenant_can_sms
 from apps.messaging.models import Campaign, MessageLog
 from apps.messaging.services import campaign_recipients, notify_claim, reminder_settings
@@ -27,6 +39,7 @@ from apps.network.models import Marketer
 from .access import branch_filter, panel_view, scoped, storage_used_bytes
 from .forms_addons import (
     CampaignForm,
+    CancelForm,
     ChequeForm,
     ChequeMoveForm,
     ClaimDocumentForm,
@@ -42,7 +55,10 @@ from .forms_addons import (
     InstallmentPlanForm,
     LedgerForm,
     MarketerForm,
+    PaymentOrderForm,
     PayoutForm,
+    ReceiptForm,
+    ReceiptLineFormSet,
     ReminderSettingsForm,
 )
 
@@ -296,7 +312,9 @@ def ledger_delete(request, pk):
 
 @panel_view(feature="finance", office_wide=True, perm="books")
 def finance_accounts(request):
-    accounts = FinanceAccount.objects.all()
+    accounts = list(FinanceAccount.objects.all())
+    for a in accounts:
+        a.balance = account_balance(a)
     return render(request, "panel/finance_accounts.html", {"accounts": accounts})
 
 
@@ -450,6 +468,149 @@ def cheque_detail(request, pk):
         "panel/cheque_detail.html",
         {"cheque": cheque, "form": form, "events": cheque.events.select_related("user")},
     )
+
+
+# ---- receipts and payment orders ----
+
+
+@panel_view(feature="finance", perm="finance")
+def receipts(request):
+    qs = scoped(request, Receipt.objects.select_related("customer").prefetch_related("lines"), "customer__branch")
+    q = request.GET.get("q", "").strip()
+    if q:
+        filt = Q(customer__full_name__icontains=q) | Q(description__icontains=q)
+        if q.isdigit():
+            filt |= Q(number=int(q))
+        qs = qs.filter(filt)
+    if request.GET.get("s") == "cancelled":
+        qs = qs.filter(status=Receipt.Status.CANCELLED)
+    page = Paginator(qs, 30).get_page(request.GET.get("page"))
+    return render(request, "panel/receipts.html", {"page": page, "q": q, "s": request.GET.get("s", "")})
+
+
+@panel_view(feature="finance", perm="finance")
+def receipt_new(request):
+    customers = scoped(request, Customer.objects.all())
+    policies = scoped(request, Policy.objects.all())
+    cheques = scoped(request, Cheque.objects.all(), "customer__branch")
+    installments = scoped(request, Installment.objects.select_related("policy"), "policy__branch")
+    initial = {}
+    if request.GET.get("customer"):
+        initial["customer"] = request.GET["customer"]
+    if request.GET.get("policy"):
+        pol = policies.filter(pk=request.GET["policy"]).first()
+        if pol:
+            initial.update(policy=pol.pk, customer=pol.customer_id)
+    form = ReceiptForm(request.POST or None, initial=initial, customers=customers, policies=policies)
+    formset = ReceiptLineFormSet(
+        request.POST or None,
+        prefix="lines",
+        form_kwargs={"cheques": cheques, "installments": installments},
+    )
+    if request.method == "POST" and form.is_valid() and formset.is_valid():
+        customer = form.cleaned_data["customer"]
+        lines, problems = [], []
+        for f in formset.forms:
+            d = f.cleaned_data
+            if not d.get("amount"):
+                continue
+            if d.get("cheque") and d["cheque"].customer_id != customer.pk:
+                problems.append("چک انتخاب‌شده مال این مشتری نیست.")
+            if d.get("installment") and d["installment"].policy.customer_id != customer.pk:
+                problems.append("قسط انتخاب‌شده مال این مشتری نیست.")
+            lines.append(
+                {
+                    "method": d["method"],
+                    "amount": d["amount"],
+                    "account": d.get("account"),
+                    "cheque": d.get("cheque"),
+                    "installment": d.get("installment"),
+                    "reference": d.get("reference", ""),
+                }
+            )
+        if problems:
+            for p in dict.fromkeys(problems):
+                messages.error(request, p)
+        else:
+            receipt = create_receipt(
+                tenant_id=request.tenant.pk, user=request.user, data=form.cleaned_data, lines=lines
+            )
+            messages.success(request, f"رسید شماره {receipt.number} ثبت شد.")
+            return redirect("panel:receipt", receipt.pk)
+    return render(request, "panel/receipt_form.html", {"form": form, "formset": formset})
+
+
+@panel_view(feature="finance", perm="finance")
+def receipt_detail(request, pk):
+    receipt = get_object_or_404(
+        scoped(request, Receipt.objects.select_related("customer", "policy__line"), "customer__branch"), pk=pk
+    )
+    lines = receipt.lines.select_related("account", "cheque", "installment")
+    ctx = {"receipt": receipt, "lines": lines, "total": sum(line.amount for line in lines)}
+    if request.GET.get("print"):
+        return render(request, "panel/receipt_print.html", ctx)
+    cancel = CancelForm(request.POST or None) if receipt.status == Receipt.Status.ACTIVE else None
+    if cancel is not None and request.method == "POST" and cancel.is_valid():
+        cancel_receipt(receipt, cancel.cleaned_data["reason"])
+        messages.success(request, "رسید ابطال شد.")
+        return redirect("panel:receipt", receipt.pk)
+    ctx["cancel"] = cancel
+    return render(request, "panel/receipt_detail.html", ctx)
+
+
+@panel_view(feature="finance", office_wide=True, perm="books")
+def payments(request):
+    qs = PaymentOrder.objects.select_related("account")
+    q = request.GET.get("q", "").strip()
+    if q:
+        filt = Q(payee__icontains=q) | Q(description__icontains=q)
+        if q.isdigit():
+            filt |= Q(number=int(q))
+        qs = qs.filter(filt)
+    page = Paginator(qs, 30).get_page(request.GET.get("page"))
+    return render(request, "panel/payments.html", {"page": page, "q": q})
+
+
+@panel_view(feature="finance", office_wide=True, perm="books")
+def payment_new(request):
+    marketers = Marketer.objects.filter(is_active=True) if "marketers" in request.features else None
+    form = PaymentOrderForm(request.POST or None, marketers=marketers)
+    if request.method == "POST" and form.is_valid():
+        for _attempt in range(5):
+            try:
+                with transaction.atomic():
+                    order = form.save(commit=False)
+                    order.number = PaymentOrder.next_number(request.tenant.pk)
+                    order.created_by = request.user
+                    order.save()
+                break
+            except IntegrityError:
+                continue
+        else:
+            messages.error(request, "ثبت انجام نشد؛ دوباره تلاش کنید.")
+            return render(
+                request,
+                "panel/form.html",
+                {"form": form, "title": "حواله پرداخت جدید", "back": "panel:payments"},
+            )
+        messages.success(request, f"حواله شماره {order.number} ثبت شد.")
+        return redirect("panel:payment", order.pk)
+    return render(request, "panel/form.html", {"form": form, "title": "حواله پرداخت جدید", "back": "panel:payments"})
+
+
+@panel_view(feature="finance", office_wide=True, perm="books")
+def payment_detail(request, pk):
+    order = get_object_or_404(PaymentOrder.objects.select_related("account"), pk=pk)
+    if request.GET.get("print"):
+        return render(request, "panel/payment_print.html", {"order": order})
+    cancel = CancelForm(request.POST or None) if order.status == PaymentOrder.Status.ACTIVE else None
+    if cancel is not None and request.method == "POST" and cancel.is_valid():
+        order.status = PaymentOrder.Status.CANCELLED
+        order.cancel_reason = cancel.cleaned_data["reason"]
+        order.save(update_fields=["status", "cancel_reason"])
+        messages.success(request, "حواله ابطال شد.")
+        return redirect("panel:payment", order.pk)
+    return render(request, "panel/payment_detail.html", {"order": order, "cancel": cancel})
 
 
 # ======================= Claims =======================

@@ -1,0 +1,29 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}رسید {{ receipt.number }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>رسید دریافت {{ receipt.number|fa }} {% if receipt.status == "cancelled" %}<span class="tag hot">ابطال‌شده</span>{% endif %}</h1>
+  <span><a class="btn btn-sm" href="?print=1" target="_blank">چاپ</a> <a class="btn btn-ghost btn-sm" href="{% url 'panel:receipts' %}">بازگشت</a></span></div>
+{% include "panel/_finance_tabs.html" %}
+<section class="panel-box">
+  <dl class="kv">
+    <dt>تاریخ</dt><dd>{{ receipt.date|jdate }}</dd>
+    <dt>دریافت از</dt><dd><a href="{% url 'panel:customer' receipt.customer_id %}">{{ receipt.customer.full_name }}</a></dd>
+    {% if receipt.policy %}<dt>بیمه‌نامه</dt><dd>{{ receipt.policy.line }} <span class="ltr">{{ receipt.policy.number }}</span></dd>{% endif %}
+    {% if receipt.description %}<dt>شرح</dt><dd>{{ receipt.description }}</dd>{% endif %}
+    {% if receipt.status == "cancelled" %}<dt>دلیل ابطال</dt><dd>{{ receipt.cancel_reason }}</dd>{% endif %}
+  </dl>
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>روش</th><th>مبلغ (ریال)</th><th>صندوق/حساب یا چک</th><th>پیگیری</th></tr></thead>
+    <tbody>{% for l in lines %}<tr><td>{{ l.get_method_display }}</td><td class="num">{{ l.amount|toman }}</td>
+      <td>{% if l.cheque %}<a href="{% url 'panel:cheque' l.cheque_id %}">چک {{ l.cheque.serial }}</a>{% else %}{{ l.account|default:"—" }}{% endif %}{% if l.installment %}<br><span class="small muted">تسویه قسط {{ l.installment.due_date|jdate }}</span>{% endif %}</td>
+      <td class="ltr">{{ l.reference|default:"—" }}</td></tr>{% endfor %}</tbody>
+    <tfoot><tr><th>جمع</th><th class="num">{{ total|toman }}</th><th colspan="2"></th></tr></tfoot>
+  </table></div>
+  <p class="muted small rial-sum"></p>
+</section>
+{% if cancel %}
+<section class="panel-box"><h2 class="h2">ابطال رسید</h2>
+  <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" with form=cancel %}<button class="btn btn-danger" type="submit" onclick="return confirm('رسید ابطال شود؟')">ابطال</button></form>
+</section>{% endif %}
+{% endblock %}

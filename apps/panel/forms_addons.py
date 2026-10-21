@@ -5,7 +5,16 @@ from apps.accounts.models import normalize_mobile, validate_mobile
 from apps.claims.models import Claim, ClaimFormFile
 from apps.crm.documents import validate_upload
 from apps.crm.models import Customer, Policy
-from apps.finance.models import Cheque, CommissionRule, FinanceAccount, Installment, LedgerEntry
+from apps.finance.models import (
+    Cheque,
+    CommissionRule,
+    FinanceAccount,
+    Installment,
+    LedgerEntry,
+    PaymentOrder,
+    Receipt,
+    ReceiptLine,
+)
 from apps.finance.money import RialInput
 from apps.messaging.models import Campaign, ReminderSettings
 from apps.network.models import Marketer, MarketerPayout
@@ -356,4 +365,132 @@ class ChequeMoveForm(forms.Form):
             self.add_error("account", "حساب بانکی وصول را انتخاب کنید.")
         if status == Cheque.Status.SPENT and not data.get("handed_to"):
             self.add_error("handed_to", "نام کسی که چک به او خرج شده را بنویسید.")
+        return data
+
+
+# ---- receipts and payment orders ----
+
+ACCOUNT_KINDS = {
+    "cash": (FinanceAccount.Kind.CASH,),
+    "card": (FinanceAccount.Kind.POS, FinanceAccount.Kind.BANK),
+    "transfer": (FinanceAccount.Kind.BANK,),
+}
+
+
+def _check_account(form, method, account):
+    kinds = ACCOUNT_KINDS.get(method)
+    if kinds is None:
+        return
+    if account is None:
+        form.add_error("account", "صندوق یا حساب را انتخاب کنید.")
+    elif account.kind not in kinds:
+        form.add_error("account", "این حساب با روش پرداخت انتخاب‌شده نمی‌خواند.")
+
+
+class ReceiptForm(forms.ModelForm):
+    class Meta:
+        model = Receipt
+        fields = ["date", "customer", "policy", "description"]
+        widgets = {"date": JalaliDateInput()}
+
+    def __init__(self, *args, customers=None, policies=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["customer"].queryset = (customers if customers is not None else Customer.objects.all()).order_by(
+            "full_name"
+        )
+        self.fields["policy"].queryset = (policies if policies is not None else Policy.objects.all()).select_related(
+            "line"
+        )
+        self.fields["policy"].label_from_instance = lambda p: f"{p.line} {p.number}"
+        self.fields["policy"].required = False
+
+    def clean(self):
+        data = super().clean()
+        if data.get("customer") and data.get("policy") and data["policy"].customer_id != data["customer"].pk:
+            self.add_error("policy", "این بیمه‌نامه مال همین مشتری نیست.")
+        return data
+
+
+class ReceiptLineForm(forms.Form):
+    method = forms.ChoiceField(label="روش", choices=ReceiptLine.Method.choices, required=False)
+    amount = forms.IntegerField(label="مبلغ (ریال)", min_value=1, required=False, widget=RialInput())
+    account = forms.ModelChoiceField(label="صندوق/حساب", queryset=FinanceAccount.objects.none(), required=False)
+    cheque = forms.ModelChoiceField(label="چک", queryset=Cheque.objects.none(), required=False)
+    installment = forms.ModelChoiceField(label="تسویه قسط", queryset=Installment.objects.none(), required=False)
+    reference = forms.CharField(label="شماره پیگیری", max_length=60, required=False)
+
+    def __init__(self, *args, cheques=None, installments=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["account"].queryset = FinanceAccount.objects.filter(is_active=True)
+        self.fields["cheque"].queryset = (cheques if cheques is not None else Cheque.objects.none()).filter(
+            status=Cheque.Status.IN_HAND
+        )
+        self.fields["cheque"].label_from_instance = lambda c: f"{c.serial} — {c.bank_name} — {c.amount:,}"
+        self.fields["installment"].queryset = (
+            installments if installments is not None else Installment.objects.none()
+        ).exclude(status=Installment.Status.PAID)
+        self.fields["installment"].label_from_instance = lambda i: f"{i.policy.number} — {i.due_date}"
+
+    def clean(self):
+        data = super().clean()
+        if not data.get("method") and not data.get("amount") and not data.get("cheque"):
+            return data  # an empty row
+        method = data.get("method")
+        if method == ReceiptLine.Method.CHEQUE:
+            if not data.get("cheque"):
+                self.add_error("cheque", "چک را انتخاب کنید.")
+            else:
+                data["amount"] = data["cheque"].amount
+        else:
+            if not data.get("amount"):
+                self.add_error("amount", "مبلغ را وارد کنید.")
+            _check_account(self, method, data.get("account"))
+            data["cheque"] = None
+        return data
+
+
+class BaseReceiptLineFormSet(forms.BaseFormSet):
+    def get_form_kwargs(self, index):
+        return self.form_kwargs
+
+    def clean(self):
+        super().clean()
+        used = [f.cleaned_data.get("cheque") for f in self.forms if f.cleaned_data.get("cheque")]
+        if len(used) != len(set(used)):
+            raise ValidationError("یک چک را فقط یک بار می‌توانید در رسید بیاورید.")
+        if not any(f.cleaned_data.get("amount") for f in self.forms if f.cleaned_data):
+            raise ValidationError("حداقل یک ردیف دریافتی وارد کنید.")
+
+
+ReceiptLineFormSet = forms.formset_factory(ReceiptLineForm, formset=BaseReceiptLineFormSet, extra=4)
+
+
+class CancelForm(forms.Form):
+    reason = forms.CharField(label="دلیل ابطال", max_length=250)
+
+
+class PaymentOrderForm(forms.ModelForm):
+    class Meta:
+        model = PaymentOrder
+        fields = ["date", "payee", "marketer", "category", "method", "account", "amount", "reference", "description"]
+        widgets = {"date": JalaliDateInput(), "amount": RialInput()}
+
+    def __init__(self, *args, marketers=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["account"].queryset = FinanceAccount.objects.filter(is_active=True)
+        if marketers is None:
+            del self.fields["marketer"]
+        else:
+            self.fields["marketer"].queryset = marketers
+            self.fields["marketer"].required = False
+        self.fields["payee"].required = False
+
+    def clean(self):
+        data = super().clean()
+        _check_account(self, data.get("method"), data.get("account"))
+        if not data.get("payee"):
+            if data.get("marketer"):
+                data["payee"] = data["marketer"].full_name
+            else:
+                self.add_error("payee", "نام دریافت‌کننده را بنویسید.")
         return data

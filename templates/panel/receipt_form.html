@@ -1,0 +1,18 @@
+{% extends "panel/base.html" %}
+{% block title %}رسید دریافت جدید{% endblock %}
+{% block content %}
+<div class="page-head"><h1>رسید دریافت جدید</h1><a class="btn btn-ghost btn-sm" href="{% url 'panel:receipts' %}">بازگشت</a></div>
+<form method="post" class="panel-form" novalidate>{% csrf_token %}
+  {% include "includes/form_fields.html" %}
+  <h2 class="h2">اقلام دریافتی</h2>
+  <p class="muted small">هر ردیف یک روش دریافت است. برای چک، چک ثبت‌شدهٔ «نزد صندوق» همین مشتری را انتخاب کنید (اول از بخش چک‌های دریافتی ثبتش کنید).</p>
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}<ul class="flash"><li class="error">{{ formset.non_form_errors|join:" " }}</li></ul>{% endif %}
+  {% for f in formset %}
+  <fieldset class="panel-box"><legend class="small muted">ردیف {{ forloop.counter }}</legend>
+    {% include "includes/form_fields.html" with form=f %}
+  </fieldset>
+  {% endfor %}
+  <div class="form-actions"><button class="btn" type="submit">ثبت رسید</button></div>
+</form>
+{% endblock %}
