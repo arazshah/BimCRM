@@ -54,6 +54,18 @@ def test_check_domain_retries_zone_creation_while_nameservers_match(tenant, sett
         assert len(calls) == 2
 
 
+def test_check_domain_creates_zone_before_nameservers_resolve(tenant):
+    # Regression: a freshly delegated domain has no zone yet, so the NS lookup fails (REFUSED ->
+    # SERVFAIL). The zone must be created anyway, otherwise the domain stays "checking" forever.
+    domain = Domain.objects.create(tenant=tenant, hostname="alborz6202.ir")
+    order = []
+    with patch("apps.core.pdns.ensure_zone", side_effect=lambda *a: order.append("zone") or True):
+        assert not check_domain(domain, resolver=lambda h: order.append("lookup") or [])
+    assert order == ["zone", "lookup"]
+    domain.refresh_from_db()
+    assert domain.status != Domain.Status.ACTIVE
+
+
 def test_check_domain_retries_failed_zone_creation(tenant):
     domain = Domain.objects.create(tenant=tenant, hostname="alborz8351.ir")
     attempts = iter([False, True])
