@@ -1,0 +1,24 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}صورت‌حساب {{ customer.full_name }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>صورت‌حساب {{ customer.full_name }}</h1>
+  <span><a class="btn btn-sm" href="javascript:window.print()">چاپ</a> <a class="btn btn-ghost btn-sm" href="{% url 'panel:customer' customer.pk %}">پرونده مشتری</a></span></div>
+<dl class="stats">
+  <div><dt>جمع بدهکار (حق بیمه)</dt><dd class="num">{{ stmt.debit|toman }} <small>ریال</small></dd></div>
+  <div><dt>جمع بستانکار (دریافتی)</dt><dd class="num">{{ stmt.credit|toman }} <small>ریال</small></dd></div>
+  <div><dt>مانده {% if stmt.balance > 0 %}(بدهکار){% elif stmt.balance < 0 %}(بستانکار){% endif %}</dt><dd class="num {% if stmt.balance > 0 %}neg{% endif %}"><span dir="ltr">{{ stmt.balance|stringformat:"d"|cut:"-"|toman }}</span> <small>ریال</small></dd></div>
+</dl>
+{% if stmt.rows %}
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>تاریخ</th><th>شرح</th><th>بدهکار</th><th>بستانکار</th><th>مانده</th></tr></thead>
+  <tbody>{% for r in stmt.rows %}
+    <tr><td>{{ r.date|jdate }}</td>
+      <td>{% if r.link and r.link.0 == "receipt" %}<a href="{% url 'panel:receipt' r.link.1 %}">{{ r.text }}</a>{% else %}{{ r.text }}{% endif %}</td>
+      <td class="num">{% if r.debit %}{{ r.debit|toman }}{% endif %}</td><td class="num">{% if r.credit %}{{ r.credit|toman }}{% endif %}</td>
+      <td class="num"><span dir="ltr">{% if r.balance < 0 %}−{% endif %}{{ r.balance|stringformat:"d"|cut:"-"|toman }}</span></td></tr>
+  {% endfor %}</tbody>
+</table></div>
+<p class="muted small">حق بیمهٔ بیمه‌نامه‌های ابطال‌شده حساب نمی‌شود. پولی که بدون رسید گرفته شده و قسطش دستی «پرداخت‌شده» شده، به‌عنوان وصول بدون رسید می‌آید؛ هر پرداخت دیگری که رسید نداشته باشد در مانده لحاظ نشده است.</p>
+{% else %}<p class="empty">هنوز گردشی برای این مشتری ثبت نشده است.</p>{% endif %}
+{% endblock %}

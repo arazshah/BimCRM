@@ -12,6 +12,7 @@
     <div class="head-actions">
       <a class="btn" href="{% url 'panel:policy_new' %}?customer={{ customer.pk }}"><svg aria-hidden="true"><use href="#p-plus"/></svg>بیمه‌نامه جدید</a>
       <a class="btn btn-ghost" href="{% url 'panel:task_new' %}?customer={{ customer.pk }}&next={{ request.path|urlencode }}"><svg aria-hidden="true"><use href="#p-tasks"/></svg>کار پیگیری</a>
+      {% if "finance" in request.features and request.can.finance %}<a class="btn btn-ghost" href="{% url 'panel:customer_account' customer.pk %}">صورت‌حساب</a><a class="btn btn-ghost" href="{% url 'panel:receipt_new' %}?customer={{ customer.pk }}">دریافت وجه</a>{% endif %}
       <a class="btn btn-ghost" href="{% url 'panel:customer_edit' customer.pk %}">ویرایش</a>
     </div>
   </div>

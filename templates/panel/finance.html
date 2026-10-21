@@ -11,6 +11,12 @@
   <div><dt>مانده</dt><dd class="num {% if net < 0 %}neg{% endif %}"><span dir="ltr">{% if net < 0 %}−{% endif %}{{ net|stringformat:"d"|cut:"-"|toman }}</span> <small>ریال</small></dd></div>
   <div><dt>کارمزد دریافت‌شده از انتظار</dt><dd class="num">{{ received|toman }} <small>از {{ expected|toman }}</small></dd></div>
 </dl>
+<dl class="stats">
+  <div><dt>موجودی صندوق و حساب‌ها</dt><dd class="num"><span dir="ltr">{{ accounts_total|toman }}</span> <small>ریال</small></dd></div>
+  <div><dt>چک‌های باز ({{ cheques_box.open_count|fa }})</dt><dd class="num">{{ cheques_box.open_total|toman }} <small>ریال</small></dd></div>
+  <div><dt>سررسید ۷ روز آینده</dt><dd class="num">{{ cheques_box.week_total|toman }} <small>ریال</small></dd></div>
+  <div><dt>گذشته از سررسید ({{ cheques_box.overdue_count|fa }})</dt><dd class="num {% if cheques_box.overdue_total %}neg{% endif %}">{{ cheques_box.overdue_total|toman }} <small>ریال</small></dd></div>
+</dl>
 
 <div class="two-col">
   <section class="panel-box">

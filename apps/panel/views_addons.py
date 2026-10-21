@@ -11,6 +11,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
@@ -31,6 +32,7 @@ from apps.finance.models import (
     cancel_receipt,
     create_receipt,
 )
+from apps.finance.reports import customer_statement, daily_cash, debtors
 from apps.integrations.senders import tenant_can_sms
 from apps.messaging.models import Campaign, MessageLog
 from apps.messaging.services import campaign_recipients, notify_claim, reminder_settings
@@ -127,6 +129,17 @@ def finance(request):
     expected = sum(p.commission_expected for p in month_policies)
     received = month_policies.aggregate(s=Sum("commission_received"))["s"] or 0
     pending = Installment.objects.filter(status=Installment.Status.PENDING).select_related("policy__customer")
+    open_cheques = Cheque.objects.filter(status__in=(Cheque.Status.IN_HAND, Cheque.Status.DEPOSITED))
+    cheque_sum = lambda qs: qs.aggregate(s=Sum("amount"))["s"] or 0  # noqa: E731
+    cheques_box = {
+        "open_total": cheque_sum(open_cheques),
+        "open_count": open_cheques.count(),
+        "week_total": cheque_sum(open_cheques.filter(due_date__gte=today, due_date__lte=today + timedelta(days=7))),
+        "overdue_total": cheque_sum(open_cheques.filter(due_date__lt=today)),
+        "overdue_count": open_cheques.filter(due_date__lt=today).count(),
+        "bounced_total": cheque_sum(Cheque.objects.filter(status=Cheque.Status.BOUNCED)),
+    }
+    accounts_total = sum(account_balance(a) for a in FinanceAccount.objects.filter(is_active=True))
     return render(
         request,
         "panel/finance.html",
@@ -138,6 +151,8 @@ def finance(request):
             "net": income - expense,
             "expected": expected,
             "received": received,
+            "cheques_box": cheques_box,
+            "accounts_total": accounts_total,
             "overdue": pending.filter(due_date__lt=today)[:10],
             "upcoming": pending.filter(due_date__gte=today, due_date__lte=today + timedelta(days=14))[:10],
             "overdue_total": pending.filter(due_date__lt=today).aggregate(s=Sum("amount"))["s"] or 0,
@@ -611,6 +626,40 @@ def payment_detail(request, pk):
         messages.success(request, "حواله ابطال شد.")
         return redirect("panel:payment", order.pk)
     return render(request, "panel/payment_detail.html", {"order": order, "cancel": cancel})
+
+
+# ---- statements and reports ----
+
+
+@panel_view(feature="finance", perm="finance")
+def customer_account(request, pk):
+    customer = get_object_or_404(scoped(request, Customer.objects.all()), pk=pk)
+    stmt = customer_statement(customer)
+    return render(
+        request,
+        "panel/customer_account.html",
+        {"customer": customer, "stmt": stmt, "print": bool(request.GET.get("print"))},
+    )
+
+
+@panel_view(feature="finance", perm="finance")
+def debtors_report(request):
+    rows = debtors(scoped(request, Customer.objects.all()))
+    return render(
+        request,
+        "panel/debtors.html",
+        {"rows": rows, "total": sum(r["balance"] for r in rows)},
+    )
+
+
+@panel_view(feature="finance", office_wide=True, perm="books")
+def daily_cash_report(request):
+    day = parse_date(request.GET.get("d", "")) or timezone.localdate()
+    return render(
+        request,
+        "panel/daily_cash.html",
+        {"day": day, "d": daily_cash(day), "prev": day - timedelta(days=1), "next": day + timedelta(days=1)},
+    )
 
 
 # ======================= Claims =======================
