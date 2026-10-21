@@ -88,7 +88,10 @@ def storage_used_bytes(tenant) -> int:
     policies = Policy.all_objects.filter(tenant=tenant).aggregate(s=Sum("file_size"))["s"] or 0
     claims = ClaimDocument.objects.filter(claim__tenant=tenant).aggregate(s=Sum("size"))["s"] or 0
     docs = CustomerDocument.all_objects.filter(tenant=tenant).aggregate(s=Sum("size"))["s"] or 0
-    return policies + claims + docs
+    from apps.finance.models import Cheque
+
+    cheques = Cheque.all_objects.filter(tenant=tenant).aggregate(s=Sum("image_size"))["s"] or 0
+    return policies + claims + docs + cheques
 
 
 def scoped(request, qs, path: str = "branch", include_unassigned: bool = False):

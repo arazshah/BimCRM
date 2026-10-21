@@ -1,0 +1,19 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}صندوق و بانک{% endblock %}
+{% block content %}
+<div class="page-head"><h1>صندوق و بانک</h1><a class="btn btn-sm" href="{% url 'panel:finance_account_new' %}">حساب جدید</a></div>
+{% include "panel/_finance_tabs.html" %}
+{% if accounts %}
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>عنوان</th><th>نوع</th><th>بانک / شعبه</th><th>شماره حساب</th><th>مانده اول دوره (ریال)</th><th></th></tr></thead>
+  <tbody>{% for a in accounts %}
+    <tr><td>{{ a.title }} {% if not a.is_active %}<span class="tag">غیرفعال</span>{% endif %}</td><td>{{ a.get_kind_display }}</td>
+      <td>{{ a.bank_name|default:"—" }}{% if a.branch_name %} / {{ a.branch_name }}{% endif %}</td>
+      <td class="ltr">{{ a.account_number|default:"—" }}{% if a.sheba %}<br><span class="small muted">IR{{ a.sheba }}</span>{% endif %}</td>
+      <td class="num">{{ a.opening_balance|toman }}</td>
+      <td class="row-actions"><a href="{% url 'panel:finance_account_edit' a.pk %}">ویرایش</a></td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% else %}<p class="empty">هنوز صندوق یا حسابی تعریف نشده است. برای شروع «صندوق» دفتر و حساب‌های بانکی را اضافه کنید.</p>{% endif %}
+{% endblock %}

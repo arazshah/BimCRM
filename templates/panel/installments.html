@@ -21,7 +21,7 @@
       <td class="num">{{ i.amount|toman }}</td>
       <td>{{ i.get_method_display }}{% if i.cheque_number %}<br><span class="small muted ltr">{{ i.cheque_number }} {{ i.cheque_bank }}</span>{% endif %}</td>
       <td><span class="tag {% if i.status == 'paid' %}ok{% elif i.status == 'bounced' %}hot{% endif %}">{{ i.get_status_display }}</span>{% if i.paid_at %}<br><span class="small muted">{{ i.paid_at|jdate }}</span>{% endif %}</td>
-      <td class="row-actions">{% if i.status == "pending" %}<form method="post" action="{% url 'panel:installment_paid' i.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="linkish">وصول شد</button></form>{% endif %}<a href="{% url 'panel:installment_edit' i.pk %}">ویرایش</a></td></tr>
+      <td class="row-actions">{% if i.status == "pending" %}<form method="post" action="{% url 'panel:installment_paid' i.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="linkish">وصول شد</button></form>{% endif %}{% if i.method == "cheque" and i.status == "pending" %}<a href="{% url 'panel:cheque_new' %}?installment={{ i.pk }}">ثبت چک</a>{% endif %}<a href="{% url 'panel:installment_edit' i.pk %}">ویرایش</a></td></tr>
   {% endfor %}</tbody>
 </table></div>
 {% include "panel/_pager.html" %}

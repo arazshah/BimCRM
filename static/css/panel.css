@@ -733,3 +733,10 @@ h1 .tier { font-size: 13px; vertical-align: 6px; }
 .msg { padding: .55rem .8rem; border-radius: 10px; margin-bottom: .5rem; background: var(--surface-2, #f1f4f8); }
 .msg.in { border-inline-start: 3px solid #d9a21b; }
 .msg.out { border-inline-start: 3px solid var(--brand, #1f6feb); }
+
+/* rial inputs: spelled-out amount under the box */
+.rial-words { display: block; min-height: 1.2em; margin-top: .25rem; font-size: 12px; line-height: 1.5; }
+.rial-input { font-variant-numeric: tabular-nums; }
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1rem; margin: 0 0 1rem; }
+dl.kv dt { color: var(--muted); }
+dl.kv dd { margin: 0; }
