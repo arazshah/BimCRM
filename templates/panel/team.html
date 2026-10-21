@@ -2,6 +2,7 @@
 {% load fa %}
 {% block title %}همکاران{% endblock %}
 {% block content %}
+{% include "panel/_section_tabs.html" with tabs=request.nav.office_tabs label="تنظیمات دفتر" %}
 <div class="page-head"><h1>همکاران</h1></div>
 <div class="table-wrap"><table class="data">
   <thead><tr><th>نام</th><th>موبایل</th><th>نقش</th>{% if branches is not None %}<th>شعبه</th>{% endif %}<th>وضعیت</th><th></th></tr></thead>

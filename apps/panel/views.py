@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -85,16 +86,52 @@ def _trial_nudge(request):
 
 
 @panel_view()
+def search(request):
+    """Palette lookup: customers by name, mobile or national code, and policies by number. Branch-limited like lists."""
+    q = (
+        (request.GET.get("q") or "")
+        .strip()[:60]
+        .translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789"))
+    )
+    if len(q) < 2:
+        return JsonResponse({"customers": [], "policies": []})
+    customers = (
+        scoped(request, Customer.objects.all())
+        .filter(Q(full_name__icontains=q) | Q(mobile__contains=q) | Q(national_code__contains=q))
+        .order_by("full_name")[:6]
+    )
+    policies = (
+        scoped(request, Policy.objects.all())
+        .filter(Q(number__icontains=q) | Q(customer__full_name__icontains=q))
+        .select_related("customer", "line")
+        .order_by("-end_date")[:4]
+    )
+    return JsonResponse(
+        {
+            "customers": [
+                {"label": c.full_name, "hint": c.mobile, "url": reverse("panel:customer", args=[c.pk])}
+                for c in customers
+            ],
+            "policies": [
+                {
+                    "label": f"{p.line} — {p.customer.full_name}",
+                    "hint": p.number,
+                    "url": reverse("panel:policy_edit", args=[p.pk]),
+                }
+                for p in policies
+            ],
+        }
+    )
+
+
+@panel_view()
 def dashboard(request):
+    from . import home
+
     today = timezone.localdate()
     policies = scoped(request, Policy.objects.all())
     customers_qs = scoped(request, Customer.objects.all())
     quotes_qs = scoped(request, QuoteRequest.objects.all(), include_unassigned=True)
-    renewals = (
-        policies.filter(status=Policy.Status.ACTIVE, end_date__gte=today, end_date__lte=today + timedelta(days=30))
-        .select_related("customer", "line", "company")
-        .order_by("end_date")[:12]
-    )
     site = _site(request)
     checklist = [
         ("اطلاعات سایت را کامل کنید", bool(site.about and site.phone), "panel:site"),
@@ -132,46 +169,30 @@ def dashboard(request):
         for row in quotes_qs.filter(status__in=open_statuses).values("status").annotate(n=Count("id"))
     }
     pipeline = [{"key": k, "label": status_labels.get(k, k), "n": open_counts.get(k, 0)} for k in open_statuses]
+    issued = quotes_qs.filter(status=QuoteRequest.Status.ISSUED, created_at__date__gte=month_start).count()
+    pipe_total = sum(p["n"] for p in pipeline) + issued
+    for p in pipeline:
+        p["pct"] = round(p["n"] * 100 / pipe_total) if pipe_total else 0
 
-    alerts = []
-    if "finance" in request.features:
-        overdue = scoped(request, Installment.objects.all(), "policy__branch").filter(
-            status=Installment.Status.PENDING, due_date__lt=today
-        )
-        n = overdue.count()
-        if n:
-            total = overdue.aggregate(s=Sum("amount"))["s"] or 0
-            alerts.append((f"{n} قسط معوق به مبلغ {total:,} ریال", "panel:installments", "?f=overdue"))
-    if "claims" in request.features:
-        n = (
-            scoped(request, Claim.objects.all(), "policy__branch")
-            .filter(status=Claim.Status.REPORTED, reported_by_customer=True)
-            .count()
-        )
-        if n:
-            alerts.append((f"{n} خسارت تازه از پنل مشتری", "panel:claims", "?s=reported"))
+    domain_promo = None
     platform = PlatformSettings.load()
     if platform.free_domain_active and not Domain.objects.filter(tenant=request.tenant).exists():
         from apps.core.templatetags.fa import jdate
 
-        until = jdate(platform.free_domain_until, "long")
-        alerts.append((f"طرح ویژه: تا {until} دامنه ir و راه‌اندازی آن رایگان است؛ درخواست بدهید", "panel:domains", ""))
-    from apps.work.models import Task
+        domain_promo = {"until": jdate(platform.free_domain_until, "long")}
 
-    my_tasks = (
-        Task.objects.filter(done_at__isnull=True, due_date__lte=today)
-        .filter(Q(assigned_to=request.user) | Q(assigned_to__isnull=True))
-        .select_related("customer")
-        .order_by("due_date", "-priority")[:6]
-    )
+    flt = request.GET.get("f", "")
+    inbox = home.build_inbox(request, today, flt)
+    money = home.money_stats(request, today) if "finance" in request.features and request.can.get("finance") else None
+    trial_nudge = _trial_nudge(request)
     name = (request.user.full_name or "").split(" ")[0]
     return render(
         request,
         "panel/dashboard.html",
         {
-            "renewals": renewals,
-            "my_tasks": my_tasks,
-            "new_quotes": quotes_qs.filter(status=QuoteRequest.Status.NEW).select_related("line")[:6],
+            "inbox": inbox,
+            "money": money,
+            "banner": home.banner(request, checklist, trial_nudge, domain_promo),
             "stats": {
                 "customers": customers_qs.count(),
                 "active_policies": policies.filter(status=Policy.Status.ACTIVE, end_date__gte=today).count(),
@@ -186,10 +207,7 @@ def dashboard(request):
             "trend": trend,
             "trend_peak": peak,
             "pipeline": pipeline,
-            "checklist": checklist,
-            "trial_nudge": _trial_nudge(request),
-            "alerts": alerts,
-            "checklist_done": sum(1 for c in checklist if c[1]),
+            "issued": issued,
             "welcome": request.GET.get("welcome"),
             "site": site,
             "today": today,

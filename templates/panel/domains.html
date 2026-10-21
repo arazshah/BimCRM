@@ -2,6 +2,7 @@
 {% load fa %}
 {% block title %}دامنه{% endblock %}
 {% block content %}
+{% include "panel/_section_tabs.html" with tabs=request.nav.site_tabs label="سایت من" %}
 <div class="page-head"><h1>دامنه</h1></div>
 {% if platform.domain_service_enabled %}
 <section class="concierge">

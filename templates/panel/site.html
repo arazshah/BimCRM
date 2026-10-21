@@ -1,6 +1,7 @@
 {% extends "panel/base.html" %}
 {% block title %}محتوای سایت{% endblock %}
 {% block content %}
+{% include "panel/_section_tabs.html" with tabs=request.nav.site_tabs label="سایت من" %}
 <div class="page-head">
   <h1>محتوای سایت</h1>
   <div class="head-actions">

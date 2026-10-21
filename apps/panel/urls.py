@@ -10,6 +10,7 @@ app_name = "panel"
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
+    path("search/", views.search, name="search"),
     path("customers/", views.customers, name="customers"),
     path("customers/new/", views.customer_edit, name="customer_new"),
     path("customers/import/", views.customer_import, name="customer_import"),

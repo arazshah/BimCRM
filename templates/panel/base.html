@@ -23,41 +23,28 @@
       </div>
     </div>
     {% if request.branch_scope %}<div class="side-branch"><span class="badge-branch">{{ request.branch_scope.name }}</span></div>{% endif %}
-    {% with u=request.resolver_match.url_name %}
+    {% if request.nav %}
     <nav class="side-nav" aria-label="منوی پنل">
-      <a href="{% url 'panel:dashboard' %}" {% if u == "dashboard" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-home"/></svg>داشبورد</a>
-      <span class="nav-group">کار روزانه</span>
-      <a href="{% url 'panel:quotes' %}" {% if u == "quotes" or u == "quote" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-inbox"/></svg>درخواست‌های سایت</a>
-      <a href="{% url 'panel:customers' %}" {% if "customer" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-users"/></svg>مشتریان</a>
-      <a href="{% url 'panel:policies' %}" {% if "polic" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-doc"/></svg>بیمه‌نامه‌ها و تمدید</a>
-      <a href="{% url 'panel:tasks' %}" {% if "task" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-tasks"/></svg>کارها و پیگیری‌ها{% if request.due_tasks %}<span class="count">{{ request.due_tasks|fa }}</span>{% endif %}</a>
-      {% if request.can.segments %}<a href="{% url 'panel:segments' %}" {% if u == "segments" or u == "club" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-star"/></svg>بخش‌ها و باشگاه مشتریان</a>{% endif %}
-      <a href="{% url 'panel:calendar' %}" {% if u == "calendar" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-calendar"/></svg>تقویم</a>
-      {% if request.can.reminders %}<a href="{% url 'panel:reminders' %}" {% if u == "reminders" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-bell"/></svg>یادآورهای پیامکی</a>{% endif %}
-      <span class="nav-group">امکانات پکیج</span>
-      {% with f=request.features %}
-      {% if request.can.finance or request.can.books %}<a href="{% if request.branch_scope or not request.can.books %}{% url 'panel:installments' %}{% else %}{% url 'panel:finance' %}{% endif %}" {% if u in "finance installments installment_plan installment_edit commissions ledger" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-wallet"/></svg>مالی و حسابداری{% if "finance" not in f %}<span class="lock">{{ request.plan_for.finance|default:"افزونه" }}</span>{% endif %}</a>{% endif %}
-      {% if request.can.claims %}<a href="{% url 'panel:claims' %}" {% if "claim" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-shield"/></svg>خسارت{% if "claims" not in f %}<span class="lock">{{ request.plan_for.claims|default:"افزونه" }}</span>{% endif %}</a>{% endif %}
-      {% if not request.branch_scope %}
-      {% if request.can.marketers %}<a href="{% url 'panel:marketers' %}" {% if "marketer" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-network"/></svg>بازاریابان{% if "marketers" not in f %}<span class="lock">{{ request.plan_for.marketers|default:"افزونه" }}</span>{% endif %}</a>{% endif %}
-      {% if request.can.campaigns %}<a href="{% url 'panel:campaigns' %}" {% if "campaign" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-megaphone"/></svg>کمپین پیامکی{% if "sms_campaigns" not in f %}<span class="lock">{{ request.plan_for.sms_campaigns|default:"افزونه" }}</span>{% endif %}</a>{% endif %}
-      {% if request.can.reports %}<a href="{% url 'panel:reports' %}" {% if "report" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-chart"/></svg>گزارش‌ها{% if "advanced_reports" not in f %}<span class="lock">{{ request.plan_for.advanced_reports|default:"افزونه" }}</span>{% endif %}</a>{% endif %}
+      {% for g in request.nav.items %}
+      {% if g.single %}
+      <a class="nav-link" href="{{ g.url }}" {% if g.active %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#{{ g.icon }}"/></svg><span class="nav-label">{{ g.label }}</span>{% if g.badge %}<span class="count{% if not g.hot %} calm{% endif %}">{{ g.badge|fa }}</span>{% endif %}{% if g.locked %}<svg class="nav-lock" role="img" aria-label="در پکیج فعلی شما نیست" title="در پکیج فعلی شما نیست{% if g.plan %} — از پکیج «{{ g.plan }}»{% endif %}"><use href="#p-lock"/></svg>{% endif %}</a>
+      {% else %}
+      <details class="nav-grp"{% if g.active %} open{% endif %}>
+        <summary><svg aria-hidden="true"><use href="#{{ g.icon }}"/></svg><span class="nav-label">{{ g.label }}</span>{% if g.badge %}<span class="count calm grp-badge">{{ g.badge|fa }}</span>{% endif %}<svg class="chev" aria-hidden="true"><use href="#p-chev"/></svg></summary>
+        <div class="nav-sub">
+          {% for c in g.children %}<a href="{{ c.url }}" {% if c.active %}aria-current="page"{% endif %}><span class="nav-label">{{ c.label }}</span>{% if c.badge %}<span class="count calm">{{ c.badge|fa }}</span>{% endif %}{% if c.locked %}<svg class="nav-lock" role="img" aria-label="در پکیج فعلی شما نیست" title="در پکیج فعلی شما نیست{% if c.plan %} — از پکیج «{{ c.plan }}»{% endif %}"><use href="#p-lock"/></svg>{% endif %}</a>{% endfor %}
+        </div>
+      </details>
       {% endif %}
-      {% if request.membership.role != "staff" %}<a href="{% url 'panel:branches' %}" {% if "branch" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-building"/></svg>شعبه‌ها{% if "branches" not in f %}<span class="lock">{{ request.plan_for.branches|default:"افزونه" }}</span>{% endif %}</a>{% endif %}
-      {% endwith %}
-      <span class="nav-group">سایت</span>
-      {% if request.can.site %}<a href="{% url 'panel:site' %}" {% if u == "site" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-globe"/></svg>محتوای سایت</a>
-      <a href="{% url 'panel:site_lines' %}" {% if u == "site_lines" or u == "site_line" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-shield"/></svg>صفحهٔ رشته‌ها</a>
-      <a href="{% url 'panel:site_template' %}" {% if u == "site_template" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-palette"/></svg>قالب</a>{% endif %}
-      {% if request.membership.role != "staff" %}<a href="{% url 'panel:domains' %}" {% if u == "domains" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-link"/></svg>دامنه</a>{% endif %}
-      <span class="nav-group">دفتر</span>
-      {% if request.membership.role != "staff" %}<a href="{% url 'panel:integrations' %}" {% if "integration" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-plug"/></svg>اتصالات</a>
-      <a href="{% url 'panel:team' %}" {% if u == "team" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-team"/></svg>همکاران</a>{% endif %}
-      <a href="{% url 'panel:billing' %}" {% if u == "billing" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-card"/></svg>اشتراک</a>
-      <a href="{% url 'panel:tickets' %}" {% if "ticket" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-help"/></svg>پشتیبانی</a>
-      <a href="{{ PLATFORM_URL }}/help/" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#p-book"/></svg>راهنمای کامل</a>
+      {% endfor %}
     </nav>
-    {% endwith %}
+    {% endif %}
+    <div class="side-tools">
+      {% if request.nav.settings %}<a href="{{ request.nav.settings.url }}" {% if request.nav.settings.active %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-gear"/></svg>تنظیمات دفتر</a>{% endif %}
+      {% if request.nav %}<a href="{{ request.nav.billing.url }}" {% if request.nav.billing.active %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-card"/></svg>اشتراک</a>{% endif %}
+      <a href="{% url 'panel:tickets' %}" {% if "ticket" in request.resolver_match.url_name %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-help"/></svg>پشتیبانی</a>
+      <a href="{{ PLATFORM_URL }}/help/" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#p-book"/></svg>راهنمای کامل</a>
+    </div>
     <div class="side-foot">
       <span class="user-avatar" aria-hidden="true">{{ request.user.full_name|default:"؟"|slice:":1" }}</span>
       <div class="user-text">
@@ -70,10 +57,11 @@
   <div class="content">
     <header class="content-top">
       <button class="menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="منو" onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))"><svg aria-hidden="true"><use href="#p-menu"/></svg></button>
-      <form class="top-search" action="{% url 'panel:customers' %}" method="get" role="search">
+      <a class="top-search" href="{% url 'panel:customers' %}" data-palette-open aria-label="جستجو و دستورها">
         <svg aria-hidden="true"><use href="#p-search"/></svg>
-        <input type="search" name="q" placeholder="جستجوی مشتری: نام، موبایل یا کد ملی" aria-label="جستجوی مشتری">
-      </form>
+        <span class="ts-text">جستجوی مشتری، بیمه‌نامه یا هر بخشی…</span>
+        <kbd class="ts-key" dir="ltr">Ctrl K</kbd>
+      </a>
       {% with sub=request.subscription %}{% if sub %}
         {% if sub.status == "trial" %}<a class="sub-note" href="{% url 'panel:billing' %}"><svg aria-hidden="true"><use href="#p-clock"/></svg>آزمایشی: {{ sub.days_left|fa }} روز مانده</a>
         {% elif sub.status == "grace" %}<a class="sub-note warn" href="{% url 'panel:billing' %}">اشتراک تمام شده و در مهلت پرداخت هستید؛ تمدید</a>
@@ -81,7 +69,8 @@
         {% endif %}
       {% endif %}{% endwith %}
       <a class="top-bell" href="{% url 'panel:notifications' %}" aria-label="اعلان‌ها{% if request.unread_count %}: {{ request.unread_count }} خوانده‌نشده{% endif %}"><svg aria-hidden="true"><use href="#p-bell"/></svg>{% if request.unread_count %}<span class="dot">{{ request.unread_count|fa }}</span>{% endif %}</a>
-      <a class="top-site" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#p-external"/></svg><span>مشاهده سایت</span></a>
+      <a class="top-site" href="{{ request.tenant.site_url }}" target="_blank" rel="noopener" aria-label="مشاهده سایت" title="مشاهده سایت"><svg aria-hidden="true"><use href="#p-external"/></svg></a>
+      {% if request.nav %}<a class="btn top-new" href="{% url 'panel:policy_new' %}" data-new-toggle aria-haspopup="true" aria-expanded="false" aria-controls="new-menu"><svg aria-hidden="true"><use href="#p-plus"/></svg><span>ثبت جدید</span></a>{% endif %}
     </header>
     <main id="main" class="main">
       {% if request.live_demo %}<div class="demo-strip" role="note"><b>پنل نمونه</b> هر بخشی را باز کنید و دکمه‌ها را امتحان کنید؛ چیزی ذخیره نمی‌شود. <a class="btn btn-sm" href="{{ PLATFORM_URL }}/#start">ساخت پنل خودم، رایگان</a></div>{% endif %}
@@ -89,8 +78,34 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+  {% if request.nav %}
+  <div class="new-scrim" hidden></div>
+  <div class="new-menu" id="new-menu" role="menu" aria-label="ثبت جدید" hidden>
+    <span class="new-title">ثبت جدید</span>
+    {% for n in request.nav.new %}<a role="menuitem" href="{{ n.url }}"><span class="mi tone-{{ n.tone }}"><svg aria-hidden="true"><use href="#{{ n.icon }}"/></svg></span>{{ n.label }}</a>{% endfor %}
+    <hr>
+    <a role="menuitem" class="foot" href="{% url 'panel:customer_import' %}"><span class="mi"><svg aria-hidden="true"><use href="#p-upload"/></svg></span>ورود مشتریان از اکسل</a>
+  </div>
+  <nav class="bottom-nav" aria-label="دسترسی سریع">
+    {% with u=request.resolver_match.url_name %}
+    <a href="{% url 'panel:dashboard' %}" {% if u == "dashboard" %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-home"/></svg>خانه</a>
+    <a href="{% url 'panel:customers' %}" {% if "customer" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-users"/></svg>مشتریان</a>
+    <a class="bn-plus" href="{% url 'panel:policy_new' %}" data-new-toggle aria-label="ثبت جدید" aria-haspopup="true" aria-expanded="false" aria-controls="new-menu"><svg aria-hidden="true"><use href="#p-plus"/></svg></a>
+    <a href="{% url 'panel:tasks' %}" {% if "task" in u %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#p-tasks"/></svg>کارها{% if request.due_tasks %}<span class="count">{{ request.due_tasks|fa }}</span>{% endif %}</a>
+    {% endwith %}
+    <button type="button" data-nav-open aria-controls="sidebar"><svg aria-hidden="true"><use href="#p-menu"/></svg>منو</button>
+  </nav>
+  <dialog class="palette" id="palette" aria-label="جستجو و دستورها" data-search-url="{{ request.nav.search_url }}">
+    <div class="pal-in"><svg aria-hidden="true"><use href="#p-search"/></svg><input type="search" id="pal-input" placeholder="نام مشتری، موبایل، شمارهٔ بیمه‌نامه یا نام یک بخش…" aria-label="جستجو" autocomplete="off"><kbd dir="ltr">Esc</kbd></div>
+    <ul class="pal-list" id="pal-list" role="listbox"></ul>
+    <p class="pal-empty" id="pal-empty" hidden>نتیجه‌ای پیدا نشد.</p>
+    <div class="pal-foot"><span><kbd>↑</kbd> <kbd>↓</kbd> جابه‌جایی</span><span><kbd>Enter</kbd> باز کردن</span></div>
+  </dialog>
+  {{ request.nav.palette|json_script:"pal-data" }}
+  {% endif %}
   <script src="{% static 'js/jdate.js' %}" defer></script>
   <script src="{% static 'js/money.js' %}" defer></script>
+  <script src="{% static 'js/panel-shell.js' %}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

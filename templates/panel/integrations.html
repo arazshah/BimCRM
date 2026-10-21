@@ -1,6 +1,7 @@
 {% extends "panel/base.html" %}
 {% block title %}اتصالات{% endblock %}
 {% block content %}
+{% include "panel/_section_tabs.html" with tabs=request.nav.office_tabs label="تنظیمات دفتر" %}
 <div class="page-head"><h1>اتصالات</h1></div>
 <p class="note">سرویس‌های خود دفتر را اینجا وصل کنید. قرارداد، هزینه و مسئولیت هر سرویس با خود شماست؛ ما فقط اطلاعاتش را رمزنگاری‌شده نگه می‌داریم و از طرف شما صدا می‌زنیم.</p>
 {% for g in groups %}
