@@ -2,15 +2,12 @@
 {% load fa %}
 {% block title %}داشبورد{% endblock %}
 {% block content %}
-<div class="dash-head">
-  <div>
-    <h1>سلام{% if greeting_name %} {{ greeting_name }}{% endif %}</h1>
-    <p class="dash-date">{{ today|jdate:"long" }}{% if stats.renewals_7 %} · <a href="{% url 'panel:policies' %}?f=expiring">{{ stats.renewals_7|fa }} تمدید در ۷ روز آینده</a>{% endif %}</p>
-  </div>
-  <div class="head-actions">
-    <a class="btn" href="{% url 'panel:policy_new' %}"><svg aria-hidden="true"><use href="#p-plus"/></svg>ثبت بیمه‌نامه</a>
-    <a class="btn btn-ghost" href="{% url 'panel:customer_new' %}"><svg aria-hidden="true"><use href="#p-plus"/></svg>مشتری جدید</a>
-  </div>
+<div class="home">
+<div class="home-hello">
+  <h1>سلام{% if greeting_name %}، {{ greeting_name }}{% endif %}</h1>
+  <p>{{ today|jdate:"long" }} ·
+    {% if inbox.waiting %}{{ inbox.waiting|fa }} کار منتظر شماست{% if inbox.urgent %}؛ <b class="hot-text">{{ inbox.urgent|fa }} مورد فوری</b>{% endif %}
+    {% else %}امروز کاری منتظر شما نیست{% endif %}</p>
 </div>
 
 {% if welcome %}
@@ -23,132 +20,97 @@
 </section>
 {% endif %}
 
-{% if checklist_done < checklist|length and not request.live_demo %}
-<section class="card setup" aria-labelledby="setup-title">
-  <div class="setup-top">
-    <h2 class="h2" id="setup-title">راه‌اندازی دفتر</h2>
-    <span class="setup-count num">{{ checklist_done|fa }} از {{ checklist|length|fa }}</span>
-  </div>
-  <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{ checklist|length }}" aria-valuenow="{{ checklist_done }}"><span style="width: {% widthratio checklist_done checklist|length 100 %}%"></span></div>
-  <ol class="setup-list">
-    {% for label, done, url in checklist %}<li class="{% if done %}done{% endif %}"><a href="{% url url %}"><span class="setup-dot" aria-hidden="true">{% if done %}<svg><use href="#p-check"/></svg>{% else %}{{ forloop.counter|fa }}{% endif %}</span>{{ label }}{% if done %}<span class="visually-hidden"> (انجام شد)</span>{% endif %}</a></li>{% endfor %}
-  </ol>
-</section>
-{% endif %}
-
-{% if alerts %}<ul class="alerts">{% for text, url, q in alerts %}<li><a href="{% url url %}{{ q }}"><svg aria-hidden="true"><use href="#p-bell"/></svg>{{ text|fa }}</a></li>{% endfor %}</ul>{% endif %}
-
-{% if trial_nudge %}
-<section class="trial-nudge" aria-label="دوره رایگان">
-  <div>
-    <strong>{% if trial_nudge.days %}{{ trial_nudge.days|fa }} روز از دورهٔ رایگان مانده{% else %}امروز آخرین روز دورهٔ رایگان است{% endif %}</strong>
-    {% if trial_nudge.plan %}<span>پکیج مناسب دفتر شما: <b>«{{ trial_nudge.plan.name }}»</b>، ماهی {{ trial_nudge.plan.monthly_price|toman }} تومان{% if trial_nudge.reasons %}؛ چون {{ trial_nudge.reasons|join:"، " }}{% endif %}.</span>{% endif %}
-    <span class="muted">اطلاعات و سایتتان پاک نمی‌شود.</span>
-  </div>
-  <a class="btn" href="{% url 'panel:billing' %}">انتخاب پکیج</a>
-</section>
-{% endif %}
-<section class="kpis" aria-label="خلاصه">
-  <a class="kpi" href="{% url 'panel:policies' %}">
-    <span class="kpi-label"><span class="kpi-ico k-green"><svg aria-hidden="true"><use href="#p-wallet"/></svg></span>حق بیمه این ماه</span>
-    <strong class="kpi-value num">{{ stats.month_premium|toman }}<small>ریال</small></strong>
-    {% if stats.premium_delta is not None %}
-      <span class="kpi-sub"><span class="delta {% if stats.premium_delta >= 0 %}up{% else %}down{% endif %}"><svg aria-hidden="true"><use href="#p-{% if stats.premium_delta >= 0 %}up{% else %}down{% endif %}"/></svg>{{ stats.premium_delta|stringformat:"d"|cut:"-"|fa }}٪</span> نسبت به ماه قبل</span>
-    {% else %}<span class="kpi-sub">ماه قبل: {{ stats.prev_premium|toman }} ریال</span>{% endif %}
-  </a>
-  <a class="kpi" href="{% url 'panel:policies' %}">
-    <span class="kpi-label"><span class="kpi-ico k-blue"><svg aria-hidden="true"><use href="#p-doc"/></svg></span>بیمه‌نامه فعال</span>
-    <strong class="kpi-value num">{{ stats.active_policies|fa }}</strong>
-    <span class="kpi-sub">برای {{ stats.customers|fa }} مشتری</span>
-  </a>
-  <a class="kpi" href="{% url 'panel:policies' %}?f=expiring">
-    <span class="kpi-label"><span class="kpi-ico k-amber"><svg aria-hidden="true"><use href="#p-clock"/></svg></span>تمدید ۳۰ روز آینده</span>
-    <strong class="kpi-value num">{{ stats.renewals_30|fa }}</strong>
-    <span class="kpi-sub">{% if stats.renewals_7 %}<b class="hot-text">{{ stats.renewals_7|fa }}</b> مورد تا ۷ روز دیگر{% else %}هیچ‌کدام در ۷ روز آینده نیست{% endif %}</span>
-  </a>
-  <a class="kpi" href="{% url 'panel:quotes' %}">
-    <span class="kpi-label"><span class="kpi-ico k-violet"><svg aria-hidden="true"><use href="#p-inbox"/></svg></span>درخواست باز</span>
-    <strong class="kpi-value num">{{ stats.open_quotes|fa }}</strong>
-    <span class="kpi-sub">{% if stats.new_quotes %}<b>{{ stats.new_quotes|fa }}</b> جدید، هنوز تماس نگرفته‌اید{% else %}درخواست بی‌پاسخی نیست{% endif %}</span>
-  </a>
-</section>
-
-<div class="dash-grid">
-  <div class="dash-col">
-  <section class="card tasks-card" aria-labelledby="tk-title">
-    <div class="card-head"><h2 class="h2" id="tk-title">کارهای امروز من</h2><a href="{% url 'panel:tasks' %}">همه</a></div>
-    {% if my_tasks %}
-    <ul class="task-list compact">{% for t in my_tasks %}{% include "panel/_task_row.html" %}{% endfor %}</ul>
-    {% else %}
-    <p class="empty small">کاری برای امروز ندارید. <a href="{% url 'panel:task_new' %}">کار جدید</a></p>
-    {% endif %}
-  </section>
-  <section class="card renew-card" aria-labelledby="ren-title">
-    <div class="card-head"><h2 class="h2" id="ren-title">تمدیدهای پیش رو</h2><a href="{% url 'panel:policies' %}?f=expiring">همه</a></div>
-    {% if renewals %}
-    <ol class="renewals">
-      {% for p in renewals %}{% with d=p.end_date|days_until %}
-      <li>
-        <span class="days {% if d <= 7 %}hot{% elif d <= 15 %}warm{% endif %}"><b class="num">{{ d|fa }}</b>روز</span>
-        <span class="who"><a href="{% url 'panel:customer' p.customer_id %}">{{ p.customer.full_name }}</a><span class="muted small">{{ p.line }} · {{ p.company }}{% if p.subject %} · {{ p.subject }}{% endif %}</span></span>
-        <a class="btn btn-ghost btn-sm" href="{% url 'panel:policy_new' %}?renew={{ p.pk }}">تمدید</a>
-      </li>
-      {% endwith %}{% endfor %}
-    </ol>
-    {% else %}
-    <div class="empty-state">
-      <svg aria-hidden="true"><use href="#p-clock"/></svg>
-      <p>تمدیدی در ۳۰ روز آینده ندارید. بیمه‌نامه‌های فعلی مشتریان را ثبت کنید تا یادآورها از همین‌جا شروع شود.</p>
-      <a class="btn btn-ghost btn-sm" href="{% url 'panel:customer_import' %}">ورود مشتریان از اکسل</a>
+{% if banner %}
+<section class="home-banner banner-{{ banner.type }}" data-banner-key="{{ banner.key }}" aria-label="{% if banner.type == 'setup' %}راه‌اندازی دفتر{% else %}اعلان{% endif %}">
+  {% if banner.type == "setup" %}
+    <div class="ring" role="img" aria-label="{{ banner.done|fa }} از {{ banner.total|fa }} مرحله انجام شده" style="--p: {% widthratio banner.done banner.total 100 %}%"><span>{{ banner.done|fa }}/{{ banner.total|fa }}</span></div>
+    <div class="bn-text"><b>مرحلهٔ بعدی راه‌اندازی: {{ banner.label }}</b><small>با تکمیل این مراحل، سایت و پنل دفترتان کامل کار می‌کند.</small></div>
+    <a class="btn btn-sm" href="{% url banner.url %}">ادامه<svg aria-hidden="true"><use href="#p-arrow"/></svg></a>
+  {% elif banner.type == "trial" %}
+    <div class="bn-text">
+      <b>{% if banner.nudge.days %}{{ banner.nudge.days|fa }} روز از دورهٔ رایگان مانده{% else %}امروز آخرین روز دورهٔ رایگان است{% endif %}</b>
+      <small>{% if banner.nudge.plan %}پکیج مناسب دفتر شما: <b>«{{ banner.nudge.plan.name }}»</b>، ماهی {{ banner.nudge.plan.monthly_price|toman }} تومان{% if banner.nudge.reasons %}؛ چون {{ banner.nudge.reasons|join:"، " }}{% endif %}. {% endif %}اطلاعات و سایتتان پاک نمی‌شود.</small>
     </div>
-    {% endif %}
-  </section>
-  <section class="card shortcuts" aria-labelledby="sc-title">
-    <h2 class="h2" id="sc-title">میانبرها</h2>
-    <ul class="shortcut-list">
-      <li><a href="{% url 'panel:customer_import' %}"><svg aria-hidden="true"><use href="#p-users"/></svg>ورود مشتریان از اکسل</a></li>
-      <li><a href="{% url 'panel:reminders' %}"><svg aria-hidden="true"><use href="#p-bell"/></svg>یادآورهای پیامکی</a></li>
-      <li><a href="{% url 'panel:site' %}"><svg aria-hidden="true"><use href="#p-globe"/></svg>ویرایش سایت</a></li>
-      <li><a href="{% url 'panel:team' %}"><svg aria-hidden="true"><use href="#p-team"/></svg>افزودن همکار</a></li>
-    </ul>
-  </section>
-  </div>
-  <div class="dash-col">
-  <section class="card trend-card" aria-labelledby="trend-title">
-    <div class="card-head"><h2 class="h2" id="trend-title">حق بیمه صادره، ۶ ماه اخیر</h2>{% if "advanced_reports" in request.features %}<a href="{% url 'panel:reports' %}">گزارش کامل</a>{% endif %}</div>
-    {% if trend_peak %}
-    <div class="trend" role="img" aria-label="نمودار حق بیمه صادره در شش ماه اخیر؛ جزئیات در جدول زیر">
-      {% for t in trend %}
-      <div class="trend-col{% if forloop.last %} now{% endif %}" tabindex="0" style="--h: {{ t.pct }}%">
-        <span class="trend-tip"><b>{{ t.full }}</b>{{ t.value|toman }} ریال · {{ t.count|fa }} بیمه‌نامه</span>
-        <span class="trend-val">{% if forloop.last %}{{ t.value|toman }}{% endif %}</span>
-        <span class="trend-bar"></span>
-        <span class="trend-x">{{ t.label }}</span>
-      </div>
+    <a class="btn btn-sm" href="{% url 'panel:billing' %}">انتخاب پکیج</a>
+  {% else %}
+    <div class="bn-text"><b>طرح ویژه: دامنهٔ ir و راه‌اندازی آن رایگان است</b><small>تا {{ banner.until }} درخواست بدهید.</small></div>
+    <a class="btn btn-sm" href="{% url 'panel:domains' %}">درخواست دامنه</a>
+  {% endif %}
+  <button class="bn-close" type="button" data-banner-close aria-label="بستن"><svg aria-hidden="true"><use href="#p-x"/></svg></button>
+</section>
+{% endif %}
+
+<div class="home-cols">
+<section class="card inbox" aria-labelledby="inbox-title">
+  <div class="inbox-head"><h2 id="inbox-title">کارهای امروز</h2><a href="{% url 'panel:tasks' %}">همهٔ پیگیری‌ها</a></div>
+  <nav class="chips" aria-label="فیلتر کارها">
+    {% for c in inbox.chips %}<a class="chip{% if c.on %} on{% endif %}" href="{% if c.key %}?f={{ c.key }}{% else %}{% url 'panel:dashboard' %}{% endif %}" {% if c.on %}aria-current="true"{% endif %}>{{ c.label }}<span class="n">{{ c.n|fa }}</span></a>{% endfor %}
+  </nav>
+  {% for g in inbox.groups %}
+  <div class="ib-group ib-{{ g.key }}">
+    <h3 class="ib-label">{{ g.label }}</h3>
+    <ul class="ib-list">
+      {% for r in g.items %}
+      <li class="ib-row">
+        <span class="tile tone-{{ r.tone }}" aria-hidden="true"><svg><use href="#{{ r.icon }}"/></svg></span>
+        <div class="ib-text"><b>{{ r.title }}</b><span>{{ r.sub }}</span></div>
+        <span class="ib-meta{% if r.hot %} hot{% endif %}">{{ r.meta|fa }}</span>
+        {% if r.post %}<form method="post" action="{{ r.url }}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="act{% if r.primary %} pri{% endif %}" type="submit">{{ r.action }}</button></form>
+        {% else %}<a class="act{% if r.primary %} pri{% endif %}" href="{{ r.url }}">{{ r.action }}</a>{% endif %}
+      </li>
       {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+  {% if inbox.empty %}
+  <div class="ib-clear">
+    <span class="ib-ok" aria-hidden="true"><svg><use href="#p-check"/></svg></span>
+    <b>همه‌چیز مرتب است</b>
+    <p>{% if inbox.filter %}در این دسته کاری باقی نمانده.{% else %}کاری منتظر شما نیست. تمدیدها، درخواست‌های سایت، اقساط و چک‌ها هر وقت سررسید شوند همین‌جا می‌آیند.{% endif %}</p>
+    {% if not stats.active_policies %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:customer_import' %}">ورود مشتریان از اکسل</a>{% endif %}
+  </div>
+  {% endif %}
+</section>
+
+<aside class="home-side" aria-label="خلاصهٔ عملکرد">
+  <section class="card perf">
+    <div class="perf-head"><span>حق بیمه صادره، این ماه</span>{% if "advanced_reports" in request.features %}<a href="{% url 'panel:reports' %}">گزارش</a>{% endif %}</div>
+    <strong class="perf-value num">{{ stats.month_premium|toman }}<small>ریال</small></strong>
+    <div class="perf-sub">
+      {% if stats.premium_delta is not None %}<span class="delta {% if stats.premium_delta >= 0 %}up{% else %}down{% endif %}"><svg aria-hidden="true"><use href="#p-{% if stats.premium_delta >= 0 %}up{% else %}down{% endif %}"/></svg>{{ stats.premium_delta|stringformat:"d"|cut:"-"|fa }}٪</span> نسبت به ماه قبل
+      {% else %}<span class="muted">ماه قبل: {{ stats.prev_premium|toman }} ریال</span>{% endif %}
+    </div>
+    {% if trend_peak %}
+    <div class="spark" role="img" aria-label="حق بیمه صادره در شش ماه اخیر؛ جزئیات در جدول زیر">
+      {% for t in trend %}<div class="sp{% if forloop.last %} now{% endif %}" tabindex="0" title="{{ t.full }}: {{ t.value|toman }} ریال · {{ t.count|fa }} بیمه‌نامه"><i style="height: {{ t.pct }}%"></i><span>{{ t.label }}</span></div>{% endfor %}
     </div>
     <table class="visually-hidden"><caption>حق بیمه صادره به تفکیک ماه</caption><tbody>{% for t in trend %}<tr><th scope="row">{{ t.full }}</th><td>{{ t.value|toman }} ریال</td><td>{{ t.count|fa }} بیمه‌نامه</td></tr>{% endfor %}</tbody></table>
+    {% else %}<p class="muted small">با ثبت بیمه‌نامه‌ها، روند فروش ماه‌به‌ماه اینجا نمایش داده می‌شود.</p>{% endif %}
+  </section>
+
+  <div class="mini-stats">
+    <a href="{% url 'panel:policies' %}"><span class="k"><svg aria-hidden="true"><use href="#p-doc"/></svg>بیمه‌نامهٔ فعال</span><strong class="num">{{ stats.active_policies|fa }}</strong><span class="s">برای {{ stats.customers|fa }} مشتری</span></a>
+    <a href="{% url 'panel:policies' %}?f=expiring"><span class="k"><svg aria-hidden="true"><use href="#p-clock"/></svg>تمدید ۳۰ روز آینده</span><strong class="num">{{ stats.renewals_30|fa }}</strong><span class="s">{% if stats.renewals_7 %}<b class="hot-text">{{ stats.renewals_7|fa }}</b> مورد تا ۷ روز دیگر{% else %}هیچ‌کدام در ۷ روز آینده نیست{% endif %}</span></a>
+    {% if money %}
+    <a href="{% url 'panel:installments' %}"><span class="k"><svg aria-hidden="true"><use href="#p-wallet"/></svg>دریافتنی تا ۷ روز</span><strong class="num">{{ money.week_total|toman }}<small>ریال</small></strong><span class="s">{{ money.week_inst|fa }} قسط · {{ money.week_chq|fa }} چک</span></a>
+    <a href="{% url 'panel:cheques' %}"><span class="k"><svg aria-hidden="true"><use href="#p-cheque"/></svg>چک‌های در جریان</span><strong class="num">{{ money.open_chq|fa }}</strong><span class="s">{{ money.open_chq_sum|toman }} ریال</span></a>
     {% else %}
-    <div class="empty-state">
-      <svg aria-hidden="true"><use href="#p-chart"/></svg>
-      <p>با ثبت بیمه‌نامه‌ها، روند فروش ماه‌به‌ماه اینجا نمایش داده می‌شود.</p>
+    <a href="{% url 'panel:customers' %}"><span class="k"><svg aria-hidden="true"><use href="#p-users"/></svg>مشتریان</span><strong class="num">{{ stats.customers|fa }}</strong><span class="s">در دفتر شما</span></a>
+    <a href="{% url 'panel:quotes' %}"><span class="k"><svg aria-hidden="true"><use href="#p-inbox"/></svg>درخواست باز</span><strong class="num">{{ stats.open_quotes|fa }}</strong><span class="s">{% if stats.new_quotes %}{{ stats.new_quotes|fa }} جدید{% else %}بی‌پاسخی نیست{% endif %}</span></a>
+    {% endif %}
+  </div>
+
+  <section class="card funnel" aria-labelledby="fn-title">
+    <div class="perf-head"><span id="fn-title">درخواست‌های سایت</span><a href="{% url 'panel:quotes' %}">همه</a></div>
+    <div class="fbar" role="img" aria-label="{% for p in pipeline %}{{ p.n|fa }} {{ p.label }}، {% endfor %}{{ issued|fa }} صادرشده در این ماه">
+      {% for p in pipeline %}{% if p.n %}<i class="pl-{{ p.key }}" style="flex: {{ p.n }}"></i>{% endif %}{% endfor %}{% if issued %}<i class="pl-issued" style="flex: {{ issued }}"></i>{% endif %}
     </div>
-    {% endif %}
-  </section>
-
-  <section class="card quotes-card" aria-labelledby="q-title">
-    <div class="card-head"><h2 class="h2" id="q-title">درخواست‌های سایت</h2><a href="{% url 'panel:quotes' %}">همه</a></div>
-    <ul class="pipeline">
-      {% for st in pipeline %}<li><a href="{% url 'panel:quotes' %}?s={{ st.key }}" class="pl-{{ st.key }}"><strong class="num">{{ st.n|fa }}</strong><span>{{ st.label }}</span></a></li>{% endfor %}
+    <ul class="legend">
+      {% for p in pipeline %}<li><a href="{% url 'panel:quotes' %}?s={{ p.key }}"><span class="sw pl-{{ p.key }}"></span>{{ p.label }}<b>{{ p.n|fa }}</b></a></li>{% endfor %}
+      <li><a href="{% url 'panel:quotes' %}?s=issued"><span class="sw pl-issued"></span>صادر شد (این ماه)<b>{{ issued|fa }}</b></a></li>
     </ul>
-    {% if new_quotes %}
-    <ul class="quote-list">
-      {% for q in new_quotes %}<li><a href="{% url 'panel:quote' q.pk %}"><span class="q-avatar" aria-hidden="true">{{ q.full_name|slice:":1" }}</span><span class="q-text"><strong>{{ q.full_name }}</strong><span class="muted small">{{ q.line }}</span></span><span class="muted small q-time">{{ q.created_at|jdate:"time" }}</span></a></li>{% endfor %}
-    </ul>
-    {% else %}
-    <p class="empty small">درخواست تازه‌ای نیست. وقتی کسی در سایت فرم استعلام را پر کند، اینجا می‌آید.</p>
-    {% endif %}
   </section>
-
+</aside>
+</div>
 </div>
 {% endblock %}

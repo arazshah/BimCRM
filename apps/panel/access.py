@@ -58,6 +58,9 @@ def panel_view(*, write_ok_when_expired=False, managers_only=False, feature=None
                 else None
             )
             request.can = membership.can_map()
+            from .nav import build_nav
+
+            request.nav = build_nav(request)
             if managers_only and membership.role not in MANAGERS:
                 return HttpResponseForbidden("این بخش فقط برای مالک و مدیر دفتر است.")
             if perm and not membership.can(perm):

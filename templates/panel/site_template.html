@@ -1,6 +1,7 @@
 {% extends "panel/base.html" %}
 {% block title %}قالب سایت{% endblock %}
 {% block content %}
+{% include "panel/_section_tabs.html" with tabs=request.nav.site_tabs label="سایت من" %}
 <div class="page-head"><h1>قالب سایت</h1></div>
 <p class="note">با عوض کردن قالب فقط ظاهر عوض می‌شود؛ متن‌ها، رشته‌ها و نظرات سر جایشان می‌مانند.</p>
 <ul class="template-grid">

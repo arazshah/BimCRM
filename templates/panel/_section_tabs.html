@@ -1,0 +1,1 @@
+{% if tabs %}<nav class="tabs section-tabs" aria-label="{{ label }}">{% for t in tabs %}<a href="{{ t.url }}" {% if t.active %}aria-current="true"{% endif %}>{{ t.label }}{% if t.locked %}<svg class="tab-lock" role="img" aria-label="در پکیج فعلی شما نیست"><use href="#p-lock"/></svg>{% endif %}</a>{% endfor %}</nav>{% endif %}

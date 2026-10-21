@@ -2,6 +2,7 @@
 {% load fa %}
 {% block title %}شعبه‌ها{% endblock %}
 {% block content %}
+{% include "panel/_section_tabs.html" with tabs=request.nav.office_tabs label="تنظیمات دفتر" %}
 <div class="page-head"><h1>شعبه‌ها</h1><a class="btn btn-sm" href="{% url 'panel:branch_new' %}">شعبه جدید</a></div>
 <p class="note">هر مشتری، بیمه‌نامه و درخواست سایت می‌تواند به یک شعبه تعلق داشته باشد. در بخش <a href="{% url 'panel:team' %}">همکاران</a> کارمند را به شعبه وصل کنید تا فقط پرونده‌های همان شعبه را ببیند؛ مالک و مدیر همه شعبه‌ها را می‌بینند و در فهرست‌ها و گزارش‌ها بر اساس شعبه فیلتر می‌کنند.</p>
 {% if rows %}

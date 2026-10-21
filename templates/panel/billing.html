@@ -2,6 +2,7 @@
 {% load fa %}
 {% block title %}اشتراک{% endblock %}
 {% block content %}
+{% include "panel/_section_tabs.html" with tabs=request.nav.office_tabs label="تنظیمات دفتر" %}
 <div class="page-head"><h1>اشتراک</h1></div>
 {% if sub %}
 <section class="plan-hero">
