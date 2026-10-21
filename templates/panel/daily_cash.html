@@ -1,0 +1,23 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}صندوق روزانه{% endblock %}
+{% block content %}
+<div class="page-head"><h1>صندوق روزانه — {{ day|jdate:"long" }}</h1>
+  <span><a class="btn btn-ghost btn-sm" href="?d={{ prev|date:'Y-m-d' }}">روز قبل</a> <a class="btn btn-ghost btn-sm" href="?d={{ next|date:'Y-m-d' }}">روز بعد</a> <a class="btn btn-sm" href="javascript:window.print()">چاپ</a></span></div>
+{% include "panel/_finance_tabs.html" %}
+<dl class="stats">
+  <div><dt>ورودی</dt><dd class="num">{{ d.total_in|toman }} <small>ریال</small></dd></div>
+  <div><dt>خروجی</dt><dd class="num">{{ d.total_out|toman }} <small>ریال</small></dd></div>
+  <div><dt>چک دریافتی امروز</dt><dd class="num">{{ d.cheques_received|toman }} <small>ریال</small></dd></div>
+</dl>
+{% if d.accounts %}
+<div class="table-wrap"><table class="data"><thead><tr><th>صندوق/حساب</th><th>ورودی</th><th>خروجی</th><th>خالص</th></tr></thead>
+  <tbody>{% for a in d.accounts %}<tr><td>{{ a.title }}</td><td class="num">{{ a.in|toman }}</td><td class="num">{{ a.out|toman }}</td><td class="num"><span dir="ltr">{% if a.net < 0 %}−{% endif %}{{ a.net|stringformat:"d"|cut:"-"|toman }}</span></td></tr>{% endfor %}</tbody></table></div>
+{% endif %}
+{% if d.movements %}
+<h2 class="h2">ریز گردش</h2>
+<div class="table-wrap"><table class="data"><thead><tr><th>شرح</th><th>صندوق/حساب</th><th>ورودی</th><th>خروجی</th></tr></thead>
+  <tbody>{% for m in d.movements %}<tr><td>{{ m.text }}</td><td>{{ m.account }}</td>
+    <td class="num">{% if m.kind == "in" %}{{ m.amount|toman }}{% endif %}</td><td class="num">{% if m.kind == "out" %}{{ m.amount|toman }}{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}<p class="empty">در این روز گردشی ثبت نشده است.</p>{% endif %}
+{% endblock %}

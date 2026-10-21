@@ -1,0 +1,18 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}بدهکاران{% endblock %}
+{% block content %}
+<div class="page-head"><h1>بدهکاران</h1></div>
+{% include "panel/_finance_tabs.html" %}
+{% if rows %}
+<p class="muted small">جمع مانده: <span class="num">{{ total|toman }}</span> ریال · {{ rows|length|fa }} مشتری</p>
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>مشتری</th><th>موبایل</th><th>مانده (ریال)</th><th></th></tr></thead>
+  <tbody>{% for r in rows %}
+    <tr><td><a href="{% url 'panel:customer' r.customer.pk %}">{{ r.customer.full_name }}</a></td>
+      <td class="ltr num">{{ r.customer.mobile|fa }}</td><td class="num">{{ r.balance|toman }}</td>
+      <td class="row-actions"><a href="{% url 'panel:customer_account' r.customer.pk %}">صورت‌حساب</a><a href="{% url 'panel:receipt_new' %}?customer={{ r.customer.pk }}">دریافت وجه</a></td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% else %}<p class="empty">مشتری بدهکاری نیست.</p>{% endif %}
+{% endblock %}

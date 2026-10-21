@@ -5,6 +5,8 @@
   <a href="{% url 'panel:receipts' %}" {% if u == "receipts" or u == "receipt" or u == "receipt_new" %}aria-current="true"{% endif %}>رسیدهای دریافت</a>
   <a href="{% url 'panel:payments' %}" {% if u == "payments" or u == "payment" or u == "payment_new" %}aria-current="true"{% endif %}>حواله‌های پرداخت</a>
   <a href="{% url 'panel:cheques' %}" {% if u == "cheques" or u == "cheque" or u == "cheque_new" or u == "cheque_edit" %}aria-current="true"{% endif %}>چک‌های دریافتی</a>
+  <a href="{% url 'panel:debtors' %}" {% if u == "debtors" %}aria-current="true"{% endif %}>بدهکاران</a>
+  <a href="{% url 'panel:daily_cash' %}" {% if u == "daily_cash" %}aria-current="true"{% endif %}>صندوق روزانه</a>
   <a href="{% url 'panel:finance_accounts' %}" {% if u == "finance_accounts" or u == "finance_account_new" or u == "finance_account_edit" %}aria-current="true"{% endif %}>صندوق و بانک</a>
   <a href="{% url 'panel:commissions' %}" {% if u == "commissions" %}aria-current="true"{% endif %}>کارمزد</a>
   <a href="{% url 'panel:ledger' %}" {% if u == "ledger" %}aria-current="true"{% endif %}>درآمد و هزینه</a>
