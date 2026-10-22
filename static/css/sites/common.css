@@ -103,15 +103,57 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .trust-badges { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
 .trust-badges img { max-height: 80px; }
 
-/* Mobile quick bar */
+/* Mobile app bar: five fixed slots, the middle one is the quote button */
 .s-mbar { display: none; }
 @media (max-width: 760px) {
-  body { padding-bottom: 68px; }
-  .s-mbar { display: flex; position: fixed; inset-inline: 10px; bottom: 10px; z-index: 30; gap: 6px; padding: 6px; background: rgba(255, 255, 255, .96); backdrop-filter: blur(8px); border-radius: 16px; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .35); border: 1px solid rgba(0, 0, 0, .06); }
-  .s-mbar a { flex: 1; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 5px; min-height: 42px; font-size: 12px; font-weight: 700; color: #2a3340; text-decoration: none; padding: 6px 8px; border-radius: 11px; }
-  .s-mbar svg { width: 18px; height: 18px; flex: none; }
-  .s-mbar .s-mbar-main { flex: 1.6; gap: .4rem; font-size: 14px; background: var(--brand); color: var(--s-on-brand); }
+  body { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .s-mbar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: end; position: fixed; inset-inline: 0; bottom: 0; z-index: 30; height: calc(70px + env(safe-area-inset-bottom)); padding: 0 4px env(safe-area-inset-bottom); background: var(--s-surface, #fff); border-top: 1px solid var(--s-line, #e3e8ee); box-shadow: 0 -8px 24px -16px rgba(0, 0, 0, .35); }
+  .s-mbar a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 56px; padding: 6px 2px 8px; font-size: 11.5px; font-weight: 600; color: var(--s-muted, #5d6877); text-decoration: none; }
+  .s-mbar svg { width: 22px; height: 22px; flex: none; }
+  .s-mbar a[aria-current="page"] { color: var(--brand); font-weight: 800; }
+  .s-mbar .s-mbar-main { color: var(--s-ink, #1b2430); font-weight: 800; }
+  .s-mbar-fab { width: 56px; height: 56px; margin-top: -26px; border-radius: 50%; display: grid; place-items: center; background: var(--brand); color: var(--s-on-brand); border: 4px solid var(--s-surface, #fff); box-shadow: 0 6px 16px -4px rgba(0, 0, 0, .4); }
+  .s-mbar-fab svg { width: 24px; height: 24px; }
 }
+
+/* Quote wizard: on phones the same form opens as a bottom sheet, one step at a time (no JS: plain form) */
+.qf-tiles, .quote-form .qf-q { display: none; }
+.qf-sheet[hidden] { display: none; }
+.qf-sheet { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; background: rgba(10, 18, 28, .55); }
+.qf-panel { width: 100%; max-height: 92dvh; display: flex; flex-direction: column; background: #fff; color: #1b2430; border-radius: 24px 24px 0 0; padding-bottom: env(safe-area-inset-bottom); animation: qf-up .22s ease-out; }
+@keyframes qf-up { from { transform: translateY(24px); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .qf-panel { animation: none; } }
+.qf-grip { width: 44px; height: 5px; border-radius: 3px; background: #d4dadd; margin: 10px auto 0; }
+.qf-head { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; padding: 6px 12px 2px; }
+.qf-head h2 { margin: 0; text-align: center; font-size: 16px; line-height: 1.4; }
+.qf-head h2 small { display: block; font-weight: 400; font-size: 12px; color: #5b6770; }
+.qf-icon-btn { width: 44px; height: 44px; border: 0; border-radius: 14px; background: #f1f4f5; color: inherit; display: grid; place-items: center; cursor: pointer; font: inherit; }
+.qf-icon-btn svg { width: 20px; height: 20px; }
+.qf-icon-btn[hidden] { display: block; visibility: hidden; }
+.qf-progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 8px 20px 12px; }
+.qf-progress span { height: 5px; border-radius: 3px; background: #e3e8ea; }
+.qf-progress span.on { background: var(--brand); }
+.qf-body { overflow: auto; padding: 0 20px 16px; overscroll-behavior: contain; }
+.qf-foot { padding: 10px 20px 16px; border-top: 1px solid #eef1f2; }
+.qf-foot .qf-submit { width: 100%; min-height: 54px; }
+.qf-resume { display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 14px; padding: 12px 14px; border: 1px solid #f3d9a4; background: #fff7e6; border-radius: 16px; font: inherit; font-size: 14px; text-align: right; cursor: pointer; color: #1b2430; }
+.qf-resume b { margin-inline-start: auto; color: #9a4a07; }
+.qf-wizard { gap: 1.1rem; }
+.qf-wizard .qf-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.qf-wizard [data-qf-line-field] { display: none; }
+.qf-wizard .qf-q { display: block; margin: 0; font-size: 20px; line-height: 1.5; }
+.qf-wizard[data-step="1"] [data-qf-step="2"], .qf-wizard[data-step="1"] [data-qf-step="3"],
+.qf-wizard[data-step="2"] [data-qf-step="1"], .qf-wizard[data-step="2"] [data-qf-step="3"],
+.qf-wizard[data-step="3"] [data-qf-step="1"], .qf-wizard[data-step="3"] [data-qf-step="2"] { display: none; }
+.qf-wizard .qf-extra, .qf-wizard .qf-row { grid-template-columns: 1fr; }
+.qf-wizard input, .qf-wizard select, .qf-wizard textarea { min-height: 50px; font-size: 16px; }
+.qf-wizard[data-step="3"] .qf-submit { min-height: 54px; }
+.qf-tile { min-height: 96px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 14px; border: 1.5px solid #e3e8ea; border-radius: 18px; background: #fff; color: #1b2430; font: inherit; text-align: right; cursor: pointer; }
+.qf-tile:hover { border-color: var(--brand); }
+.qf-tile svg { width: 26px; height: 26px; color: var(--brand); }
+.qf-tile b { font-size: 15px; }
+.qf-tile span { font-size: 12px; color: #5b6770; line-height: 1.6; }
+html.qf-lock, html.qf-lock body { overflow: hidden; }
 
 /* Sub-pages: quote done, tracking, customer portal */
 .subpage { max-width: 680px; margin: 48px auto; padding: 0 20px; min-height: 40vh; }
@@ -292,3 +334,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .t-khodro .claim-box, .t-khodro .claim-howto li, .t-khodro .claim-docs-help, .t-khodro .claim-form fieldset { border-color: #2c313a; }
 .t-khodro .bubble.them, .t-khodro .claim-forms-box { background: #262a31; }
 .t-khodro .claim-box.need { background: #2d2a1c; }
+
+/* Quote done page */
+.done-page { text-align: center; }
+.done-badge { width: 68px; height: 68px; margin: 0 auto .6rem; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--brand) 14%, transparent); color: var(--brand); }
+.done-badge svg { width: 34px; height: 34px; }
+.done-code { display: flex; flex-direction: column; align-items: center; gap: .5rem; margin: 1rem 0; }
+.done-code > span { color: var(--s-muted); font-size: 13px; }
+.done-actions { display: grid; gap: .6rem; margin: 1.2rem 0; }
+.done-actions [hidden] { display: none; }

@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 from apps.core.models import InsuranceCompany, LineOfBusiness
 
-from . import registry
+from . import pwa, registry
 
 DEMO_LINES = [
     ("شخص ثالث", "third-party", "car", "استعلام نرخ با پلاک و سابقه تخفیف"),
@@ -72,4 +72,6 @@ def demo_context(key: str) -> dict:
         "body_code": "",
         "can_portal": True,
         "base_template": f"sites/{key}/base.html",
+        "mbar_items": pwa.mbar_items(site, True, False),
+        "mbar_active": "home",
     }

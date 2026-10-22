@@ -74,9 +74,10 @@
 .d-about-grid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.6fr); gap: 48px; }
 .t-khodro .subpage a, .t-khodro .acc-table { color: #e9ecf1; }
 .t-khodro .status-steps li { background: #262a31; }
-.t-khodro .s-mbar { background: rgba(29,32,38,.96); border-color: #2c313a; }
-.t-khodro .s-mbar a { color: #e9ecf1; }
-.t-khodro .s-mbar .s-mbar-main { color: #111; }
+.t-khodro .s-mbar { background: #11161d; border-color: #222b35; }
+.t-khodro .s-mbar a { color: #a8b3bf; }
+.t-khodro .s-mbar a[aria-current="page"], .t-khodro .s-mbar .s-mbar-main { color: #fff; }
+.t-khodro .s-mbar-fab { color: #111; border-color: #11161d; }
 
 @media (max-width: 960px) {
   .d-hero-grid, .d-renew-grid, .d-about-grid { grid-template-columns: 1fr; gap: 32px; }

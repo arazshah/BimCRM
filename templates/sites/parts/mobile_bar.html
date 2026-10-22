@@ -1,8 +1,8 @@
-{% if not is_embed %}
+{% if not is_embed and mbar_items %}
 <nav class="s-mbar" aria-label="دسترسی سریع">
-  <a href="/track/"><svg aria-hidden="true"><use href="#i-search"/></svg>پیگیری</a>
-  {% if site.phone %}<a href="tel:{{ site.phone }}"><svg aria-hidden="true"><use href="#i-phone"/></svg>تماس</a>{% endif %}
-  <a class="s-mbar-main" href="{% if line %}#quote{% else %}/#quote{% endif %}"><svg aria-hidden="true"><use href="#i-doc"/></svg>استعلام</a>
-  {% if can_portal %}<a href="/account/"><svg aria-hidden="true"><use href="#i-user"/></svg>پنل</a>{% elif site.whatsapp %}<a href="https://wa.me/98{{ site.whatsapp|slice:'1:' }}" rel="noopener"><svg aria-hidden="true"><use href="#i-chat"/></svg>گفتگو</a>{% endif %}
+  {% for item in mbar_items %}
+  {% if item.main %}<a class="s-mbar-main" href="{% if line %}#quote{% else %}{{ item.href }}{% endif %}" data-open-quote><span class="s-mbar-fab"><svg aria-hidden="true"><use href="#i-{{ item.icon }}"/></svg></span><span>{{ item.label }}</span></a>
+  {% else %}<a href="{{ item.href }}"{% if item.key == mbar_active %} aria-current="page"{% endif %}{% if item.href|slice:":4" == "http" %} rel="noopener" target="_blank"{% endif %}><svg aria-hidden="true"><use href="#i-{{ item.icon }}"/></svg><span>{{ item.label }}</span></a>{% endif %}
+  {% endfor %}
 </nav>
 {% endif %}

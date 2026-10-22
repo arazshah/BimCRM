@@ -15,6 +15,7 @@ from apps.crm.models import Branch, Customer, CustomerDocument, Policy, QuoteReq
 from apps.integrations.models import Integration
 from apps.integrations.senders import send_tenant_otp, tenant_can_sms
 
+from . import pwa
 from .models import FAQ, SiteLineContent, SiteSettings, Testimonial
 
 SITE_TRACKED_QUOTE = "site_tracked_quote"
@@ -102,6 +103,8 @@ def _site_context(request, site: SiteSettings) -> dict:
         "is_preview": not site.is_published,
         "is_noindex": not site.is_published,
         "base_template": f"sites/{site.template}/base.html",
+        "mbar_items": pwa.mbar_items(site, tenant_can_sms(request.tenant), "claims" in _features(request)),
+        "mbar_active": pwa.mbar_active(request.path),
     }
 
 
@@ -689,6 +692,28 @@ def sitemap(request):
         + "</urlset>\n"
     )
     return HttpResponse(xml, content_type="application/xml")
+
+
+def web_manifest(request):
+    return pwa.manifest(request, _site(request))
+
+
+def service_worker(request):
+    return pwa.service_worker(request)
+
+
+def pwa_icon(request):
+    return pwa.icon_svg(request, _site(request))
+
+
+def office_vcard(request):
+    return pwa.vcard(request, _site(request))
+
+
+def offline(request):
+    context = _site_context(request, _site(request))
+    context["is_noindex"] = True
+    return render(request, "sites/offline.html", context)
 
 
 def favicon(request):
