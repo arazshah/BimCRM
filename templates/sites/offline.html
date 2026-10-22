@@ -1,0 +1,9 @@
+{% extends base_template %}
+{% block main %}
+<section class="subpage">
+  <h1>اتصال اینترنت قطع است</h1>
+  <p>این صفحه بدون اینترنت باز نمی‌شود. اگر کار فوری دارید، مستقیم با دفتر تماس بگیرید.</p>
+  {% if site.phone %}<p><a class="site-btn" href="tel:{{ site.phone }}">تماس با دفتر</a></p>{% endif %}
+  <p><a href="/">تلاش دوباره</a></p>
+</section>
+{% endblock %}

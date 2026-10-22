@@ -1,12 +1,23 @@
 {% extends base_template %}
 {% load fa %}
 {% block main %}
-<section class="subpage">
+<section class="subpage done-page">
+  <div class="done-badge" aria-hidden="true"><svg><use href="#i-check"/></svg></div>
   <h1>درخواستتان ثبت شد</h1>
-  <p>{{ quote.full_name }} عزیز، درخواست {{ quote.line }} به دفتر رسید. شماره‌ای که برای پیگیری درخواست ثبت شده: <span class="ltr">{{ quote.mobile|fa }}</span></p>
-  <p>کد پیگیری:</p>
-  <p><span class="big-code num">{{ quote.tracking_code|fa }}</span></p>
+  <p>{{ quote.full_name }} عزیز، درخواست {{ quote.line }} به دفتر رسید{% if site.working_hours %}؛ کارشناس در ساعات کاری ({{ site.working_hours }}) با شما تماس می‌گیرد{% endif %}. شماره‌ای که برای پیگیری ثبت شده: <span class="ltr">{{ quote.mobile|fa }}</span></p>
+  <div class="done-code">
+    <span>کد پیگیری</span>
+    <strong class="big-code num" id="done-code">{{ quote.tracking_code|fa }}</strong>
+    <button type="button" class="s-btn s-btn-alt" data-copy="#done-code" hidden>کپی کد</button>
+  </div>
   <p>کد را نگه دارید و برای مشاهدهٔ وضعیت، همراه با شمارهٔ موبایل ثبت‌شده در <a href="/track/">صفحهٔ پیگیری</a> وارد کنید.</p>
-  <a class="site-btn" href="/">بازگشت به صفحه اصلی</a>
+  <div class="done-actions">
+    <a class="s-btn" href="/track/">پیگیری درخواست</a>
+    <a class="s-btn s-btn-alt" href="/contact.vcf">ذخیرهٔ شمارهٔ دفتر در مخاطبین</a>
+    <button type="button" class="s-btn s-btn-alt" data-install hidden>افزودن دفتر به صفحهٔ گوشی</button>
+    {% if site.phone %}<a class="s-btn s-btn-alt" href="tel:{{ site.phone }}">تماس با دفتر</a>{% endif %}
+  </div>
+  <p><a href="/">بازگشت به صفحه اصلی</a></p>
 </section>
+<script>try { localStorage.removeItem("qf-draft"); } catch (e) {}</script>
 {% endblock %}

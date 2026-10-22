@@ -13,5 +13,6 @@
 <link rel="stylesheet" href="{% static 'css/sites/common.css' %}">
 <link rel="stylesheet" href="{% static 'css/sites/'|add:tpl.key|add:'.css' %}">
 <style>:root { --brand: {{ site.color }}; }</style>
+{% if not is_demo %}<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="{{ site.color }}"><meta name="mobile-web-app-capable" content="yes"><link rel="apple-touch-icon" href="{% if site.logo %}{{ site.logo.url }}{% else %}/pwa-icon.svg{% endif %}">{% endif %}
 {% if not is_demo %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"InsuranceAgency","name":"{{ tenant.name|escapejs }}","url":"{{ request.scheme }}://{{ request.get_host }}/"{% if site.phone %},"telephone":"{{ site.phone|escapejs }}"{% endif %}{% if site.address %},"address":{"@type":"PostalAddress","streetAddress":"{{ site.address|escapejs }}","addressCountry":"IR"}{% endif %}{% if site.working_hours %},"openingHours":"{{ site.working_hours|escapejs }}"{% endif %}{% if site.logo %},"logo":"{{ request.scheme }}://{{ request.get_host }}{{ site.logo.url }}"{% endif %}}</script>{% endif %}
 {{ head_code }}
