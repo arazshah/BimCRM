@@ -29,7 +29,10 @@ services:
       MIGRATE_DATABASE_URL: postgres://bimcrm:${POSTGRES_PASSWORD}@db:5432/bimcrm
       APP_DB_USER: bimcrm_app
       APP_DB_PASSWORD: ${APP_DB_PASSWORD}               # set in Coolify
-      REDIS_URL: redis://redis:6379/0
+      # `redis` is ambiguous on the shared `coolify` network (web/worker join it, and other stacks
+      # run a password-protected Redis under that name -> "Authentication required"). Use an alias
+      # that exists only on this stack's default network.
+      REDIS_URL: redis://bimcrm-redis:6379/0
       SMS_BACKEND: ${SMS_BACKEND:-smsir}
       SMSIR_API_KEY: ${SMSIR_API_KEY}                   # set in Coolify
       SMSIR_OTP_TEMPLATE_ID: ${SMSIR_OTP_TEMPLATE_ID}   # set in Coolify
@@ -142,6 +145,10 @@ services:
     restart: unless-stopped
     volumes:
       - redisdata:/data
+    networks:
+      default:
+        aliases:
+          - bimcrm-redis
 
 volumes:
   pgdata:
