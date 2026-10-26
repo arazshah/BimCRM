@@ -11,7 +11,8 @@ WORKDIR /app
 # docker build --build-arg PIP_INDEX_URL=https://mirror.example/simple .
 ARG PIP_INDEX_URL=https://pypi.org/simple
 COPY requirements.txt .
-RUN pip install --index-url "$PIP_INDEX_URL" -r requirements.txt
+# Long timeout and many retries: the server's route to PyPI is slow and flaky at times.
+RUN pip install --default-timeout=120 --retries=10 --index-url "$PIP_INDEX_URL" -r requirements.txt
 
 COPY . .
 RUN SECRET_KEY=build-only DEBUG=False python manage.py collectstatic --noinput \
