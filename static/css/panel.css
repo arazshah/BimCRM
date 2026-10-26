@@ -933,3 +933,6 @@ kbd { font-family: inherit; font-size: 11.5px; border: 1px solid var(--line); bo
 .pal-in input::-webkit-search-cancel-button { display: none; }
 .top-search { min-width: 0; }
 .top-site, .top-bell, .menu-btn { flex: none; }
+.import-steps { margin: 0 0 1rem; padding-inline-start: 1.4rem; line-height: 2; }
+.import-errors li { justify-content: flex-start; font-size: 14px; }
+.import-errors li span:first-child { min-width: 5.5rem; color: var(--muted); }

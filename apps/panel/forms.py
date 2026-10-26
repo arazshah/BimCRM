@@ -367,13 +367,6 @@ class ReplyForm(forms.Form):
     attachment = forms.FileField(label="پیوست (اختیاری)", required=False)
 
 
-class ImportForm(forms.Form):
-    file = forms.FileField(
-        label="فایل CSV مشتریان",
-        help_text="ستون‌ها: نام، موبایل، کد ملی، شهر (ردیف اول عنوان). از اکسل «ذخیره به CSV UTF-8» بگیرید.",
-    )
-
-
 class RenewalOrderForm(forms.Form):
     period = forms.ChoiceField(label="دوره", choices=Period.choices, initial=Period.YEARLY, widget=forms.RadioSelect)
     contact_mobile = forms.CharField(label="موبایل برای تماس کارشناس", max_length=20)

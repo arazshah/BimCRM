@@ -2,7 +2,7 @@
 {% load fa %}
 {% block title %}بیمه‌نامه‌ها{% endblock %}
 {% block content %}
-<div class="page-head"><h1>بیمه‌نامه‌ها و تمدید</h1><a class="btn btn-sm" href="{% url 'panel:policy_new' %}">بیمه‌نامه جدید</a></div>
+<div class="page-head"><h1>بیمه‌نامه‌ها و تمدید</h1><div class="head-actions"><a class="btn btn-sm" href="{% url 'panel:policy_new' %}">بیمه‌نامه جدید</a><a class="btn btn-ghost btn-sm" href="{% url 'panel:data_import' %}">ورود از اکسل</a></div></div>
 <div class="toolbar">
   <nav class="tabs" aria-label="فیلتر">
     <a href="?{% if b %}b={{ b }}{% endif %}" {% if not f %}aria-current="true"{% endif %}>همه</a>

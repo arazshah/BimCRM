@@ -1,5 +1,3 @@
-import csv
-import io
 import logging
 from datetime import timedelta
 
@@ -36,7 +34,6 @@ from .forms import (
     DomainForm,
     DomainServiceForm,
     FAQFormSet,
-    ImportForm,
     MemberBranchForm,
     MemberForm,
     PolicyForm,
@@ -136,7 +133,7 @@ def dashboard(request):
     checklist = [
         ("اطلاعات سایت را کامل کنید", bool(site.about and site.phone), "panel:site"),
         ("رشته‌های قابل استعلام را انتخاب کنید", site.lines.exists(), "panel:site"),
-        ("مشتریان قبلی را وارد کنید", Customer.objects.exists(), "panel:customer_import"),
+        ("مشتریان قبلی را وارد کنید", Customer.objects.exists(), "panel:data_import"),
         (
             "پنل پیامک خودتان را وصل کنید",
             Integration.objects.filter(kind="sms", enabled=True).exists(),
@@ -281,43 +278,6 @@ def customer_detail(request, pk):
             else None,
             **customer_work_context(request, customer),
         },
-    )
-
-
-@panel_view()
-def customer_import(request):
-    form = ImportForm(request.POST or None, request.FILES or None)
-    if request.method == "POST" and form.is_valid():
-        raw = form.cleaned_data["file"].read()
-        try:
-            text = raw.decode("utf-8-sig")
-        except UnicodeDecodeError:
-            text = raw.decode("cp1256", errors="replace")
-        created = skipped = 0
-        reader = csv.reader(io.StringIO(text))
-        next(reader, None)
-        for row in reader:
-            if len(row) < 2:
-                skipped += 1
-                continue
-            mobile = normalize_mobile(row[1])
-            if len(mobile) != 11 or not mobile.startswith("09") or Customer.objects.filter(mobile=mobile).exists():
-                skipped += 1
-                continue
-            Customer.objects.create(
-                full_name=row[0].strip()[:120] or mobile,
-                mobile=mobile,
-                national_code=(row[2].strip() if len(row) > 2 else "")[:10],
-                city=(row[3].strip() if len(row) > 3 else "")[:60],
-                source=Customer.Source.IMPORT,
-            )
-            created += 1
-        messages.success(request, f"{created} مشتری اضافه شد؛ {skipped} ردیف تکراری یا نامعتبر رد شد.")
-        return redirect("panel:customers")
-    return render(
-        request,
-        "panel/form.html",
-        {"form": form, "title": "ورود مشتریان از اکسل", "back": "panel:customers", "multipart": True},
     )
 
 

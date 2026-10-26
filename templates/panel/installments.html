@@ -2,7 +2,7 @@
 {% load fa %}
 {% block title %}اقساط و چک‌ها{% endblock %}
 {% block content %}
-<div class="page-head"><h1>اقساط و چک‌ها</h1><a class="btn btn-sm" href="{% url 'panel:installment_plan' %}">تقسیط بیمه‌نامه</a></div>
+<div class="page-head"><h1>اقساط و چک‌ها</h1><div class="head-actions"><a class="btn btn-sm" href="{% url 'panel:installment_plan' %}">تقسیط بیمه‌نامه</a><a class="btn btn-ghost btn-sm" href="{% url 'panel:data_import' %}">ورود از اکسل</a></div></div>
 {% include "panel/_finance_tabs.html" %}
 <nav class="tabs toolbar" aria-label="فیلتر">
   <a href="?f=pending" {% if f == "pending" %}aria-current="true"{% endif %}>در انتظار</a>

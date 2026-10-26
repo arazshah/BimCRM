@@ -4,6 +4,7 @@ from . import views
 from . import views_addons as addons
 from . import views_club as club
 from . import views_docs as docs
+from . import views_import as imports
 from . import views_work as work
 
 app_name = "panel"
@@ -13,7 +14,9 @@ urlpatterns = [
     path("search/", views.search, name="search"),
     path("customers/", views.customers, name="customers"),
     path("customers/new/", views.customer_edit, name="customer_new"),
-    path("customers/import/", views.customer_import, name="customer_import"),
+    path("customers/import/", imports.data_import, name="customer_import"),
+    path("import/", imports.data_import, name="data_import"),
+    path("import/template.xlsx", imports.import_template, name="import_template"),
     path("customers/<int:pk>/", views.customer_detail, name="customer"),
     path("customers/<int:pk>/edit/", views.customer_edit, name="customer_edit"),
     path("customers/<int:pk>/activity/", work.activity_add, name="activity_add"),
