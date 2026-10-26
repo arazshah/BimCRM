@@ -1,0 +1,72 @@
+{% extends "panel/base.html" %}
+{% load fa %}
+{% block title %}ورود اطلاعات از اکسل{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>ورود اطلاعات از اکسل</h1>
+  <div class="head-actions"><a class="btn btn-sm" href="{% url 'panel:import_template' %}">دریافت قالب اکسل</a><a class="btn btn-ghost btn-sm" href="{{ PLATFORM_URL }}/help/import/" target="_blank" rel="noopener">راهنمای کامل</a></div>
+</div>
+
+{% if report %}
+<section class="panel-box import-report">
+  <div class="box-head"><h2 class="h2">{% if preview %}پیش‌نمایش «{{ filename }}» — هنوز چیزی ثبت نشده{% else %}نتیجه ورود «{{ filename }}»{% endif %}</h2></div>
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>برگه</th><th>{% if preview %}جدید می‌شود{% else %}جدید{% endif %}</th><th>{% if preview %}به‌روز می‌شود{% else %}به‌روز شد{% endif %}</th><th>بدون تغییر</th><th>خطا</th></tr></thead>
+    <tbody>
+    {% for s in report.sheets %}{% if s.found %}
+      <tr><td>{{ s.sheet.title }}</td>{% if s.skipped_reason %}<td colspan="4" class="late">{{ s.skipped_reason }}</td>{% else %}<td class="num">{{ s.created|fa }}</td><td class="num">{{ s.updated|fa }}</td><td class="num">{{ s.unchanged|fa }}</td><td class="num">{% if s.errors %}<b class="late">{{ s.errors|length|fa }}</b>{% else %}۰{% endif %}</td>{% endif %}</tr>
+    {% endif %}{% endfor %}
+    </tbody>
+  </table></div>
+  {% for s in report.sheets %}{% if s.ignored_columns %}<p class="muted small">ستون‌های ناشناخته در برگه {{ s.sheet.title }} نادیده گرفته شد: {{ s.ignored_columns|join:"، " }}</p>{% endif %}{% endfor %}
+  {% for s in report.sheets %}{% if s.errors %}
+    <h3 class="h3">ردیف‌های رد شده در برگه {{ s.sheet.title }}</h3>
+    <ul class="plain-list import-errors">{% for row, msg in s.errors|slice:":100" %}<li><span>ردیف {{ row|fa }}</span><span>{{ msg }}</span></li>{% endfor %}</ul>
+    {% if s.errors|length > 100 %}<p class="muted small">و {{ s.errors|length|add:"-100"|fa }} خطای دیگر…</p>{% endif %}
+  {% endif %}{% endfor %}
+  {% if preview %}
+  <form method="post" class="form-actions">
+    {% csrf_token %}
+    {% if report.changes %}<button class="btn" type="submit" name="action" value="confirm">ثبت نهایی ({{ report.changes|fa }} مورد)</button>{% endif %}
+    <button class="btn btn-ghost" type="submit" name="action" value="cancel">لغو</button>
+  </form>
+  {% if report.error_count %}<p class="muted small">ردیف‌های خطادار ثبت نمی‌شوند. می‌توانید آن‌ها را در اکسل اصلاح و همان فایل را دوباره بارگذاری کنید؛ ردیف‌های قبلی تکراری نمی‌شوند.</p>{% endif %}
+  {% endif %}
+</section>
+{% endif %}
+
+{% if not preview %}
+<section class="panel-box">
+  <h2 class="h2">{% if done %}بارگذاری فایل دیگر{% else %}بارگذاری فایل{% endif %}</h2>
+  <form method="post" class="panel-form" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="action" value="preview">
+    {% include "includes/form_fields.html" %}
+    <div class="form-actions"><button class="btn" type="submit">بررسی و پیش‌نمایش</button></div>
+  </form>
+</section>
+{% endif %}
+
+<section class="panel-box">
+  <h2 class="h2">چطور کار می‌کند؟</h2>
+  <ol class="import-steps">
+    <li><strong>قالب اکسل را دریافت کنید.</strong> برگه‌های {% for s in sheets %}«{{ s.title }}»{% if not forloop.last %}، {% endif %}{% endfor %} دارد و برگه «راهنما» توضیح هر ستون را می‌دهد.</li>
+    <li><strong>اطلاعات را در ستون‌ها کپی کنید.</strong> عنوان ستون‌ها را تغییر ندهید؛ ترتیب ستون‌ها مهم نیست. هر برگه‌ای که اطلاعاتش را ندارید خالی بماند.</li>
+    <li><strong>فایل را بارگذاری کنید.</strong> قبل از ثبت، پیش‌نمایش می‌بینید: چند مورد جدید است، چند مورد به‌روز می‌شود و کدام ردیف‌ها مشکل دارند.</li>
+    <li><strong>ثبت نهایی را بزنید.</strong></li>
+  </ol>
+  <p class="note">نگران تکراری شدن نباشید. مشتری با <strong>موبایل</strong> شناسایی می‌شود، بیمه‌نامه با <strong>شماره بیمه‌نامه و شرکت</strong> و قسط با <strong>بیمه‌نامه و تاریخ سررسید</strong>. اگر از قبل ثبت شده باشد، فقط اطلاعاتش به‌روز می‌شود. مثلاً اگر نام مشتریان قبلاً به‌صورت «؟؟؟» ثبت شده، همان فایل را با نام‌های درست دوباره بارگذاری کنید تا نام‌ها اصلاح شود؛ لازم نیست چیزی را پاک کنید.</p>
+  <p class="muted small">فایل اکسل (.xlsx) بهترین انتخاب است و مشکل حروف فارسی ندارد. اگر CSV می‌فرستید، در اکسل گزینه <strong>CSV UTF-8</strong> را انتخاب کنید؛ CSV معمولی روی ویندوز غیرفارسی حروف را به علامت سؤال تبدیل می‌کند و چنین ردیف‌هایی رد می‌شوند.</p>
+</section>
+
+{% for s in sheets %}
+<section class="panel-box">
+  <h2 class="h2">ستون‌های برگه «{{ s.title }}»</h2>
+  <p class="muted small">{{ s.intro }}</p>
+  <div class="table-wrap"><table class="data">
+    <thead><tr><th>عنوان ستون</th><th></th><th>توضیح</th><th>نمونه</th></tr></thead>
+    <tbody>{% for c in s.columns %}<tr><td><b>{{ c.title }}</b></td><td>{% if c.required %}<span class="tag warm">اجباری</span>{% else %}<span class="tag">اختیاری</span>{% endif %}</td><td class="small">{{ c.help }}</td><td class="small ltr">{{ c.example }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endfor %}
+{% endblock %}

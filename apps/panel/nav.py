@@ -220,9 +220,7 @@ def build_nav(request) -> dict:
     palette += [
         {"label": f"ثبت {n['label']} جدید", "url": n["url"], "hint": "دستور", "kind": "command"} for n in new_menu
     ]
-    palette.append(
-        {"label": "ورود مشتریان از اکسل", "url": _url("customer_import"), "hint": "دستور", "kind": "command"}
-    )
+    palette.append({"label": "ورود اطلاعات از اکسل", "url": _url("data_import"), "hint": "دستور", "kind": "command"})
 
     return {
         "items": items,

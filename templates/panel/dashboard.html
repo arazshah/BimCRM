@@ -67,7 +67,7 @@
     <span class="ib-ok" aria-hidden="true"><svg><use href="#p-check"/></svg></span>
     <b>همه‌چیز مرتب است</b>
     <p>{% if inbox.filter %}در این دسته کاری باقی نمانده.{% else %}کاری منتظر شما نیست. تمدیدها، درخواست‌های سایت، اقساط و چک‌ها هر وقت سررسید شوند همین‌جا می‌آیند.{% endif %}</p>
-    {% if not stats.active_policies %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:customer_import' %}">ورود مشتریان از اکسل</a>{% endif %}
+    {% if not stats.active_policies %}<a class="btn btn-ghost btn-sm" href="{% url 'panel:data_import' %}">ورود اطلاعات از اکسل</a>{% endif %}
   </div>
   {% endif %}
 </section>

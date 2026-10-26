@@ -268,6 +268,7 @@ def test_csv_import(client, tenant, owner):
         {"file": SimpleUploadedFile("c.csv", csv.encode("utf-8-sig"))},
         HTTP_HOST=host(tenant),
     )
+    client.post("/panel/customers/import/", {"action": "confirm"}, HTTP_HOST=host(tenant))
     with tenant_context(tenant):
         assert list(Customer.objects.values_list("full_name", flat=True)) == ["مینا"]
 

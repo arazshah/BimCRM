@@ -393,8 +393,15 @@ def help_article(request, slug):
             "body_template": f"help/a/{slug}.html",
             "videos": h.videos_for(slug),
             "platform": PlatformSettings.load(),
+            "import_sheets": _import_sheets() if slug == "import" else (),
         },
     )
+
+
+def _import_sheets():
+    from apps.panel.importer import SHEETS
+
+    return SHEETS
 
 
 def help_articles():

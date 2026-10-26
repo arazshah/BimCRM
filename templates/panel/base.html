@@ -84,7 +84,7 @@
     <span class="new-title">ثبت جدید</span>
     {% for n in request.nav.new %}<a role="menuitem" href="{{ n.url }}"><span class="mi tone-{{ n.tone }}"><svg aria-hidden="true"><use href="#{{ n.icon }}"/></svg></span>{{ n.label }}</a>{% endfor %}
     <hr>
-    <a role="menuitem" class="foot" href="{% url 'panel:customer_import' %}"><span class="mi"><svg aria-hidden="true"><use href="#p-upload"/></svg></span>ورود مشتریان از اکسل</a>
+    <a role="menuitem" class="foot" href="{% url 'panel:data_import' %}"><span class="mi"><svg aria-hidden="true"><use href="#p-upload"/></svg></span>ورود اطلاعات از اکسل</a>
   </div>
   <nav class="bottom-nav" aria-label="دسترسی سریع">
     {% with u=request.resolver_match.url_name %}
